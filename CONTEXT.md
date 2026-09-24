@@ -65,7 +65,7 @@ A price a Fornecedor gave for one specific request (dates, rooms, people), with 
 _Avoid_: Orçamento (that is CoreaLux's own price)
 
 **Profissional**:
-A CoreaLux staff member who works on Viagens as Guia, Assistente or motorista, and does office work when there is no Viagem: languages, specialties, home city, contact, what they are paid, and availability.
+A person who works on Viagens as Guia, Assistente or motorista, either a funcionário (who also does office work when there is no Viagem) or an outside professional paid per service: languages, specialties, home city, contact, what they are paid, and availability.
 _Avoid_: Freelancer, staff (loose)
 
 **Guia**:
@@ -89,7 +89,7 @@ The access level of a staff member: Admin, Faturamento, Propostas e Orçamentos,
 _Avoid_: Cargo, perfil, permissão (for the level itself)
 
 **Usuário**:
-A person who signs in to Corealux OS, with a login, a password and one Papel. It may be linked to a Profissional; it must be when its Papel is Guiamento, so that "its own Dias" means the Alocações of that Profissional. A Usuário is deactivated, never deleted, because Viagens and their history point to it.
+A funcionário of CoreaLux who signs in to Corealux OS, with a login, a password and one Papel; outside people never get one. It may be linked to a Profissional; it must be when its Papel is Guiamento, so that "its own Dias" means the Alocações of that Profissional. A Usuário is deactivated, never deleted, because Viagens and their history point to it.
 _Avoid_: Conta, login (for the person)
 
 ## Comercial
