@@ -16,6 +16,10 @@ _Avoid_: Parceiro, operadora (as a party; "Interep/operadora" survives only as a
 A person who actually travels on a Viagem. Headcount is expressed in pax.
 _Avoid_: Cliente (when the traveller is not the buyer), hóspede
 
+**Dados de viagem**:
+What CoreaLux must hold about a Viajante to operate: full name as in the passport, date of birth, passport number and validity, flights, dietary restrictions, accessibility needs, emergency contact.
+_Avoid_: Cadastro, pax list (that is a document built from these)
+
 **Pagante**:
 A Viajante whose share of the price is charged. The per-person price divides by pagantes, not by all pax.
 
@@ -195,6 +199,21 @@ _Avoid_: To do, checklist (as loose text)
 **Alocação**:
 The assignment of Equipe and vehicle to a Dia of a Viagem. The tour agenda is the view of all Alocações by date.
 _Avoid_: Escala, agenda (for the assignment itself)
+
+**Receptivo**:
+A meeting or pickup the Equipe does with the Viajantes at an airport, station or hotel, with time, place and responsible person. The arrival Receptivo starts the trip; the departure one (the send-off) ends it.
+_Avoid_: Transfer (a transfer is the priced ride; the Receptivo is the operational meeting)
+
+**Alteração**:
+A change the Cliente asks for after confirmação. It produces a new Versão de orçamento and, when it changes the price, a difference to be paid or refunded.
+_Avoid_: Revisão, mudança (loose)
+
+**Ocorrência**:
+Something that happened during the trip and needs a record or a charge: delayed flight, waiting beyond 90 minutes, no-show, a change on the day, an incident with a Fornecedor.
+
+**Despesa de campo**:
+An amount the Equipe spends during a Dia (taxi, parking, tolls, fuel, tickets, meals), paid with the company card or a personal one, with its receipt, to be reconciled after the Viagem.
+_Avoid_: Gasto, prestação de contas (that is the reconciliation)
 
 **Roteiro operacional**:
 The internal version of the Roteiro, with times, checklists and pending bookings, for the Equipe.
