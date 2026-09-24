@@ -34,7 +34,7 @@ During the trip the Equipe logs **Ocorrências** and **Despesas de campo**. The 
 ### Confirmação and the operational plan
 
 1. As a salesperson, I want confirming a Viagem to copy the accepted Opção's Dias, Viajantes and Linhas de custo into its operational plan, so that operations start from what was sold.
-2. As a salesperson, I want the Código da viagem generated on confirmação, so that the Voucher and the team use one identifier.
+2. As a salesperson, I want the Código da viagem (created at first contact) printed on every operational document, so that the Voucher and the team use one identifier.
 3. As an operator, I want to collect each Viajante's Dados de viagem (passport name, date of birth, passport number and validity, arrival, departure and internal flights, travel insurance company and policy number, diet, accessibility, emergency contact), so that bookings, DMZ entry and airline lists are right.
 4. As an operator, I want a warning when a passport expires less than 6 months after the trip, or when data needed by a booked item is missing, so that nobody is stopped at a border or a checkpoint.
 5. As an operator, I want to generate a lista de passageiros for an airline or attraction from the Dados de viagem, so that I no longer retype names and passports.
@@ -43,7 +43,7 @@ During the trip the Equipe logs **Ocorrências** and **Despesas de campo**. The 
 
 6. As an operator, I want each Linha de custo that needs a booking (hotel, KTX, flight, bus, restaurant, ticket, Sky Capsule) to create a Reserva to be made, so that nothing sold is forgotten.
 7. As an operator, I want each Reserva to have a Fornecedor, a state (a fazer, solicitada, confirmada, cancelada), a booking code (PNR, hotel confirmation), its real cost and currency, and its cancellation terms, so that the booking is complete in one place.
-8. As an operator, I want to see the difference between the cost sold in the Versão and the real cost of each Reserva, so that the real Margem is known.
+8. As an operator, I want to see the difference between the cost sold in the Versão and the real cost of each Reserva, so that the real margin can be verified.
 9. As an operator, I want Reservas with booking deadlines (KTX, DMZ, Sky Capsule, Jeju flights, hotels) to show their deadline, so that we book before things sell out.
 10. As an operator, I want Pendências per Dia (send train tickets, K-ETA guidance, receive hotel voucher, confirm restaurant, passport reminder for the DMZ), with a due date and done/not done, so that the checklist lives next to the Dia.
 11. As an operator, I want a D-2 check per Dia (opening hours, times, programme, closures, travel time), so that the "checklist d-2" column finally gets filled.
@@ -106,6 +106,31 @@ During the trip the Equipe logs **Ocorrências** and **Despesas de campo**. The 
 53. As whoever does the departure Receptivo, I want to confirm the send-off at the airport, so that the Viagem moves to concluída.
 54. As a salesperson, I want the goodbye and review-request message suggested when the Viagem becomes concluída, so that every trip ends with a thank-you and feedback.
 55. As Carlos, I want a warning when a concluída Viagem still has an open Saldo, unreconciled Despesas de campo or open Ocorrências, so that nothing is left hanging.
+
+### Added from the full source sweep
+
+56. As an operator, I want each hotel, flight and transfer marked as ours (a Reserva) or as an Item de terceiros, so that we don't chase, warn about or take blame for what the Agência or client booked, while still knowing the hotel and flights.
+57. As an operator, I want the Voucher to list only the Hospedagem we booked, and to show Items de terceiros only when I choose, so that the Voucher states what we are responsible for.
+58. As an operator, I want the Voucher's dates to be the authoritative schedule and every sent version kept as an Envio, so that "as datas do voucher são as datas que valem" can be proven.
+59. As an operator, I want the Voucher to introduce the Equipe (name, photo, role) and list every booking code and ticket, so that clients trust the guide as our staff and have everything at hand.
+60. As an operator, I want the Voucher to use generic names ("bondinho") and to allow "horário a confirmar" for items whose booking window hasn't opened, so that the first Voucher can go out early and is updated later.
+61. As an operator, I want each Reserva to have the date its booking window opens (KTX and some experiences: one month before) and a "reservar nesta semana" list, so that we book the moment it's possible.
+62. As an operator, I want a Reserva to hold bed type, early check-in and upgrade requests, hotel confirmation number, and train car and seat numbers per person, so that the guide can meet clients on the platform and the hotel request is complete.
+63. As an operator, I want Observações para a Equipe on each Viajante (topics to avoid, mistrust, mobility, food), visible to the Equipe and never to the client, so that guides are briefed.
+64. As an operator, I want to allocate Profissionais per Período of a Dia (morning and afternoon can have different Guias), so that a guide can hand over a group mid-day.
+65. As an operator, I want a suggestion to keep the same Guia across the whole Viagem and a warning when it changes, so that clients don't have to switch guides.
+66. As an operator, I want a warning when a Profissional is allocated in two cities on the same day, not only at overlapping times, so that impossible schedules are caught.
+67. As an operator, I want recurring unavailability (every Tuesday, a class timetable, a period), so that availability reflects real life.
+68. As an operator, I want vehicle capacity suggestions that depend on the Categoria de atendimento (econômico can fill the car; VIP uses fewer seats) and on luggage, so that allocation follows how we actually sell.
+69. As an operator, I want the medical-tourism limit (3 people per clinic per shift, Guia plus acompanhante) checked, so that clinic days are staffed right.
+70. As an operator, I want Receptivos at cruise ports and bus terminals too, and groups on different flights split into separate Receptivos, so that every real pickup fits.
+71. As an operator, I want the Viagem to become concluída at the end of its last Dia when there is no departure Receptivo (clients going to the airport alone), so that trips close anyway.
+72. As an operator, I want to record a Despesa a repassar (tickets or extras we paid for the Agência's clients) and bill it back to the Agência, so that these amounts are recovered.
+73. As an operator, I want to record Cortesias given during the trip (a dinner on us, extra baggage, a free extra service) with their cost, so that goodwill is visible in the Resultado da viagem.
+74. As a salesperson, I want the Pagamento schedule to allow more than Sinal and Saldo (e.g. hotels in two or three instalments), so that real payment plans fit.
+75. As an operator, I want a "Sugestões" document for the Viagem (apps, money, K-ETA, hotel address in Hangul, restaurants per city), exportable as formatted PDF or plain text for agencies that use their own layout, so that travel tips stop being written from scratch.
+76. As a salesperson, I want the review request after concluída to be sent only to clients we choose, with a question about publishing photos, so that reviews come while the trip is fresh and photo use is consented.
+77. As an operator, I want to record feedback about Fornecedores after the trip (e.g. an old, worn-out hotel room), so that the next quote knows it.
 
 ## Implementation Decisions
 

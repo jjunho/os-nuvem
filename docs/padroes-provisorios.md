@@ -1,32 +1,33 @@
 # Padrões provisórios
 
-Resposta padrão que o Corealux OS usa para cada questão ainda aberta em
+Resposta que o Corealux OS dá a cada questão ainda aberta em
 `../docs/negocio/07-questoes-abertas.md`, até que Carlos decida. Tudo aqui é
-**valor sugerido e editável por Orçamento** (ADR-0001): o sistema propõe, a
-pessoa ajusta com motivo, e a Versão de orçamento registra ambos.
+**valor sugerido e editável por Orçamento** (ADR-0001), ou **a informar**
+quando Carlos pediu explicitamente para não presumir: nesse caso o sistema não
+sugere número e a pessoa preenche caso a caso.
 
 Quando Carlos decidir, a decisão vai para o acervo (K-unit) e para a Tabela de
 referência (ADR-0002), e a linha correspondente sai deste arquivo.
 
 | Questão | Padrão provisório | Por quê (evidência) |
 |---|---|---|
-| **KTX — adicional** (K891) | +20% sobre o bilhete KTX quando a data do trecho cai na janela de feriado nacional coreano (±2 dias), em qualquer classe, para clientes e equipe. Fora dessa janela, sem adicional. Cotação sugere classe econômica nessas datas. | K465/K543 já ligam o +20% ao feriado e preferem econômica por falta de assento; a equipe paga o mesmo bilhete, então o custo é real. Usa o mesmo calendário de feriados que já existe. |
-| **Ônibus — empilhamento** (K894) | `tabela 45 lugares × fator de tamanho × max(temporada ônibus, fds/feriado)`, depois +15% de intermediação. Cotação real do fornecedor em KRW, quando existir, substitui a tabela. | Alta e fds/feriado valem ambos ×1,2; multiplicá-los (×1,44) cobraria duas vezes a mesma escassez. `max` é a opção citada na própria recomendação B16. |
-| **IVA 10%** (K922, K933) | Desligado por padrão. Quando ligado: 10% sobre o total geral já arredondado, em linha própria, antes dos acréscimos de cartão/PIX. Marcar para confirmação contábil. | Nenhuma proposta real observada destaca IVA; ligar por padrão mudaria todos os preços praticados. A posição “após o total, antes do meio de pagamento” evita que margem e arredondamento incidam sobre imposto. |
-| **Faixa entre meia e diária** (K927) | Até 4h: 0,60. Mais de 4h até 6h: 0,80. Mais de 6h: diária completa. Mesmo fator para guia, assistente e carro; não vale para transfer. | Carlos exigiu a faixa; 4–6h a 80% é o único parâmetro que aparece no acervo, e mantém o degrau proporcional (4h/9h ≈ 44% → 0,60; 6h/9h ≈ 67% → 0,80). |
-| **Alçada da margem real mínima** (K920) | Margem real ≥ 10%: nada. Abaixo de 10%: alerta visível e o Responsável registra o motivo; Admin (Carlos) é notificado e pode dar o aprovo depois. Nada impede enviar a Proposta. | Piso de 10% é vigente, mas o preço é negociado; bloquear o envio travaria a negociação. Registro + aviso ao Admin torna o piso visível sem burocracia numa equipe pequena. |
-| **Reembolso — base comparável** (K916) | Comparar em USD: converter o valor pago em BRL pela taxa do dia do reembolso e devolver o menor entre esse valor e o valor reembolsável contratado em USD. | K916 já manda “o que for menor”; USD é a moeda interna do cálculo (K225), então é a base natural de comparação. |
+| **KTX — adicional** (K891) | **Linha opcional, desligada.** Nas datas da janela de feriado nacional coreano o sistema lembra que o adicional de 20% pode caber e sugere classe econômica; quem cota decide se liga, em que classe e para quem. | `negocio/05`: “não o aplicar como regra universal”; gatilho, classe e abrangência seguem abertos. K543 prefere econômica nessas datas. |
+| **Ônibus — empilhamento** (K894) | **A informar.** A linha de ônibus mostra separados o fator de tamanho, a temporada do fornecedor e fds/feriado, cada um editável; o sistema não os combina sozinho e pede que a combinação seja confirmada. Cotação real em KRW, quando existe, substitui a tabela. | Carlos (B16) não escolheu fórmula; a atualização de 13/09 manda não adotar `max` nem outra fórmula como decisão. K097 já prevê o multiplicador do ônibus em linha própria. |
+| **IVA 10%** (K922, K933) | **A informar por Proposta**: não cobrado, sempre, ou conforme forma de pagamento. Quando cobrado, entra em linha própria sobre o total arredondado, antes de cartão/PIX. | Carlos quer decidir “se vamos cobrar sempre ou somente a depender da forma de pagamento”; a atualização de 13/09 manda não tratar 0% como política. |
+| **Faixa entre meia e diária** (K927) | **A informar.** Até 4h: 0,60; 9h: diária completa. Entre 4h e 9h o fator é digitado caso a caso, com motivo; o sistema não sugere número. | `negocio/05`: a faixa “não autoriza presumir 80% para 4–6h”; Carlos: “não publique esse exemplo”. |
+| **Margem real mínima** (K920) | No Orçamento a margem é estimada e aparece como **“não verificável”** enquanto faltarem custos reais; o piso de 10% é conferido no Resultado da viagem. Abaixo de 10% (estimado ou real): alerta, motivo registrado e aviso ao Admin; nada impede enviar. Quem aprova exceções segue aberto. | K920/B42: sem custos reais, não declarar o piso verificado; a atualização de 13/09 pede “margem não verificável”, nunca “aprovada”. |
+| **Reembolso — base comparável** (K916) | **A informar.** O sistema mostra o valor em USD e em BRL pela taxa do dia do reembolso, e a pessoa escolhe o menor declarado no contrato, com motivo. Não compara numericamente sozinho. | K916 define “o que for menor”, mas não o critério de comparação; a atualização de 13/09 manda não comparar USD e BRL numericamente. |
 | **Multa × processamento** (K917) | Dedução de item de terceiro = multa do fornecedor + 10% de processamento sobre o valor do item. | Leitura direta de K917 (“taxa de cancelamento mais 10% de processamento”); a multa do fornecedor prevalece (K852). |
 | **Capacidade de veículo** (K885–K887) | Cadastro guarda assentos físicos. Na alocação, o sistema desconta motorista e equipe sentada e mostra a capacidade líquida para clientes; o limite de conforto é alerta, não teto. | Guardar o número físico e descontar uma única vez elimina a dupla dedução que K887 aponta. |
-| **Crianças e bebês** (K925) | Bebê (< 2 anos): não conta para itens por pessoa nem para a proporção de guias; conta como assento no veículo. Criança (2–11): conta como pax em tudo; ingressos usam a tarifa infantil real do fornecedor quando cadastrada. Sem desconto em guia/carro. | Guia e carro são custos fixos do grupo; só ingressos variam por idade na prática. Assento de bebê é exigência de segurança. Faixas iguais às usadas por companhias aéreas, o que evita duas convenções no mesmo Orçamento. |
+| **Crianças e bebês** (K925) | **A informar por serviço.** O sistema registra idades desde o lead e, em cada linha por pessoa, pede como contar crianças e bebês; ingressos usam a tarifa infantil da Atração quando cadastrada. Sem política universal. Alerta de assento no veículo para bebê. | B47 pede pesquisa por serviço; a atualização de 13/09: “não invente política universal”. |
 | **Custo intermunicipal por API** (K930) | Sem API no primeiro momento: linha por trecho com custo digitado (e sua fonte) + 20%. | K930 define a regra de +20%, mas não identifica API; custo manual cumpre a regra hoje. |
 | **Calendário de feriados** (K892–K893) | Tabela anual de feriados nacionais coreanos cadastrada por ano. Faixas de temporada são dia/mês e incluem 29/02 na faixa que contém fevereiro; temporada baixa do ônibus vai até o último dia de fevereiro. | Lista anual já é vigente; datas por dia/mês com fim “último dia do mês” resolvem o ano bissexto sem regra especial. |
 | **Feriados estaduais/municipais** (K076) | Não aplicados automaticamente; podem ser marcados manualmente numa data do Orçamento. | K076 só considera feriados nacionais. |
 | **Custo real do cartão** (K915) | Manter 5% como padrão; registrar a taxa efetiva cobrada em cada pagamento, para permitir revisar o padrão com dados. | Mantém a regra vigente e gera a evidência que falta. |
-| **Gorjeta** (K026, K400, K553, K898) | Desligada por padrão. Ligada: valores de K898 (motorista 2, guia 4, assistente 2, fundo 5; +3 cada em Premium/VIP) por cliente por dia de trabalho, exibidos como sugestão **não incluída** no total. Sem divisão automática. | K898 fixa os valores; K553/K579 mostram que na prática a gorjeta aparece só como item não incluso. |
+| **Gorjeta** (K026, K400, K553, K898) | Desligada por padrão (regra vigente). Um clique a mostra no Orçamento e na Proposta como valor **sugerido, não incluído**, com os valores de K898. Agência pode optar por pagar adiantado (vira Pagamento e Conta a pagar às equipes). Rateio proporcional aos dias trabalhados. | K553/K898 vigentes; Carlos (27/07) quer que a gorjeta seja “mencionada no orçamento… dizer que é sugerido” e que agências possam pagar adiantado. |
 | **Adicional de espera** (K561, K114) | 10% após 90 min do pouso, cobrado uma vez por ocorrência. | Disposição provisória (CAMPO) registrada no acervo em K114; a questão segue aberta para Carlos em `07` (ele disse só “ignorar por enquanto”). |
 | **Dia do transfer no roteiro** (K566, K142) | Transfer de chegada é Dia 1; contagem editável por Roteiro. | Disposição provisória (CAMPO) registrada no acervo em K142; segue aberta para Carlos em `07`, e a prática dele é “Dia 0 … Dia da Chegada”. Os documentos reais usam as duas convenções (Rachel 2025 começa em Dia 0; Interep/Leda e Turis VIP em Dia 1), por isso a contagem fica editável. |
-| **Número de cliente** (K570) | `CLX` + ano (2 dígitos) + sequência de 3 dígitos + dígito Luhn. Se o ano passar de 999, a sequência cresce para 4 dígitos sem mudar os números já emitidos. Nunca reutilizar. | Mantém o contrato vigente e só muda quando o volume exigir, sem migração. |
+| **Número de cliente** (K570) | `CLX` + ano (2) + sequência (3) + Luhn, padrão `^CLX\d{6}$`, exibição opcional `CLX26 0018`. Ao chegar perto de 999 no ano, o sistema avisa; a evolução do formato é decisão aberta. Nunca reutilizar. | Especificação de 25/08/2026; K570 deixa a evolução para decisão. |
 | **Bebê em grupo Jeju Air após emissão** | Tratar como não garantido: o sistema alerta para incluir bebês antes da emissão do grupo. | Manuais S092 e S093 divergem; o caminho seguro é o que ambos permitem. |
 
 Não entram aqui B02 (markup) e B03 (custos), que Carlos deixou sem resposta:
@@ -137,3 +138,32 @@ Meio de contato e resumo; a conversa continua no canal de origem.
 | **Moeda de cobrança e recebimento** | Invoice e Pagamento em USD, BRL, EUR, KRW ou JPY, convertidos do Preço enviado em USD pela taxa do dia, registrada. PIX em BRL ×1,035; cartão +5%. | Na prática a cobrança é em USD ou BRL e às vezes em EUR, KRW ou JPY (Juliano, 24/09/2026); os fatores de PIX e cartão são K915–K919. |
 | **Custo de fornecedor em outra moeda** | KRW, JPY, EUR ou BRL convertidos para USD por `taxa × 1,10` (Naver para KRW), com taxa e data na Memória de cálculo. | A regra `× 1,10` está escrita só para KRW (K060); estendê-la a JPY/EUR/BRL mantém o mesmo colchão cambial para viagens ao Japão e fornecedores fora da Coreia. Padrão provisório. |
 | **Saldo com moedas misturadas** | O saldo é sempre apurado em USD: cada Pagamento vale o que sua taxa registrada converte. | Evita que um sinal em BRL e um saldo em USD deixem diferença por variação cambial não registrada. |
+
+## Varredura completa das fontes (reuniões, Kakao, manuscritos, áudios, documentos do Carlos)
+
+Regras e comportamentos que entram como Valor sugerido, aviso ou campo. Os
+valores com K-unit são vigentes; os demais vêm de falas do Carlos e ficam
+editáveis.
+
+| Tema | No sistema | Fonte |
+|---|---|---|
+| **Ordem do fator de duração** | `fator × (base + soma dos adicionais)`; duração não é adicional. | B01, K879 |
+| **Transfer em dia com carro** | +15% no carro do dia e sem transfer separado; Gyeongju↔Busan separado só sem carro; temporada vale para transfer. | B31–B33, K909–K911 |
+| **Nível de recepção** | Entre N2 e N3, sugere o maior (ICN: 150). Meet & greet em linha própria. | B19, K897 |
+| **Passagem da equipe** | Linha própria por profissional que viaja o trecho, sempre econômica, +15% de segurança, fora da margem. | B18, K149, K883 |
+| **Jeju** | Sempre + meia diária de serviço; USD 70 por pernoite com hospedagem e alimentação (+20% sex, dom e véspera de feriado); pernoite anterior só se o tour começa de manhã. | B27, K903–K906 |
+| **Carro próprio em Busan** | Só sugerido em econômico/padrão e conforme disponibilidade; nunca VIP. | B35, K913 |
+| **Capacidade por categoria** | Lotação sugerida do veículo varia pela Categoria de atendimento: econômico/padrão pode encher (Carnival 6, Solati 13 em transfer econômico); VIP usa menos gente por carro. Aviso, não teto. | Carlos 14–15/08/2026, K565 |
+| **Mudanças e no-show** | No-show: transfer integral. Cancelamento de transfer: grátis até 2 dias, 50% na véspera. Troca de transfer no dia ou de voo: +20%. Troca de hotel em Seul mantém preço; fora de Seul, recotar. Mala que não cabe: táxi por conta do cliente. | K088–K091, K561, Carlos 27/07/2026 |
+| **Atração sem preço** | Custo começa em zero; cobrança positiva exige custo real. USD 30 só como estimativa sinalizada, e a Versão não sai com estimativa. | B45, K924, K935 |
+| **Ajuste geral de tabela** | Um percentual aplicado a toda a Tabela de referência cria nova versão (ex.: +3–4% após alta do câmbio). | Carlos 10/08/2026 |
+| **Resposta por canal** | Prazo da primeira resposta: B2C mais curto, Operadora curto, Agência no mesmo dia útil. | Questionário B2B Q2; reunião 14/07 |
+| **Mínimos de viagem** | Aviso quando Agência pede menos de 3 dias, ou Jeju com menos de 2 dias de guia; exceção possível com motivo. | Reunião 29/06 |
+| **Paridade de preço** | Aviso quando o preço direto ao cliente fica abaixo do preço à Agência para o mesmo serviço. | Reunião 29/06 |
+| **Mesmo guia na viagem** | Alocação sugere manter o mesmo Guia em todos os Dias e avisa ao trocar. | Reunião 29/06 |
+| **Produto com especialista** | Tour ou Módulo pode exigir um Profissional específico (BTS → Jessica, arte → Lia); disponibilidade dele é conferida já na cotação. | Reunião 29/06 |
+| **Disponibilidade na cotação** | Ao cotar, o sistema mostra se há Guia/Assistente livre nas datas (sem reservar). | Reunião 29/06 |
+| **Janela de reserva** | Reserva tem data de abertura (KTX e experiências de cosméticos: 1 mês antes) e lista “reservar nesta semana”; Voucher pode sair com “horário a confirmar”. | Reunião 29/06; Lia (thread Explore Travel) |
+| **Turismo médico** | Até 3 pessoas por clínica por turno; Guia + acompanhante; sem assistente livre, vai Guia. | Carlos 27/07/2026 |
+| **Taxa de elaboração de roteiro** | Linha opcional desligada (USD 200 suspensa); se usada, é paga antes do Aceite, não reembolsável e descontada ao fechar. | B36, K914, Carlos 27/07/2026 |
+| **Cotação de hotel** | Booking conta empresa, tarifa cancelável, café para dois, Deluxe ou Superior (evitar Standard); datas distantes: estimativa do hotel + margem de segurança. | Análise consolidada §13; Carlos 15/08/2026 |

@@ -2,9 +2,17 @@
 
 CoreaLux negotiates every sale, and the knowledge base (`../docs/AGENTS.md`) states outright that "editável", "negociável" and "caso a caso" are the final shape of its rules, not gaps to close. So Corealux OS never enforces a price rule as a hard constraint. Every rate, percentage, count and condition is a **suggested value** on its Linha de custo. Staff can override it with an Ajuste manual that records who, when, the original value and why. The Versão de orçamento freezes both the suggestion and the override in its Memória de cálculo.
 
-Questions the business has not closed yet (`../docs/negocio/07-questoes-abertas.md`) are treated the same way. Each gets a **padrão provisório**: a sensible default derived from the evidence and marked as provisional, until Carlos decides. See `docs/padroes-provisorios.md`.
+Questions the business has not closed yet (`../docs/negocio/07-questoes-abertas.md`) follow one of two paths:
+
+- **Padrão provisório.** The question gets a sensible default derived from the evidence, marked as provisional until Carlos decides. See `docs/padroes-provisorios.md`.
+- **A informar.** Where Carlos explicitly said not to assume a value, the system leaves it blank and the person fills it in each case. His 13/09/2026 instructions list these: the 4–6h band, children's rates, VAT, bus stacking, and the USD/BRL refund comparison.
 
 ## Consequences
 
-- The only hard blocks are integrity rules: a sent Versão de orçamento cannot change, and money always carries its currency. Pricing floors (e.g. the 10% real-margin floor) raise a warning and record a reason. They never refuse the value or hold back a Proposta.
-- Every calculated value needs to store its suggestion, its applied value and an optional reason. A model that stores only the final number would violate this ADR.
+- The system never blocks **negotiation**. The hard stops are integrity and data, and there are four:
+  - a sent Versão de orçamento cannot change;
+  - money always carries its currency;
+  - a Versão cannot be sent while a charged value is still "a informar", for example an Atração with a positive price but no real cost (Carlos, B45);
+  - buying a non-refundable item while the Cliente's payments don't cover it needs a recorded override by Faturamento or Admin (Carlos, B40).
+- Pricing floors such as the 10% real-margin floor raise a warning and record a reason. They never refuse a value or hold back a Proposta. At quote time the margin is shown as "não verificável" until real costs exist.
+- Every calculated value stores its suggestion, its applied value and an optional reason. A model that stores only the final number would violate this ADR.

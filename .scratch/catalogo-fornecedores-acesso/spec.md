@@ -35,15 +35,16 @@ A Viagem can start from a Roteiro-modelo, and a Módulo can be dropped into any 
 
 If no Tarifário is valid, or one exists but a **Cotação de fornecedor** was received, the line uses the quote and records its source.
 
-**Access by Papel.** Each staff member has one **Papel**, and each Papel sees what the ones below it see:
+**Access by Papel.** Each staff member has one **Papel**. Money is visible only from Propostas e Orçamentos up:
 
 | Papel | What it adds |
 |---|---|
 | Admin | Everything, plus users and Tabelas de referência |
-| Faturamento | Pagamentos, reconciliation, real Margem |
+| Faturamento | Pagamentos, Invoices, reconciliation, Contas a pagar, Resultado da viagem |
 | Propostas e Orçamentos | Calculation, Opções, Preço enviado, Propostas |
 | Itinerários e Produtos | Catálogo and Roteiros. Can see single prices but not totals or Margem |
-| Guiamento | Own Alocações, the Roteiro operacional and the Dados de viagem needed for them. No prices |
+| Atendimento | Leads, Viagens, Contatos, Roteiros and the Catálogo. No prices at all |
+| Guiamento | Own Alocações, the Roteiro operacional, Incluso / Não incluso, and the Dados de viagem and Observações para a Equipe needed for them. No prices |
 | Conteúdo | Catálogo read-only and general content |
 
 ## User Stories
@@ -91,10 +92,28 @@ If no Tarifário is valid, or one exists but a **Cotação de fornecedor** was r
 30. As Carlos, I want Guiamento users, including outside guides, to see only their own Alocações, the Roteiro operacional of those Dias and the Dados de viagem they need (names, flights, emergency contact), so that personal data and prices stay protected.
 31. As Carlos, I want Itinerários e Produtos users to edit the Catálogo and Roteiros and see single-line prices, but not totals, Margem or Preço enviado, so that calculation stays with Propostas.
 32. As Carlos, I want only Propostas e Orçamentos and above to build Orçamentos, set Margem and Preço enviado, and send Propostas, so that pricing is done by the right people.
-33. As Carlos, I want Pagamentos, reconciliation and the real Margem visible only to Faturamento and Admin, so that the most sensitive data is limited.
-34. As Carlos, I want only Admin to manage users and Tabelas de referência, so that the rules can't be changed by accident.
-35. As a user, I want screens and fields I can't access to be hidden rather than shown as errors, so that the app is simple for each Papel.
-36. As Carlos, I want a record of who viewed or exported Dados de viagem, so that passport data access is traceable.
+33. As Carlos, I want Pagamentos, Invoices, Contas a pagar and the Resultado da viagem visible only to Faturamento and Admin, so that the most sensitive data is limited.
+34. As Carlos, I want an Atendimento Papel for staff who take first contact and handle leads without seeing any price, so that a generic attendant can work without access to money.
+35. As a Guia, I want to see what is and isn't included for each of my Dias without any value, so that I know what to do and what to refuse.
+36. As Carlos, I want only Admin to manage users and Tabelas de referência, so that the rules can't be changed by accident.
+37. As a user, I want screens and fields I can't access to be hidden rather than shown as errors, so that the app is simple for each Papel.
+38. As Carlos, I want a record of who viewed or exported Dados de viagem, so that passport data access is traceable.
+
+### Added from the full source sweep
+
+39. As a product person, I want Atração fields for indoor/outdoor, cost tier (free, cheap up to USD 5, expensive), near/far, opening hours, address, menu and price band (restaurants), and ticket price per person or per package, so that the catalogue supports planning and search.
+40. As a product person, I want a generic "refeição" slot distinct from a specific "restaurante", and dinner and night slots in a Dia besides morning, lunch and afternoon, so that programmes can stay vague or be precise.
+41. As a product person, I want Dia models from the catalogue (transfer in/out, Seul centro/moderna/museus/fronteira, Busan moderno/antigo, Gyeongju, Jeju oeste/leste/museus, Gapyeong, Andong, Wonju), so that a Roteiro is assembled from proven days.
+42. As a product person, I want a Tour's status (active, hidden, beta), so that products like Suwon or Sokcho can be kept out of sale or sold cautiously.
+43. As a product person, I want a Tour or Módulo to name the Profissional it requires, so that specialist products are checked for availability.
+44. As a product person, I want to rate Roteiros-modelo by quality (five stars to "não dá para fazer"), so that the best ones are reused first.
+45. As a product person, I want photos tagged (with or without people, season, place) and marked as ours or external (e.g. KTO), so that the right, usable image is chosen.
+46. As a product person, I want service items with zero price (remote WhatsApp support on free days) and paid booking services (reserving a restaurant), so that these offers appear in quotes.
+47. As a product person, I want restaurants with view, ambience, level (simple to sophisticated), queue and fame, so that the food questions in the briefing can be matched.
+48. As an operator, I want Fornecedores of type taxi and driver-for-the-client's-car (USD 100/day, 60% half day, USD 12/h overtime, +15% night, Seoul area), so that these services can be quoted.
+49. As an operator, I want to reuse a recent Cotação de fornecedor as a reference for another Viagem in the same season, marked as reference, so that recent real prices aren't lost.
+50. As Carlos, I want a general percentage adjustment on the Tabelas de referência (e.g. +3% after the exchange rate moves), creating a new version, so that all prices move in one step.
+51. As Carlos, I want the Perfil do cliente to record the legal basis or consent for keeping history (LGPD), so that client history is kept lawfully.
 
 ## Implementation Decisions
 
@@ -106,7 +125,7 @@ If no Tarifário is valid, or one exists but a **Cotação de fornecedor** was r
 - **Hotel cost suggestion** is part of the Cálculo de orçamento. Its inputs are the hotel line (hotel, category, dates, rooms, occupancy), the valid Tarifário and any Cotação de fornecedor. Its outputs are the KRW cost per night with taxes and extras, the USD value, and warnings: out of validity, "a confirmar" value used, group threshold reached. The calculation stays pure and receives the Tarifário as data.
 - **Tarifário date bands** are stored as explicit date ranges and weekday rules per validity period. Resolving a date to a band follows the Tarifário's own rules, never the CoreaLux Temporadas.
 - **Photos** store their source and usage-rights note. The Proposta only uses photos marked usable.
-- **Papel is a single ordered level per user,** not a free permission matrix. Guiamento gets row-level restriction to its own Alocações. This is the smallest model that expresses Carlos's proposal. A finer matrix can come later if needed.
+- **Papel is one fixed profile per user,** not a free permission matrix. Profiles are not a strict ladder: Atendimento and Guiamento see no money, Itinerários sees single prices only, and Guiamento is restricted to its own Alocações. This is the smallest model that expresses Carlos's proposal plus his request for a price-free attendant. A finer matrix can come later if needed.
 
 ## Testing Decisions
 
