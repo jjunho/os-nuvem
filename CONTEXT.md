@@ -280,7 +280,7 @@ _Avoid_: Custo (the estimate in the Orçamento), payable
 The share of what the Cliente paid that goes to an Influenciador (5% by reference), owed once the payment is received.
 
 **Gorjeta**:
-An optional suggested amount per Viajante per day for each kind of Profissional, plus a share for the back-office fund split at year end. Off by default, and never inside the Preço enviado.
+An optional suggested amount per Viajante per day for each kind of Profissional, shown only as text in the Proposta. Off by default, never inside the Preço enviado, and never collected, split or paid through CoreaLux.
 
 **Resultado da viagem**:
 What a Viagem actually earned: Pagamentos received minus Contas a pagar. The real Margem is measured on it, not on the Orçamento.
