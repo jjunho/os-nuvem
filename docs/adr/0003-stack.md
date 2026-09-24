@@ -38,5 +38,5 @@ The app must feel faster than a spreadsheet, or the team will stay in Excel. Car
 
 - There is one repository and one deploy. Module boundaries are enforced by folder structure and import rules, not by the network.
 - A real PostgreSQL must be available in development and CI; tests never replace it with a fake.
-- **Hosting is not decided yet.** Any host that runs a Node.js process next to PostgreSQL works. That decision belongs in its own ADR when it is made.
-- **Authentication is not decided yet.** Access by Papel is enforced in the app on every request, whichever login method is chosen.
+- **Hosting** is decided in ADR-0004 (a Raspberry Pi, reachable from the internet).
+- **Authentication** is decided in ADR-0005 (login with password). Access by Papel is enforced in the app on every request.

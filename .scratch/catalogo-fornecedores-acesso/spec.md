@@ -16,7 +16,7 @@ What CoreaLux sells and what it buys are scattered:
 Everyone also sees everything. Carlos wants access by area:
 - Calculations only for Propostas and above.
 - Itinerários may see single prices but not calculate.
-- Guiamento can include outside people and needs care.
+- Guiamento needs care: a Guia works in the field, on a phone, with clients' personal data.
 - Faturamento is the most sensitive.
 
 ## Solution
@@ -89,7 +89,7 @@ If no Tarifário is valid, or one exists but a **Cotação de fornecedor** was r
 ### Access by Papel
 
 29. As Carlos, I want to give each staff member one Papel, so that access follows responsibility.
-30. As Carlos, I want Guiamento users, including outside guides, to see only their own Alocações, the Roteiro operacional of those Dias and the Dados de viagem they need (names, flights, emergency contact), so that personal data and prices stay protected.
+30. As Carlos, I want Guiamento users to see only their own Alocações, the Roteiro operacional of those Dias and the Dados de viagem they need (names, flights, emergency contact), so that personal data and prices stay protected.
 31. As Carlos, I want Itinerários e Produtos users to edit the Catálogo and Roteiros and see single-line prices, but not totals, Margem or Preço enviado, so that calculation stays with Propostas.
 32. As Carlos, I want only Propostas e Orçamentos and above to build Orçamentos, set Margem and Preço enviado, and send Propostas, so that pricing is done by the right people.
 33. As Carlos, I want Pagamentos, Invoices, Contas a pagar and the Resultado da viagem visible only to Faturamento and Admin, so that the most sensitive data is limited.
@@ -159,7 +159,7 @@ The tests are vertical first, then one transversal test at the end.
   1. A Propostas user starts the Viagem from a Roteiro-modelo.
   2. They add a Tour, an Atração on a closing day (warned and changed), and a hotel priced from a Tarifário.
   3. They send the Proposta, which carries the Atração descriptions.
-  4. After confirmação, an outside Guia logs in and sees only their Dias, without prices.
+  4. After confirmação, a Guia logs in from outside the office and sees only their Dias, without prices.
   5. Faturamento records the Sinal.
 
   At each step, it checks what that Papel sees.

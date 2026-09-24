@@ -65,7 +65,7 @@ A price a Fornecedor gave for one specific request (dates, rooms, people), with 
 _Avoid_: Orçamento (that is CoreaLux's own price)
 
 **Profissional**:
-A person who works on Viagens as Guia, Assistente or motorista, internal staff or external: languages, specialties, home city, contact, what they are paid, and availability.
+A CoreaLux staff member who works on Viagens as Guia, Assistente or motorista, and does office work when there is no Viagem: languages, specialties, home city, contact, what they are paid, and availability.
 _Avoid_: Freelancer, staff (loose)
 
 **Guia**:
@@ -88,6 +88,10 @@ A person who brings Viajantes through the Influencer Canal comercial and earns a
 The access level of a staff member: Admin, Faturamento, Propostas e Orçamentos, Itinerários e Produtos, Atendimento, Guiamento, Conteúdo. Money is visible only from Propostas e Orçamentos up (Itinerários sees single prices, never totals or Margem). Atendimento handles leads and conversations without any price. Guiamento sees only its own Dias, with Incluso / Não incluso but no values.
 _Avoid_: Cargo, perfil, permissão (for the level itself)
 
+**Usuário**:
+A person who signs in to Corealux OS, with a login, a password and one Papel. It may be linked to a Profissional; it must be when its Papel is Guiamento, so that "its own Dias" means the Alocações of that Profissional. A Usuário is deactivated, never deleted, because Viagens and their history point to it.
+_Avoid_: Conta, login (for the person)
+
 ## Comercial
 
 **Viagem**:
@@ -108,9 +112,13 @@ Why a Viagem ended as perdida or cancelada (e.g. achou caro, demora na resposta,
 How the Viagem reached CoreaLux: Instagram, site, indicação (with who referred it), Agência, Operadora, Influenciador.
 _Avoid_: Canal (alone), referência
 
+**Tarefa**:
+A concrete thing one Usuário must do, with a Prazo, people in copy, a column (Novo, Em foco, Aguardando, Concluído) and a code (TAR-…) to mention it; it may belong to a Viagem. The team's board of Tarefas is called Trelelê.
+_Avoid_: To do, task, card
+
 **Próxima ação**:
-The next concrete thing someone must do on a Viagem, separate from its Etapa.
-_Avoid_: To do, putting actions into the Etapa ("preparar orçamento")
+The open Tarefa of a Viagem with the earliest Prazo, shown beside its Etapa in the pipeline.
+_Avoid_: Putting actions into the Etapa ("preparar orçamento")
 
 **Canal comercial**:
 The price tier a Viagem is sold under: Interep/Operadora, Agência, Cliente final, Influencer.
@@ -123,6 +131,9 @@ _Avoid_: Canal (alone)
 **Categoria de atendimento**:
 The service level of a Viagem: econômico, padrão, premium, VIP. Independent of the Canal comercial.
 _Avoid_: 급, classe, estrelas, categoria de serviço, nível de serviço (the rules use "nível de serviço" for the Nível de recepção of transfers)
+
+**Idioma da interface**:
+The language a Usuário sees the system in: português or coreano. Separate from the Idioma do cliente and the Idioma de guiamento.
 
 **Idioma do cliente**:
 The language the client-facing documents and messages are written in: português, espanhol, inglês or francês. Separate from the Idioma de guiamento.
@@ -359,3 +370,24 @@ The document handed to the Cliente after confirmation, listing transfers, lodgin
 
 **Código da viagem**:
 The identifier of a Viagem from the first contact on (the team's "código do caso"), used to mention and search it everywhere and printed on every document.
+
+## Comunicação interna
+
+**Comunicador**:
+Corealux OS's own chat for the staff, replacing the internal KakaoTalk and WhatsApp groups.
+_Avoid_: Chat (loose), Canal
+
+**Grupo**:
+A named conversation among Usuários in the Comunicador, public (any Usuário but Guiamento can join) or private (by invitation).
+_Avoid_: Canal, sala
+
+**Conversa da viagem**:
+One of the two conversations a Viagem has in the Comunicador: the Interna, for staff only, and the Equipe, with the Profissionais of its Dias and its Responsável, so that guides never read the commercial talk.
+_Avoid_: Grupo da viagem
+
+**Conversa direta**:
+A conversation between two Usuários in the Comunicador.
+_Avoid_: DM, privado
+
+**Mensagem**:
+One message posted in a Grupo or Conversa direta. It can mention a Usuário and link to anything in the system as a card, and can carry a photo or a voice note; a mention shows each reader only what their Papel lets them see.
