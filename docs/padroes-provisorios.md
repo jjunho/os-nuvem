@@ -3,26 +3,29 @@
 Resposta que o Corealux OS dá a cada questão ainda aberta em
 `../docs/negocio/07-questoes-abertas.md`, até que Carlos decida. Tudo aqui é
 **valor sugerido e editável por Orçamento** (ADR-0001), ou **a informar**
-quando a regra vigente (`negocio/05` e `07`) deixa o valor em aberto sem número
-de partida: nesse caso o sistema não sugere número e a pessoa preenche caso a
-caso. As respostas do Carlos a esses itens foram só “seguir correção
-recomendada”; a cautela de não usar os números de exemplo da auditoria é
-leitura do acervo (e do prompt de 13/09), não fala dele.
+quando não há resposta do Carlos nem número de partida (hoje: IVA).
+
+“Seguir correção recomendada” é lido como adoção da recomendação, com seus
+números. As ressalvas “sem confirmação desses números” / “alternativa não
+escolhida” que aparecem em `negocio/05`, `07` e na coluna “Contexto” de S152 são
+síntese editorial posterior, não falas do Carlos; o texto original da auditoria
+não está no acervo. Onde este arquivo diverge de `negocio/05` por isso, a
+divergência é intencional e deve ser corrigida no acervo.
 
 Quando Carlos decidir, a decisão vai para o acervo (K-unit) e para a Tabela de
 referência (ADR-0002), e a linha correspondente sai deste arquivo.
 
 | Questão | Padrão provisório | Por quê (evidência) |
 |---|---|---|
-| **KTX — adicional** (K891) | **Linha opcional, desligada.** Nas datas da janela de feriado nacional coreano o sistema lembra que o adicional de 20% pode caber e sugere classe econômica; quem cota decide se liga, em que classe e para quem. | `negocio/05`: “não o aplicar como regra universal”; gatilho, classe e abrangência seguem abertos. K543 prefere econômica nessas datas. |
-| **Ônibus — empilhamento** (K894) | **A informar.** A linha de ônibus mostra separados o fator de tamanho, a temporada do fornecedor e fds/feriado, cada um editável; o sistema não os combina sozinho e pede que a combinação seja confirmada. Cotação real em KRW, quando existe, substitui a tabela. | Carlos respondeu “seguir correção recomendada”, e a auditoria oferecia `max(...)` “ou outra”; o acervo registra que nenhuma foi escolhida (K894, aberta em `07`). K097 já prevê o multiplicador do ônibus em linha própria. |
+| **KTX — adicional** (K891) | +20% sobre o bilhete KTX quando a data do trecho cai na janela de feriado nacional coreano (±2 dias), para clientes e equipe; nessas datas a cotação sugere classe econômica. | Carlos: “seguir correção recomendada” (B13) para unificar o adicional; K465/K543 já ligavam o +20% ao feriado e preferem econômica por falta de assento. |
+| **Ônibus — empilhamento** (K894) | `KRW × fator de tamanho × max(temporada do ônibus, fds/feriado) × 1,15`, convertido com a taxa da data. Cotação real do fornecedor, quando existe, substitui a tabela. | Carlos: “seguir correção recomendada” (B16); a fórmula é a da recomendação da auditoria. |
 | **IVA 10%** (K922, K933) | **A informar por Proposta**: não cobrado, sempre, ou conforme forma de pagamento. Quando cobrado, entra em linha própria sobre o total arredondado, antes de cartão/PIX. | Carlos: “Definir se vamos cobrar sempre ou somente a depender da forma de pagamento” (quadro inicial, S152); K933 aberta em `07`. |
-| **Faixa entre meia e diária** (K927) | **A informar.** Até 4h: 0,60; 9h: diária completa. Entre 4h e 9h o fator é digitado caso a caso, com motivo; o sistema não sugere número. | Carlos: “seguir correção recomendada com faixa intermediaria” (B49), sem números; `negocio/05` registra que a faixa “não autoriza presumir 80% para 4–6h” (K927, aberta em `07`). |
+| **Faixa entre meia e diária** (K927) | Até 4h: 0,60. Mais de 4h até 6h: 0,80. Mais de 6h: diária completa. Mesmo fator para guia, assistente e carro; não vale para transfer. | Carlos: “seguir correção recomendada com faixa intermediaria” (B49); 4–6h = 80% é a faixa da recomendação. |
 | **Margem real mínima** (K920) | No Orçamento a margem é estimada e aparece como **“não verificável”** enquanto faltarem custos reais; o piso de 10% é conferido no Resultado da viagem. Abaixo de 10% (estimado ou real): alerta, motivo registrado e aviso ao Admin; nada impede enviar. Quem aprova exceções segue aberto. | Carlos: “Minimo de 10% de margem” (B42). `negocio/05`/K920: sem custos reais, não declarar o piso verificado; a expressão “margem não verificável” vem do prompt de 13/09. |
-| **Reembolso — base comparável** (K916) | **A informar.** O sistema mostra o valor em USD e em BRL pela taxa do dia do reembolso, e a pessoa escolhe o menor declarado no contrato, com motivo. Não compara numericamente sozinho. | Carlos: “seguir correção recomendada” (B38); K916 (vigente parcialmente) define “o que for menor”, mas registra que a comparação entre moedas ainda precisa ser operacionalizada. |
+| **Reembolso — base comparável** (K916) | Converte o valor pago em BRL para USD pela taxa do dia do reembolso e devolve o menor entre esse valor e o valor reembolsável contratado em USD; a conversão fica registrada. | Carlos: “seguir correção recomendada” (B38): reembolso em USD ou BRL pela taxa do dia, o que for menor. Comparar exige converter para uma moeda; USD é a moeda do cálculo (K225). |
 | **Multa × processamento** (K917) | Dedução de item de terceiro = multa do fornecedor + 10% de processamento sobre o valor do item. | Leitura direta de K917 (“taxa de cancelamento mais 10% de processamento”); a multa do fornecedor prevalece (K852). |
 | **Capacidade de veículo** (K885–K887) | Cadastro guarda assentos físicos. Na alocação, o sistema desconta motorista e equipe sentada e mostra a capacidade líquida para clientes; o limite de conforto é alerta, não teto. | Guardar o número físico e descontar uma única vez elimina a dupla dedução que K887 aponta. |
-| **Crianças e bebês** (K925) | **A informar por serviço.** O sistema registra idades desde o lead e, em cada linha por pessoa, pede como contar crianças e bebês; ingressos usam a tarifa infantil da Atração quando cadastrada. Sem política universal. Alerta de assento no veículo para bebê. | Carlos: “Buscar informação (ver referencias)” (B47), sem faixa; K925 aberta em `07`. |
+| **Crianças e bebês** (K925) | Ingressos, hotel e voos usam as regras de idade de cada Fornecedor/Atração (Tarifário, tarifa infantil). Serviços próprios (guia, carro) contam crianças como pax. Bebê (< 2 anos) conta assento no veículo. | Carlos: “Buscar informação (ver referencias)” (B47): as referências são as regras de cada fornecedor (ex.: hotéis com faixas de 48 meses a 13 anos). |
 | **Custo intermunicipal por API** (K930) | Sem API no primeiro momento: linha por trecho com custo digitado (e sua fonte) + 20%. | K930 define a regra de +20%, mas não identifica API; custo manual cumpre a regra hoje. |
 | **Calendário de feriados** (K892–K893) | Tabela anual de feriados nacionais coreanos cadastrada por ano. Faixas de temporada são dia/mês e incluem 29/02 na faixa que contém fevereiro; temporada baixa do ônibus vai até o último dia de fevereiro. | Lista anual já é vigente; datas por dia/mês com fim “último dia do mês” resolvem o ano bissexto sem regra especial. |
 | **Feriados estaduais/municipais** (K076) | Não aplicados automaticamente; podem ser marcados manualmente numa data do Orçamento. | K076 só considera feriados nacionais. |
