@@ -35,7 +35,7 @@ During the trip the Equipe logs **Ocorrências** and **Despesas de campo**. The 
 
 1. As a salesperson, I want confirming a Viagem to copy the accepted Opção's Dias, Viajantes and Linhas de custo into its operational plan, so that operations start from what was sold.
 2. As a salesperson, I want the Código da viagem generated on confirmação, so that the Voucher and the team use one identifier.
-3. As an operator, I want to collect each Viajante's Dados de viagem (passport name, date of birth, passport number and validity, flights, diet, accessibility, emergency contact), so that bookings, DMZ entry and airline lists are right.
+3. As an operator, I want to collect each Viajante's Dados de viagem (passport name, date of birth, passport number and validity, arrival, departure and internal flights, travel insurance company and policy number, diet, accessibility, emergency contact), so that bookings, DMZ entry and airline lists are right.
 4. As an operator, I want a warning when a passport expires less than 6 months after the trip, or when data needed by a booked item is missing, so that nobody is stopped at a border or a checkpoint.
 5. As an operator, I want to generate a lista de passageiros for an airline or attraction from the Dados de viagem, so that I no longer retype names and passports.
 
@@ -52,7 +52,7 @@ During the trip the Equipe logs **Ocorrências** and **Despesas de campo**. The 
 ### Alocação and the agenda
 
 13. As an operator, I want to allocate Guias, Assistentes, drivers and vehicles to each Dia of a Viagem, so that everyone knows who works where.
-14. As an operator, I want the suggested Equipe for each Dia to come from the Categoria de serviço and the Viajantes taking part, so that staffing follows the sale.
+14. As an operator, I want the suggested Equipe for each Dia to come from the Categoria de atendimento and the Viajantes taking part, and the suggested Profissionais to match the Idioma de guiamento, the Dia's theme (K-Beauty, art, shopping) and the level asked for, so that the right person is sent.
 15. As an operator, I want a warning when the same person or vehicle is allocated to two Viagens at the same time, so that double-booking is caught.
 16. As an operator, I want to mark people as unavailable (folga, other commitments), so that the warnings know about them.
 17. As an operator, I want an Alocação to be "a confirmar" until it is confirmed, and a list of Dias in the next 7 days still without a confirmed Guia, so that late staffing is visible early.
@@ -63,46 +63,49 @@ During the trip the Equipe logs **Ocorrências** and **Despesas de campo**. The 
 
 ### Voucher and Roteiro operacional
 
-22. As an operator, I want the Voucher generated from the operational plan (Código da viagem, Responsável and phone, Viajantes, emergency contact, Receptivos and deslocamentos with the person in charge and their phone, Hospedagem with check-in and check-out, Guiamento per Dia with meeting time and activities), so that I never retype it.
-23. As an operator, I want any change to the plan to let me issue a new Voucher version, with previous versions kept, so that the client always has the latest one and we know what they had.
-24. As an operator, I want to attach tickets and booking confirmations to the Voucher ("com os tickets"), so that the client has everything in one file.
-25. As an operator, I want the Roteiro operacional for the Equipe (times, addresses, bookings, Pendências, notes), so that the internal plan is separate from the client document.
+22. As an operator, I want each Receptivo to carry the flight, the Nível de recepção and who does it (Guia, Assistente or only the driver), and a driver sheet with the flight arrival and the name sign, so that a pickup without a Guia is still fully prepared.
+23. As an operator, I want the Voucher, in the Idioma do cliente, generated from the operational plan (Código da viagem, Responsável and phone, Viajantes, emergency contact, Receptivos and deslocamentos with the person in charge and their phone, Hospedagem with check-in and check-out, Guiamento per Dia with meeting time and activities), so that I never retype it.
+24. As an operator, I want any change to the plan to let me issue a new Voucher version, with previous versions kept, so that the client always has the latest one and we know what they had.
+25. As an operator, I want to attach tickets and booking confirmations to the Voucher ("com os tickets"), so that the client has everything in one file.
+26. As an operator, I want the Roteiro operacional for the Equipe (times, addresses, bookings, Pendências, notes), so that the internal plan is separate from the client document.
 
 ### Pagamentos
 
-26. As a salesperson, I want the Sinal and Saldo due dates and amounts set from the accepted Proposta's Condições, so that payment follows what was agreed.
-27. As a salesperson, I want to record each Pagamento with date, amount, currency, method (PIX, Wise, cartão, espécie) and proof, so that screenshots stop being the record.
-28. As a salesperson, I want to issue an Invoice and receive a Pagamento in USD, BRL, EUR, KRW or JPY, with the amount converted from the USD Preço enviado at the rate of the day, plus the method's factor (PIX in BRL ×1.035, card +5%), all as editable suggestions, so that each Cliente pays in the currency they use.
-29. As a salesperson, I want the Situação de pagamento (sem sinal, sinal recebido, pago) and the open Saldo always visible on the Viagem, so that nobody asks "did they pay?".
-30. As a salesperson, I want a Próxima ação created before the Saldo due date and an alert when it passes, so that balances are chased on time.
-31. As an operator, I want a warning when I mark a non-refundable Reserva as solicitada while the paid amount does not cover it, so that we don't pay for tickets the client hasn't covered.
-32. As a salesperson, I want to collect the Cliente's Dados de faturamento (name, CPF or CNPJ or foreign tax ID, address; company data for an Agência), so that an Invoice can be issued. Today this is asked in the chat every time.
-33. As a salesperson, I want to issue an Invoice for the Sinal, the Saldo or the whole amount, with Empresa emissora, Dados de faturamento, items, amount, due date, payment methods, bank details (bank, SWIFT, PIX key, Wise) and the Condições, so that the Cliente can pay and has a document that works as the contract.
-34. As a salesperson, I want to choose whether the Invoice shows one package line or a breakdown by Dia and service, so that clients who ask "the value of each service" get it without a second manual document.
-35. As a salesperson, I want each Invoice numbered and named consistently ("Invoice - {Cliente} - {mês ano}"), with a new version when anything changes and the old one kept, so that everybody refers to the same document.
-36. As a salesperson, I want Invoices addressed to an Agência in the Agência's name, even when the Viajantes are its clients, so that B2B billing follows who pays.
-37. As Carlos, I want the planned Invoice date on each Viagem (when the next Invoice should go out), and a list of Invoices due to be sent, so that "previsão de envio de invoice" is no longer tracked by memory.
-38. As a salesperson, I want to generate a Recibo from each Pagamento, showing what was paid, how and what remains, so that the "Template Recibo Tour" is filled automatically.
-39. As a salesperson, I want an Invoice's paid amount to follow the Pagamentos recorded against it, and the Invoice to show as open, partially paid or paid, so that we know which requests are settled.
-40. As a salesperson, I want to record a Saldo collected during the trip by the Equipe, so that mid-trip payments are not lost.
+27. As a salesperson, I want the Sinal and Saldo due dates and amounts set from the accepted Proposta's Condições, so that payment follows what was agreed.
+28. As a salesperson, I want to record each Pagamento with date, amount, currency, method (PIX, Wise, cartão, espécie) and proof, so that screenshots stop being the record.
+29. As a salesperson, I want to issue an Invoice and receive a Pagamento in USD, BRL, EUR, KRW or JPY, with the amount converted from the USD Preço enviado at the rate of the day, plus the method's factor (PIX in BRL ×1.035, card +5%), all as editable suggestions, so that each Cliente pays in the currency they use.
+30. As a salesperson, I want the Situação de pagamento (sem sinal, sinal recebido, pago) and the open Saldo always visible on the Viagem, so that nobody asks "did they pay?".
+31. As a salesperson, I want a Próxima ação created before the Saldo due date and an alert when it passes, so that balances are chased on time.
+32. As an operator, I want a warning when I mark a non-refundable Reserva as solicitada while the paid amount does not cover it, so that we don't pay for tickets the client hasn't covered.
+33. As a salesperson, I want to collect the Cliente's Dados de faturamento (name, CPF or CNPJ or foreign tax ID, address; company data for an Agência), so that an Invoice can be issued. Today this is asked in the chat every time.
+34. As a salesperson, I want to issue an Invoice for the Sinal, the Saldo or the whole amount, with Empresa emissora, Dados de faturamento, items, amount, due date, payment methods, bank details (bank, SWIFT, PIX key, Wise) and the Condições, so that the Cliente can pay and has a document that works as the contract.
+35. As a salesperson, I want to choose whether the Invoice shows one package line or a breakdown by Dia and service, so that clients who ask "the value of each service" get it without a second manual document.
+36. As a salesperson, I want each Invoice numbered and named consistently ("Invoice - {Cliente} - {mês ano}"), with a new version when anything changes and the old one kept, so that everybody refers to the same document.
+37. As a salesperson, I want Invoices addressed to an Agência in the Agência's name, even when the Viajantes are its clients, so that B2B billing follows who pays.
+38. As Carlos, I want the planned Invoice date on each Viagem (when the next Invoice should go out), and a list of Invoices due to be sent, so that "previsão de envio de invoice" is no longer tracked by memory.
+39. As a salesperson, I want to generate a Recibo from each Pagamento, showing what was paid, how and what remains, so that the "Template Recibo Tour" is filled automatically.
+40. As a salesperson, I want an Invoice's paid amount to follow the Pagamentos recorded against it, and the Invoice to show as open, partially paid or paid, so that we know which requests are settled.
+41. As a salesperson, I want to record a Saldo collected during the trip by the Equipe, so that mid-trip payments are not lost.
 
 ### Alterações and cancelamento
 
-41. As a salesperson, I want an Alteração after confirmação to create a new Versão de orçamento and show the price difference, so that changes are priced like the original.
-42. As a salesperson, I want the taxa de alteração available (starting at 0), so that customised packages can be charged when agreed.
-43. As a salesperson, I want to cancel a confirmada Viagem with a Motivo de perda, so that cancelada differs from perdida.
-44. As a salesperson, I want the refund suggested on cancelamento: supplier penalties per Reserva, 10% processing on non-refundable third-party items, our own cancellation terms, and the smaller of the USD or BRL amount, so that refunds follow the Condições.
+42. As a salesperson, I want an Alteração after confirmação to create a new Versão de orçamento and show the price difference, so that changes are priced like the original.
+43. As a salesperson, I want to record who asked for an Alteração (the Agência or the Viajante), and in B2B to mark complex or costly changes as "levar ao parceiro" so the Agência agrees the solution and any extra payment with its traveller, so that we follow the B2B rule and never surprise the partner.
+44. As an operator, I want to notify the Agência early when a problem may affect its traveller, so that the partner hears it from us first.
+45. As a salesperson, I want the taxa de alteração available (starting at 0), so that customised packages can be charged when agreed.
+46. As a salesperson, I want to cancel a confirmada Viagem with a Motivo de perda, so that cancelada differs from perdida.
+47. As a salesperson, I want the refund suggested on cancelamento: supplier penalties per Reserva, 10% processing on non-refundable third-party items, our own cancellation terms, and the smaller of the USD or BRL amount, so that refunds follow the Condições.
 
 ### During the trip and the send-off
 
-45. As an operator, I want the Aviso do dia prepared each evening for the next Dia (meeting time and place, Guia and phone, what to bring), ready to copy into the client's channel, so that nobody types it from scratch.
-46. As a Guia, I want to confirm the arrival Receptivo, so that the Viagem moves to em viagem.
-47. As a Guia, I want to log an Ocorrência (delayed flight, waiting beyond 90 minutes, no-show, change on the day, supplier incident), with a suggested charge when one applies, so that extra costs are billed and incidents are known.
-48. As a Guia, I want to log Despesas de campo with the card used (company or personal), amount in KRW and a photo of the receipt, so that my expenses are reconciled without a spreadsheet.
-49. As an operator, I want to reconcile a Viagem's Despesas de campo after it ends, with personal-card totals to reimburse, so that guides are repaid correctly.
-50. As a Guia, I want to confirm the departure Receptivo (the send-off at the airport), so that the Viagem moves to concluída.
-51. As a salesperson, I want the goodbye and review-request message suggested when the Viagem becomes concluída, so that every trip ends with a thank-you and feedback.
-52. As Carlos, I want a warning when a concluída Viagem still has an open Saldo, unreconciled Despesas de campo or open Ocorrências, so that nothing is left hanging.
+48. As an operator, I want the Aviso do dia prepared each evening for the next Dia (meeting time and place, Guia and phone, what to bring), in the Idioma do cliente and addressed to whoever the Viagem talks to (the Viajantes, or the Agência in B2B), ready to copy into that channel, so that nobody types it from scratch.
+49. As whoever does the arrival Receptivo (Guia, Assistente, driver, or the operator on their behalf), I want to confirm it, so that the Viagem moves to em viagem.
+50. As a Guia, I want to log an Ocorrência (delayed flight, waiting beyond 90 minutes, no-show, change on the day, supplier incident), with a suggested charge when one applies, so that extra costs are billed and incidents are known.
+51. As a Guia, I want to log Despesas de campo with the card used (company or personal), amount in KRW and a photo of the receipt, so that my expenses are reconciled without a spreadsheet.
+52. As an operator, I want to reconcile a Viagem's Despesas de campo after it ends, with personal-card totals to reimburse, so that guides are repaid correctly.
+53. As whoever does the departure Receptivo, I want to confirm the send-off at the airport, so that the Viagem moves to concluída.
+54. As a salesperson, I want the goodbye and review-request message suggested when the Viagem becomes concluída, so that every trip ends with a thank-you and feedback.
+55. As Carlos, I want a warning when a concluída Viagem still has an open Saldo, unreconciled Despesas de campo or open Ocorrências, so that nothing is left hanging.
 
 ## Implementation Decisions
 
@@ -165,7 +168,7 @@ The tests are vertical first, then one transversal test at the end.
   5. Voucher v1;
   6. Invoice for the Sinal issued in the Agência's name, and the Sinal recorded against it with a Recibo;
   7. an Alteração adds a day, giving a new Versão, Voucher v2 and a price difference;
-  8. Invoice for the Saldo issued, and the Saldo recorded by D-30;
+  8. Invoice for the Saldo issued, and the Saldo recorded before the first tour day;
   9. Aviso do dia;
   10. arrival Receptivo, so em viagem;
   11. an Ocorrência and Despesas de campo;
@@ -189,7 +192,7 @@ The tests are vertical first, then one transversal test at the end.
 
 - New glossary terms: Dados de viagem, Receptivo, Alteração, Ocorrência and Despesa de campo in `CONTEXT.md`.
 - Relevant defaults are in `docs/padroes-provisorios.md`:
-  - Sinal 30% and Saldo by D-30.
+  - Sinal 20% and Saldo on the first tour day (current rule), with warnings when the paid amount does not cover committed penalties or a non-refundable purchase.
   - Waiting charge of 10% after 90 minutes, charged once.
   - Refunds compared in USD.
   - Supplier penalty plus 10% processing.

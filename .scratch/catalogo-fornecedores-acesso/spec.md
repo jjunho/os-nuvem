@@ -50,50 +50,51 @@ If no Tarifário is valid, or one exists but a **Cotação de fornecedor** was r
 
 ### Atrações
 
-1. As a product person, I want to create an Atração with official name, display name, city, category (palace, museum, observatory, shop, market, clinic, restaurant, experience, transport), client-facing description and internal note, so that it's written once.
-2. As a product person, I want to attach photos to an Atração with their source and usage rights, so that proposals only use images we may use.
-3. As a product person, I want to record an Atração's closing days and seasonal notes (e.g. Gyeongbokgung closed on Tuesdays, cherry blossom in April), so that itineraries avoid closed days.
-4. As a product person, I want reference ticket prices per Atração by age band (adult, child, senior) and by currency, with the date they were checked, so that tickets are suggested from real data.
-5. As a product person, I want to mark an Atração as free, so that the zero cost doesn't look like a missing price.
-6. As a salesperson, I want to pick Atrações for the manhã, almoço and tarde of a Dia, so that the programme, tickets and descriptions come together.
-7. As a salesperson, I want a warning when a Dia's date is a closing day of one of its Atrações, so that we don't send people to a closed palace.
-8. As a salesperson, I want picking an Atração to suggest its ticket as a Linha de custo for the Viajantes of that Dia plus the Guia, so that tickets are not forgotten or miscounted.
-9. As a salesperson, I want to still type free text in a Dia's programme, so that one-off visits don't need a catalogue entry first.
-10. As a product person, I want restaurants in the Catálogo with city, cuisine, price band, Michelin distinction as declared by the source, and suitability for children, so that the restaurant guides stop being separate slide decks.
+1. As a product person, I want to create an Atração with official name, display name, generic name ("mercado de peixe"), city, category (palace, museum, observatory, shop, market, clinic, restaurant, experience, transport), client-facing description and internal note, so that it's written once.
+2. As a product person, I want an Atração's client-facing description in português, espanhol and inglês, with documents falling back to português and warning when a translation is missing, so that Spanish-speaking clients get Spanish documents.
+3. As a product person, I want to attach photos to an Atração with their source and usage rights, so that proposals only use images we may use.
+4. As a product person, I want to record an Atração's closing days and seasonal notes (e.g. Gyeongbokgung closed on Tuesdays, cherry blossom in April), so that itineraries avoid closed days.
+5. As a product person, I want reference ticket prices per Atração by age band (adult, child, senior) and by currency, with the date they were checked, so that tickets are suggested from real data.
+6. As a product person, I want to mark an Atração as free, so that the zero cost doesn't look like a missing price.
+7. As a salesperson, I want to pick Atrações for the manhã, almoço and tarde of a Dia, so that the programme, tickets and descriptions come together.
+8. As a salesperson, I want a warning when a Dia's date is a closing day of one of its Atrações, so that we don't send people to a closed palace.
+9. As a salesperson, I want picking an Atração to suggest its ticket as a Linha de custo for the Viajantes of that Dia plus the Guia, so that tickets are not forgotten or miscounted.
+10. As a salesperson, I want to still type free text in a Dia's programme, so that one-off visits don't need a catalogue entry first.
+11. As a product person, I want restaurants in the Catálogo with city, cuisine, price band, Michelin distinction as declared by the source, and suitability for children, so that the restaurant guides stop being separate slide decks.
 
 ### Tours, Módulos and Roteiros-modelo
 
-11. As a product person, I want each Tour to hold its published data (region, Atrações, duration, group size, languages, days of operation, meeting point, transport, Incluso / Não incluso), so that the catalogue lives in the system.
-12. As a product person, I want to keep the Tour's published duration separate from the 9h working-day reference, so that the catalogue does not change pricing.
-13. As a salesperson, I want to add a Tour to a Dia and get its Atrações, programme and suggested Linhas de custo, so that a catalogue day is priced in one step.
-14. As a product person, I want to build Módulos from Atrações and Linhas de custo (e.g. "Dia de autocuidados"), so that recurring blocks are reused across proposals.
-15. As a salesperson, I want to start a Viagem's Roteiro from a Roteiro-modelo and adapt it, so that common trips start 80% done.
-16. As a product person, I want to save any Viagem's Roteiro as a new Roteiro-modelo, so that good itineraries become reusable.
-17. As a salesperson, I want to generate the B2B catalogue (Tours without prices) as a PDF from the Catálogo, so that the Canva version can be retired.
+12. As a product person, I want each Tour to hold its published data (region, Atrações, duration, group size, languages, days of operation, meeting point, transport, Incluso / Não incluso), so that the catalogue lives in the system.
+13. As a product person, I want to keep the Tour's published duration separate from the 9h working-day reference, so that the catalogue does not change pricing.
+14. As a salesperson, I want to add a Tour to a Dia and get its Atrações, programme and suggested Linhas de custo, so that a catalogue day is priced in one step.
+15. As a product person, I want to build Módulos from Atrações and Linhas de custo (e.g. "Dia de autocuidados"), so that recurring blocks are reused across proposals.
+16. As a salesperson, I want to start a Viagem's Roteiro from a Roteiro-modelo and adapt it, so that common trips start 80% done.
+17. As a product person, I want to save any Viagem's Roteiro as a new Roteiro-modelo, stripped of prices, Descontos and Ajustes manuais, so that good itineraries become reusable without leaking one client's negotiated values to another.
+18. As a salesperson, I want to generate the B2B catalogue (Tours without prices) as a PDF from the Catálogo, so that the Canva version can be retired.
 
 ### Fornecedores and Tarifários
 
-18. As an operator, I want each Fornecedor with type, region, contacts (role, e-mail, phone, mobile) and notes, so that the hotel list becomes searchable.
-19. As an operator, I want to record a hotel's room categories (name, size, base and maximum occupancy, extra bed allowed), so that the right room is quoted.
-20. As an operator, I want to enter a Tarifário with a validity period, currency, date bands (weekday, Friday, Saturday, Sunday, named special dates), rate per category and band, and whether taxes are included or added (+10%, +21%), so that the rate card is data, not a PDF.
-21. As an operator, I want the Tarifário's extras (breakfast in advance vs on site, extra person, extra bed, child age rules), group threshold (e.g. from 10 rooms) and cancellation tiers, so that a quote includes everything the hotel charges.
-22. As an operator, I want to mark a Tarifário value as "a confirmar" when the source is ambiguous, so that it's never used silently.
-23. As an operator, I want a warning when an Orçamento date falls outside every Tarifário of the chosen hotel, so that an old year's rate is never used.
-24. As a salesperson, I want a hotel line to suggest the cost from the valid Tarifário for the dates, room category, rooms and occupancy, with taxes and breakfast, and converted to USD with the rule, so that hotels are priced in seconds.
-25. As a salesperson, I want to record a Cotação de fornecedor for a specific request (dates, rooms, people, price, source, date received, cut-off), and have it override the Tarifário for that line, so that e-mailed quotes are used and traceable.
-26. As an operator, I want the Reserva of a hotel to show the Tarifário's cancellation tiers and the deadline for free cancellation, so that we cancel in time.
-27. As an operator, I want non-hotel Fornecedores (bus company, driver, restaurant, clinic) with their own conditions (e.g. bus cancellation percentages by days before), so that their penalties feed the refund suggestion.
+19. As an operator, I want each Fornecedor with type, region, contacts (role, e-mail, phone, mobile) and notes, so that the hotel list becomes searchable.
+20. As an operator, I want to record a hotel's room categories (name, size, base and maximum occupancy, extra bed allowed), so that the right room is quoted.
+21. As an operator, I want to enter a Tarifário with a validity period, currency, date bands (weekday, Friday, Saturday, Sunday, named special dates), rate per category and band, and whether taxes are included or added (+10%, +21%), so that the rate card is data, not a PDF.
+22. As an operator, I want the Tarifário's extras (breakfast in advance vs on site, extra person, extra bed, child age rules), group threshold (e.g. from 10 rooms) and cancellation tiers, so that a quote includes everything the hotel charges.
+23. As an operator, I want to mark a Tarifário value as "a confirmar" when the source is ambiguous, so that it's never used silently.
+24. As an operator, I want a warning when an Orçamento date falls outside every Tarifário of the chosen hotel, so that an old year's rate is never used.
+25. As a salesperson, I want a hotel line to suggest the cost from the valid Tarifário for the dates, room category, rooms and occupancy, with taxes and breakfast, and converted to USD with the rule, so that hotels are priced in seconds.
+26. As a salesperson, I want to record a Cotação de fornecedor for a specific request (dates, rooms, people, price, source, date received, cut-off), and have it override the Tarifário for that line, so that e-mailed quotes are used and traceable.
+27. As an operator, I want the Reserva of a hotel to show the Tarifário's cancellation tiers and the deadline for free cancellation, so that we cancel in time.
+28. As an operator, I want non-hotel Fornecedores (bus company, driver, restaurant, clinic) with their own conditions (e.g. bus cancellation percentages by days before), so that their penalties feed the refund suggestion.
 
 ### Access by Papel
 
-28. As Carlos, I want to give each staff member one Papel, so that access follows responsibility.
-29. As Carlos, I want Guiamento users, including outside guides, to see only their own Alocações, the Roteiro operacional of those Dias and the Dados de viagem they need (names, flights, emergency contact), so that personal data and prices stay protected.
-30. As Carlos, I want Itinerários e Produtos users to edit the Catálogo and Roteiros and see single-line prices, but not totals, Margem or Preço enviado, so that calculation stays with Propostas.
-31. As Carlos, I want only Propostas e Orçamentos and above to build Orçamentos, set Margem and Preço enviado, and send Propostas, so that pricing is done by the right people.
-32. As Carlos, I want Pagamentos, reconciliation and the real Margem visible only to Faturamento and Admin, so that the most sensitive data is limited.
-33. As Carlos, I want only Admin to manage users and Tabelas de referência, so that the rules can't be changed by accident.
-34. As a user, I want screens and fields I can't access to be hidden rather than shown as errors, so that the app is simple for each Papel.
-35. As Carlos, I want a record of who viewed or exported Dados de viagem, so that passport data access is traceable.
+29. As Carlos, I want to give each staff member one Papel, so that access follows responsibility.
+30. As Carlos, I want Guiamento users, including outside guides, to see only their own Alocações, the Roteiro operacional of those Dias and the Dados de viagem they need (names, flights, emergency contact), so that personal data and prices stay protected.
+31. As Carlos, I want Itinerários e Produtos users to edit the Catálogo and Roteiros and see single-line prices, but not totals, Margem or Preço enviado, so that calculation stays with Propostas.
+32. As Carlos, I want only Propostas e Orçamentos and above to build Orçamentos, set Margem and Preço enviado, and send Propostas, so that pricing is done by the right people.
+33. As Carlos, I want Pagamentos, reconciliation and the real Margem visible only to Faturamento and Admin, so that the most sensitive data is limited.
+34. As Carlos, I want only Admin to manage users and Tabelas de referência, so that the rules can't be changed by accident.
+35. As a user, I want screens and fields I can't access to be hidden rather than shown as errors, so that the app is simple for each Papel.
+36. As Carlos, I want a record of who viewed or exported Dados de viagem, so that passport data access is traceable.
 
 ## Implementation Decisions
 
@@ -150,7 +151,7 @@ The tests are vertical first, then one transversal test at the end.
 - The RH area and the Relato diário or task board mentioned in the docs. They are internal-work tools, not part of the trip flow.
 - A client-facing catalogue website.
 - Supplier portals, and online booking with Fornecedores.
-- Translating the Catálogo. Content is in Portuguese first; other languages come later.
+- Machine translation. Descriptions in espanhol and inglês are written by people; the system only stores and uses them.
 
 ## Further Notes
 

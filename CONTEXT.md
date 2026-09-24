@@ -5,19 +5,26 @@ The internal system CoreaLux (the Tours & Experiências unit of Coreaníssima) u
 ## Pessoas e partes
 
 **Cliente**:
-Whoever buys the Viagem from CoreaLux: either an Agência or a person buying directly.
+Whoever pays CoreaLux for the Viagem: an Operadora, an Agência, or a person buying directly.
 _Avoid_: Nome, conta
 
 **Agência**:
-A B2B intermediary (agency or operator) that resells CoreaLux services to its own travellers. It carries its usual Canal comercial (Interep is its own tier) and how it pays CoreaLux.
-_Avoid_: Parceiro, operadora (as a party; "Interep/operadora" survives only as a Canal comercial)
+A travel agency that sells trips to its own travellers and buys the Korean part from CoreaLux, directly or through an Operadora. It carries its usual Canal comercial and how it pays.
+_Avoid_: Parceiro (loose)
+
+**Operadora**:
+A tour operator between Agências and CoreaLux, for which CoreaLux acts as the local DMC (e.g. Interep). A Viagem can have a chain: the Agência that sold the trip, then the Operadora that buys from CoreaLux and is the Cliente. Operadora has its own price tier.
+_Avoid_: Agência (they are different relationships)
+
+**Perfil do cliente**:
+What CoreaLux learns about a Cliente or Viajante across Viagens: past trips, preferences, restrictions, how they received past itineraries, birthday, language.
 
 **Viajante**:
-A person who actually travels on a Viagem. Headcount is expressed in pax.
+A person who actually travels on a Viagem. Headcount is expressed in pax. Ages (at least adult, child or infant, and children's ages) are known from the lead on, because they change the Roteiro and the price.
 _Avoid_: Cliente (when the traveller is not the buyer), hóspede
 
 **Dados de viagem**:
-What CoreaLux must hold about a Viajante to operate: full name as in the passport, date of birth, passport number and validity, flights, dietary restrictions, accessibility needs, emergency contact.
+What CoreaLux must hold about a Viajante to operate: full name as in the passport, date of birth, passport number and validity, arrival, departure and internal flights, travel insurance (company and policy number), dietary restrictions, accessibility needs, emergency contact.
 _Avoid_: Cadastro, pax list (that is a document built from these)
 
 **Pagante**:
@@ -75,8 +82,8 @@ _Avoid_: Cargo, perfil, permissão (for the level itself)
 ## Comercial
 
 **Viagem**:
-One trip CoreaLux is selling or delivering for a Cliente; the central record everything else hangs off. It exists from the first contact about the trip, before any price, and replaces one row of today's pipeline spreadsheet. One Viagem has one price and one Voucher: when part of a group needs its own price or Voucher, that part is a separate Viagem, linked to the others as Viagens relacionadas.
-_Avoid_: Tour (for the whole trip), lead, cliente (for the row)
+One trip CoreaLux is selling or delivering for a Cliente; the central record everything else hangs off. The team also calls it a caso. It exists from the first contact about the trip, before any price, and replaces one row of today's pipeline spreadsheet. One Viagem has one price and one Voucher: when part of a group needs its own price or Voucher, that part is a separate Viagem, linked to the others as Viagens relacionadas.
+_Avoid_: Tour (for the whole trip), lead, cliente (for the row), caso (use Viagem in the system; "código do caso" is the Código da viagem)
 
 **Viagens relacionadas**:
 Viagens that travel together or came from the same request but are priced and vouchered separately (e.g. one 7-pax group split into 2 pax, 4 pax and 1 pax).
@@ -89,7 +96,7 @@ _Avoid_: Andamento, status (as free text)
 Why a Viagem ended as perdida or cancelada (e.g. achou caro, demora na resposta, só queria um dia, fechou com outro guia, sem resposta).
 
 **Origem**:
-How the Viagem reached CoreaLux: Instagram, site, indicação (with who referred it), Agência, operadora parceira.
+How the Viagem reached CoreaLux: Instagram, site, indicação (with who referred it), Agência, Operadora, Influenciador.
 _Avoid_: Canal (alone), referência
 
 **Próxima ação**:
@@ -97,16 +104,19 @@ The next concrete thing someone must do on a Viagem, separate from its Etapa.
 _Avoid_: To do, putting actions into the Etapa ("preparar orçamento")
 
 **Canal comercial**:
-The price tier a Viagem is sold under: Interep/operadora, Agência, Cliente final, Influencer.
+The price tier a Viagem is sold under: Interep/Operadora, Agência, Cliente final, Influencer.
 _Avoid_: Canal (alone)
 
 **Meio de contato**:
-The medium a conversation happened through: WhatsApp, e-mail, Respond.io, formulário.
+The medium a conversation happened through: WhatsApp (business or personal), Respond.io, e-mail, Instagram, phone or audio, video call, formulário. A Viagem can use several.
 _Avoid_: Canal (alone)
 
-**Categoria de serviço**:
-The service level of a Viagem: econômico, padrão, premium, VIP.
-_Avoid_: 급, nível, classe, estrelas
+**Categoria de atendimento**:
+The service level of a Viagem: econômico, padrão, premium, VIP. Independent of the Canal comercial.
+_Avoid_: 급, classe, estrelas, categoria de serviço, nível de serviço (the rules use "nível de serviço" for the Nível de recepção of transfers)
+
+**Idioma do cliente**:
+The language the client-facing documents and messages are written in: português, espanhol or inglês. Separate from the Idioma de guiamento.
 
 **Formulário de planejamento**:
 The intake questionnaire a Cliente fills in describing the trip they want.
@@ -120,10 +130,10 @@ _Avoid_: Código da viagem (a different identifier)
 
 **Orçamento**:
 The priced calculation of a Viagem, built Dia by Dia: Linhas de custo, Margem and total in USD. A Viagem can have several.
-_Avoid_: Cotação
+_Avoid_: Cotação (alone; the rules say "cotação" for it, and Cotação de fornecedor is the supplier's price)
 
 **Opção**:
-One priced alternative inside an Orçamento, differing in group size, hotels, dates or Categoria de serviço ("7 pax A", "10 pax D1", "hotel 4 estrelas"). The Cliente chooses one.
+One priced alternative inside an Orçamento, differing in group size, hotels, dates or Categoria de atendimento ("7 pax A", "10 pax D1", "hotel 4 estrelas"). The Cliente chooses one.
 _Avoid_: Cenário, versão (a Versão is a frozen snapshot, not an alternative)
 
 **Preço calculado**:
@@ -144,7 +154,19 @@ One priced item inside an Orçamento (a Diária de guia, a transfer, a ticket, a
 
 **Margem**:
 The percentage added over the eligible subtotal of an Orçamento. Negotiated per Orçamento, like every other value.
-_Avoid_: Markup, lucro
+_Avoid_: Lucro; markup (the rules use "markup geral" as a synonym)
+
+**Desconto**:
+A reduction on the Preço enviado or on a Linha de custo, with its reason. Never copied to another Viagem.
+
+**Taxa de alteração**:
+A charge for customising a pacote fechado or changing a confirmed Viagem, as a percentage or a fixed amount, starting at 0.
+
+**Kit do dia**:
+The per-person bundle a Dia carries by Categoria de atendimento: tickets, water and Cortesia, charged once per Dia.
+
+**Pernoite fora da base**:
+A night a Profissional spends away from their home city for a Viagem, with its lodging and meals cost (USD 70 by reference).
 
 **Valor sugerido**:
 The value the system proposes for a Linha de custo from the Tabelas de referência, before any Ajuste manual.
@@ -173,7 +195,7 @@ A service of up to 4h, priced as a fraction of a Diária.
 Each full hour of service beyond a Diária.
 
 **Cortesia**:
-A small gift item priced per Viajante per day by Categoria de serviço (water, snacks).
+A small gift item priced per Viajante per day by Categoria de atendimento (water, snacks).
 _Avoid_: Cortesia meaning a free traveller (that is a Gratuidade)
 
 **Temporada**:
@@ -215,7 +237,7 @@ What a Viagem actually earned: Pagamentos received minus Contas a pagar. The rea
 _Avoid_: Lucro, margem (for the realized figure)
 
 **Sinal**:
-The first payment that confirms a Viagem.
+The first payment of a Viagem, due after the Aceite. It should cover the penalties CoreaLux would bear if the Viagem is cancelled. The Viagem is confirmada by the Aceite, even before the Sinal arrives.
 
 **Saldo**:
 What remains to be paid after the Sinal.
@@ -227,26 +249,26 @@ A catalogue product: a published guided day with its region, Atrações, duratio
 _Avoid_: Tour meaning the whole Viagem, passeio (loose)
 
 **Atração**:
-A place or experience a Dia can visit: palace, museum, observatory, shop, market, clinic, restaurant, cable car. It has a client-facing description, an internal note, photos with their source, city, closing days and reference ticket prices.
+A place or experience a Dia can visit: palace, museum, observatory, shop, market, clinic, restaurant, cable car. It has an official name, a display name and a generic name ("mercado de peixe"), a client-facing description per Idioma do cliente, an internal note, photos with their source, city, closing days and reference ticket prices.
 _Avoid_: Ponto turístico, lugar
 
 **Módulo**:
-A reusable block of a Dia or of several Dias, built from Atrações and Linhas de custo, that can be dropped into any Roteiro (e.g. "Dia de autocuidados").
+A reusable block of a Dia or of several Dias, built from Atrações and Linhas de custo, that can be dropped into any Roteiro (e.g. "Dia de autocuidados"). Its lines carry Valores sugeridos only, never a Viagem's negotiated values.
 _Avoid_: Bloco, pacote (a Pacote is a whole trip)
 
 **Roteiro-modelo**:
-A ready-made Roteiro to start from (Seul 3 dias; Seul–Busan–Jeju; Seul com criança; the 10-day standard), copied into a Viagem and then adapted.
+A ready-made Roteiro to start from (Seul 3 dias; Seul–Busan–Jeju; Seul com criança; the 10-day standard), copied into a Viagem and then adapted. It carries no prices, Descontos or Ajustes manuais from the Viagem it came from.
 _Avoid_: Template, pacote fechado (unless sold as-is)
 
 **Roteiro**:
-The day-by-day programme of a Viagem.
-_Avoid_: Itinerário
+The day-by-day programme of a Viagem. Before confirmação it names places generically ("mercado de peixe"); the detailed version follows after.
+_Avoid_: Itinerário (the team says it; in the system it is the Roteiro; "Itinerários e Produtos" survives only as a Papel name)
 
 **Dia**:
 One date of a Roteiro: its city or route, its Período, its programme (manhã, almoço, tarde), which Viajantes take part (not always all of them), and the Linhas de custo it generates. The building block of the Orçamento, the Voucher and the Alocação.
 
 **Aviso do dia**:
-The message sent to the Viajantes the evening before a Dia: meeting time and place, who the Guia is and their phone, and what to bring (e.g. passport for the DMZ).
+The message sent the evening before a Dia to whoever the Viagem talks to (the Viajantes, or the Agência in B2B, where direct contact with the traveller is rare): meeting time and place, who the Guia is and their phone, and what to bring (e.g. passport for the DMZ).
 
 **Idioma de guiamento**:
 The language the Equipe must speak on a Viagem: português by default, espanhol or inglês when asked.
@@ -264,8 +286,15 @@ The assignment of Equipe and vehicle to a Dia of a Viagem. The tour agenda is th
 _Avoid_: Escala, agenda (for the assignment itself)
 
 **Receptivo**:
-A meeting or pickup the Equipe does with the Viajantes at an airport, station or hotel, with time, place and responsible person. The arrival Receptivo starts the trip; the departure one (the send-off) ends it.
+A pickup or drop-off of the Viajantes at an airport, station or hotel, with time, place, flight, Nível de recepção and who does it (Guia, Assistente or only the driver). The arrival Receptivo starts the trip; the departure one (the send-off) ends it. The Voucher's "Receptivos & Deslocamentos" table lists them.
 _Avoid_: Transfer (a transfer is the priced ride; the Receptivo is the operational meeting)
+
+**Nível de recepção**:
+How much service a Receptivo includes: só deixar/pegar, motorista com placa, funcionário recepciona/despede (meet & greet), ajuda no check-in de saída internacional. Each level has its own price.
+_Avoid_: Nível de serviço (that phrase is taken by Categoria de atendimento in speech)
+
+**Passeio sem guia**:
+A Dia with car and English-speaking driver but no Guia, priced as the car +20%.
 
 **Alteração**:
 A change the Cliente asks for after confirmação. It produces a new Versão de orçamento and, when it changes the price, a difference to be paid or refunded.
