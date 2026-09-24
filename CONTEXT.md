@@ -102,7 +102,7 @@ _Avoid_: Tour (for the whole trip), lead, cliente (for the row), caso (use Viage
 Viagens that travel together or came from the same request but are priced and vouchered separately (e.g. one 7-pax group split into 2 pax, 4 pax and 1 pax).
 
 **Etapa**:
-Where a Viagem stands in its life: lead (first contact), em orçamento, proposta enviada, em negociação (the Cliente answered and asks for changes), confirmada, em viagem (from the arrival pickup), concluída (after the last send-off at the airport, or the end of the last Dia when there is no send-off). "Pago" is not an Etapa; it is the Situação de pagamento. It can also end as perdida (never confirmed), cancelada (confirmed, then called off) or descartada (not a trip request at all: press, spam, partnership offers).
+Where a Viagem stands in its life: lead (first contact), em orçamento, proposta enviada, em negociação (the Cliente answered and asks for changes), confirmada, em viagem (from the arrival pickup), concluída (after the last send-off at the airport, or the end of the last Dia when there is no send-off). "Pago" is not an Etapa; it is the Situação de pagamento. It can also end as perdida (never confirmed), cancelada (confirmed, then called off) or descartada (not a trip request at all: press, spam, partnership offers). The Etapa is inferred from what has been recorded on the Viagem, never set by hand; it only moves forward, and a wrong one is fixed by a Correção de etapa.
 _Avoid_: Andamento, status (as free text)
 
 **Motivo de perda**:
@@ -113,11 +113,35 @@ How the Viagem reached CoreaLux: Instagram, site, indicação (with who referred
 _Avoid_: Canal (alone), referência
 
 **Tarefa**:
-A concrete thing one Usuário must do, with a Prazo, people in copy, a column (Novo, Em foco, Aguardando, Concluído) and a code (TAR-…) to mention it; it may belong to a Viagem. The team's board of Tarefas is called Trelelê.
-_Avoid_: To do, task, card
+A concrete thing one Usuário must do, with a Prazo, people in copy and a code (TAR-…) to mention it; open, concluída or cancelada (closed because nobody needs it any more); it may belong to a Viagem. On a Quadro, each card is a Tarefa, and it sits on exactly one list of one Quadro. Sending it to another Usuário hands it over: they become its Responsável, and the sender stays in copy. Concluding it records who, when, what and why.
+_Avoid_: To do, task, subtarefa
+
+**Tarefa da etapa**:
+A Tarefa the system creates when a Viagem enters an Etapa, from that Etapa's editable template, and concludes itself when the fact it asks for is recorded (an Envio, an Aceite, a Cotação de fornecedor). Nobody creates one by hand.
+_Avoid_: Tarefa manual (any other Tarefa), checklist da etapa
+
+**Correção de etapa**:
+The fix of a Viagem whose Etapa is wrong because a fact was recorded by mistake, with who, when and why. The only way a Viagem moves back.
+_Avoid_: Voltar etapa, arrastar
+
+**Conversa da tarefa**:
+The Comunicador conversation of one Tarefa, among its Responsável and the people in copy, where its comments and its activity (moved, handed over, concluded) appear.
+_Avoid_: Comentários (as a separate thing)
+
+**Quadro**:
+A Trello-style board of lists whose cards are Tarefas. Every Usuário has a personal Quadro (lists Novo, Em foco, Aguardando, Concluído) where Tarefas handed to them land; they can also create more, share them and send Tarefas to someone else's. At most one list per Quadro is its lista de conclusão: a Tarefa moved there is concluída, and a Tarefa concluded anywhere moves there.
+_Avoid_: Board, Trello, Trelelê
+
+**Item de checklist**:
+A plain tick inside a Tarefa, with no Responsável, Prazo or code. When it needs an owner or a date, it is promoted to its own Tarefa, linked back.
+_Avoid_: Subtarefa, Pendência (that is what a Dia needs before it can happen)
+
+**Pipeline**:
+The view of Viagens by Etapa, as a list or as a kanban whose columns are the Etapas. A Viagem is never dragged on it: it sits where its current state puts it.
+_Avoid_: Quadro (a Quadro holds Tarefas, not Viagens), funil
 
 **Próxima ação**:
-The open Tarefa of a Viagem with the earliest Prazo, shown beside its Etapa in the pipeline.
+The open Tarefa of a Viagem with the earliest Prazo, shown beside its Etapa in the Pipeline.
 _Avoid_: Putting actions into the Etapa ("preparar orçamento")
 
 **Canal comercial**:
