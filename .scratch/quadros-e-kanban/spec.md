@@ -145,7 +145,7 @@ Tests are **vertical first, then one transversal test**, as in the other specs. 
      - Itens de checklist, and promoting one to a Tarefa linked back.
      - Labels, cover, attachments; a download refused to someone who can't see the Tarefa.
      - Commenting with a mention and a `V26-…` card in the Conversa da tarefa; activity lines for a move, a handoff and a conclusion.
-     - A Tarefa card with a Viagem shows the price to Propostas e Orçamentos and not to Atendimento.
+     - A Tarefa card with a Viagem shows the price to Propostas e Orçamentos and not to Conteúdo.
   4. **Inferência de etapa and Tarefas da etapa:**
      - A new Viagem is lead with *responder* on the Responsável's Quadro; a contact note concludes it.
      - Creating an Orçamento moves it to em orçamento and creates that template.
@@ -162,7 +162,7 @@ Tests are **vertical first, then one transversal test**, as in the other specs. 
   5. **Pipeline:**
      - The kanban and the list show the same Viagens and filters; ended Etapas are collapsed.
      - A Viagem can't be dragged; clicking opens it.
-     - Atendimento sees no prices on the cards; Guiamento has no Pipeline.
+     - Conteúdo sees no prices on the cards; Guiamento has no Pipeline.
      - An Etapa change made by another Usuário's action appears without reload.
      - The Viagem spec's part 1 pipeline tests still pass.
 - **The Inferência de etapa** has fast table-driven Vitest tests at its own interface: facts in different orders × Correções × endings × templates × time, including facts arriving out of order and facts recorded twice. These add to the vertical tests.

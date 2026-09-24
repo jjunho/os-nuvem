@@ -85,7 +85,7 @@ _Avoid_: Carro (loose; the internal models and the public fleet names differ)
 A person who brings Viajantes through the Influencer Canal comercial and earns a Comissão, without handling the payment.
 
 **Papel**:
-The access level of a staff member: Admin, Faturamento, Propostas e Orçamentos, Itinerários e Produtos, Atendimento, Guiamento, Conteúdo. Money is visible only from Propostas e Orçamentos up (Itinerários sees single prices, never totals or Margem). Atendimento handles leads and conversations without any price. Guiamento sees only its own Dias, with Incluso / Não incluso but no values.
+The access level of a staff member: Admin, Faturamento, Propostas e Orçamentos, Itinerários e Produtos, Guiamento, Conteúdo. Whoever takes first contact and handles leads is Propostas e Orçamentos; there is no separate Atendimento Papel. Money is visible only from Propostas e Orçamentos up (Itinerários sees single prices, never totals or Margem). Guiamento sees only its own Dias, with Incluso / Não incluso but no values.
 _Avoid_: Cargo, perfil, permissão (for the level itself)
 
 **Usuário**:

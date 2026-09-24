@@ -88,7 +88,7 @@ Success means this: on a date Carlos sets and announces, the internal KakaoTalk 
 47. As a Usuário, I want typing a `TAR-…`, `OC-…` or Número da proposta to turn into its card, so that every coded thing links itself.
 48. As a Usuário, I want `[[` to open a picker that searches Tarefas, Viagens (by Cliente), Pendências, Dias, Clientes, Agências, Fornecedores, Profissionais and Tours by name, so that things without a code can also be linked.
 49. As a Usuário, I want a pasted link to any screen of the app to become a card, so that sharing a screen shows what it is.
-50. As a reader, I want each card to show only what my Papel allows (no prices for Atendimento or Guiamento, only my own Dias for Guiamento), so that mentions never leak what I shouldn't see.
+50. As a reader, I want each card to show only what my Papel allows (no prices for Conteúdo or Guiamento, only my own Dias for Guiamento), so that mentions never leak what I shouldn't see.
 51. As a reader without access to a mentioned thing, I want the card to say it is restricted instead of hiding the Mensagem, so that the conversation still reads correctly.
 52. As a Usuário, I want the text of a Mensagem never filtered by Papel, so that what a person wrote stays exactly what they wrote.
 53. As a Usuário, I want a card to show the thing's current state (e.g. the Viagem's Etapa now), so that old Mensagens don't mislead.
@@ -234,7 +234,7 @@ Tests are **vertical first, then one transversal test** at the end, as in the ot
      - The index below the box.
      - `@` mention with a push recorded. `@todos` versus `@aqui`.
      - `#` Grupo. `V26-…` becomes a Viagem card, and a pasted app link becomes a card. `[[` finds a Viagem by Cliente.
-     - The same Mensagem shows the Viagem card with the price to the Admin and without it to Atendimento. Guiamento gets "restricted" for a Viagem not its own, and the text is unchanged for all three.
+     - The same Mensagem shows the Viagem card with the price to the Admin and without it to Conteúdo. Guiamento gets "restricted" for a Viagem not its own, and the text is unchanged for all three.
      - A card shows the Etapa current at read time.
   4. **Tarefas:**
      - Create a Tarefa with copy and a Prazo, get its TAR code, mark it concluída and reopen it, and filter the list by Responsável and overdue.

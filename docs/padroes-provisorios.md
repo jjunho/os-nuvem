@@ -162,7 +162,7 @@ editáveis.
 | **Capacidade por categoria** | Lotação sugerida do veículo varia pela Categoria de atendimento: econômico/padrão pode encher (Carnival 6, Solati 13 em transfer econômico); VIP usa menos gente por carro. Aviso, não teto. | Carlos 14–15/08/2026, K565 |
 | **Mudanças e no-show** | No-show: transfer integral. Cancelamento de transfer: grátis até 2 dias, 50% na véspera. Troca de transfer no dia ou de voo: +20%. Troca de hotel em Seul mantém preço; fora de Seul, recotar. Mala que não cabe: táxi por conta do cliente. | K088–K091, K561, Carlos 27/07/2026 |
 | **Atração sem preço** | Custo começa em zero; cobrança positiva exige custo real. USD 30 só como estimativa sinalizada, e a Versão não sai com estimativa. | B45, K924, K935 |
-| **Ajuste geral de tabela** | Um percentual aplicado a toda a Tabela de referência cria nova versão (ex.: +3–4% após alta do câmbio). | Carlos 10/08/2026 |
+| **Ajuste geral de tabela** | Um percentual ajustável aplicado a toda a Tabela de referência cria nova versão, para quando o câmbio oscila demais (ex.: +3–4%). Separado do fator de câmbio ×1,10. | Carlos 10/08/2026; Juliano 24/09/2026 (substitui K532) |
 | **Resposta por canal** | Prazo da primeira resposta: B2C mais curto, Operadora curto, Agência no mesmo dia útil. | Questionário B2B Q2; reunião 14/07 |
 | **Mínimos de viagem** | Aviso quando Agência pede menos de 3 dias, ou Jeju com menos de 2 dias de guia; exceção possível com motivo. | Reunião 29/06 |
 | **Paridade de preço** | Aviso quando o preço direto ao cliente fica abaixo do preço à Agência para o mesmo serviço. | Reunião 29/06 |

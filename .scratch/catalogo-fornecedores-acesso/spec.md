@@ -43,7 +43,6 @@ If no Tarifário is valid, or one exists but a **Cotação de fornecedor** was r
 | Faturamento | Pagamentos, Invoices, reconciliation, Contas a pagar, Resultado da viagem |
 | Propostas e Orçamentos | Calculation, Opções, Preço enviado, Propostas |
 | Itinerários e Produtos | Catálogo and Roteiros. Can see single prices but not totals or Margem |
-| Atendimento | Leads, Viagens, Contatos, Roteiros and the Catálogo. No prices at all |
 | Guiamento | Own Alocações, the Roteiro operacional, Incluso / Não incluso, and the Dados de viagem and Observações para a Equipe needed for them. No prices |
 | Conteúdo | Catálogo read-only and general content |
 
@@ -93,7 +92,7 @@ If no Tarifário is valid, or one exists but a **Cotação de fornecedor** was r
 31. As Carlos, I want Itinerários e Produtos users to edit the Catálogo and Roteiros and see single-line prices, but not totals, Margem or Preço enviado, so that calculation stays with Propostas.
 32. As Carlos, I want only Propostas e Orçamentos and above to build Orçamentos, set Margem and Preço enviado, and send Propostas, so that pricing is done by the right people.
 33. As Carlos, I want Pagamentos, Invoices, Contas a pagar and the Resultado da viagem visible only to Faturamento and Admin, so that the most sensitive data is limited.
-34. As Carlos, I want an Atendimento Papel for staff who take first contact and handle leads without seeing any price, so that a generic attendant can work without access to money.
+34. ~~Atendimento Papel~~ Removed on 2026-09-24: whoever takes first contact is Propostas e Orçamentos (Juliano). The Atendimento Papel came only from an unapproved plan (K447) and is not in Carlos's list of 13/09.
 35. As a Guia, I want to see what is and isn't included for each of my Dias without any value, so that I know what to do and what to refuse.
 36. As Carlos, I want only Admin to manage users and Tabelas de referência, so that the rules can't be changed by accident.
 37. As a user, I want screens and fields I can't access to be hidden rather than shown as errors, so that the app is simple for each Papel.
@@ -113,7 +112,7 @@ If no Tarifário is valid, or one exists but a **Cotação de fornecedor** was r
 48. As an operator, I want Fornecedores of type taxi and driver-for-the-client's-car (USD 100/day, 60% half day, USD 12/h overtime, +15% night, Seoul area), so that these services can be quoted.
 49. As an operator, I want to reuse a recent Cotação de fornecedor as a reference for another Viagem in the same season, marked as reference, so that recent real prices aren't lost.
 50. As Carlos, I want a general percentage adjustment on the Tabelas de referência (e.g. +3% after the exchange rate moves), creating a new version, so that all prices move in one step.
-51. As Carlos, I want the Perfil do cliente to record the legal basis or consent for keeping history (LGPD), so that client history is kept lawfully.
+51. ~~LGPD legal basis~~ Dropped for now (Juliano, 2026-09-24): no source in the acervo. As Carlos, I want the Perfil do cliente to record the legal basis or consent for keeping history (LGPD), so that client history is kept lawfully.
 
 ## Implementation Decisions
 
@@ -125,7 +124,7 @@ If no Tarifário is valid, or one exists but a **Cotação de fornecedor** was r
 - **Hotel cost suggestion** is part of the Cálculo de orçamento. Its inputs are the hotel line (hotel, category, dates, rooms, occupancy), the valid Tarifário and any Cotação de fornecedor. Its outputs are the KRW cost per night with taxes and extras, the USD value, and warnings: out of validity, "a confirmar" value used, group threshold reached. The calculation stays pure and receives the Tarifário as data.
 - **Tarifário date bands** are stored as explicit date ranges and weekday rules per validity period. Resolving a date to a band follows the Tarifário's own rules, never the CoreaLux Temporadas.
 - **Photos** store their source and usage-rights note. The Proposta only uses photos marked usable.
-- **Papel is one fixed profile per user,** not a free permission matrix. Profiles are not a strict ladder: Atendimento and Guiamento see no money, Itinerários sees single prices only, and Guiamento is restricted to its own Alocações. This is the smallest model that expresses Carlos's proposal plus his request for a price-free attendant. A finer matrix can come later if needed.
+- **Papel is one fixed profile per user,** not a free permission matrix. Carlos listed the Papéis from the highest to the lowest (13/09, S153): Admin, Faturamento, Propostas e Orçamentos, Itinerários e Produtos, Guiamento, Conteúdo. Profiles are still not a strict ladder: Guiamento sees no money and is restricted to its own Alocações, and Itinerários sees single prices only. This is the smallest model that expresses Carlos's proposal. A finer matrix can come later if needed.
 
 ## Testing Decisions
 
@@ -184,3 +183,16 @@ The tests are vertical first, then one transversal test at the end.
   - Several meeting points are marked "?".
   - Park Hyatt 2027 has three conflicting values.
   - Maison Glad's child ages disagree.
+
+## Revisions of 2026-09-24
+
+A full read of `../docs/negocio` found gaps, now carried by the tickets in `issues/`. Decisions taken with Juliano:
+- **Hotel cost:** when CoreaLux has the hotel's price (Tarifário or Cotação de fornecedor), the line uses it; when it doesn't, the first quote uses the public Booking price, recorded with its source and date.
+- **Ticket prices** live on the Atração, versioned and pinned in the Versão like the Tabelas de referência. A catalogue item starts at zero cost (K935); only a positive price needs a source and a check date. Story 6's "free" mark is replaced by that rule.
+- **No Atendimento Papel** (story 34 removed).
+- **The +20% outside Seoul** is on the car only (Viagem spec). Museum SAN and Sayuwon's +20% on the car is this regional rule, not a property of the Atração.
+- **Story 50 stays:** a settable general percentage on the Tabelas, for when the exchange rate moves too much, separate from the ×1.10 factor (supersedes K532).
+- **Story 51 (LGPD) is dropped for now.**
+- **Pagamentos** don't appear in the app yet; their access rules come with them.
+- **Profissionais** are built here (the Custos spec reads them).
+- The known conflicts to enter as "a confirmar" are far more than the four listed above; ticket 20 lists them. Sokcho and the "?" meeting points are Catálogo fields, not Tarifário values.
