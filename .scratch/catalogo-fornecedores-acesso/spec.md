@@ -40,8 +40,8 @@ If no Tarifário is valid, or one exists but a **Cotação de fornecedor** was r
 | Papel | What it adds |
 |---|---|
 | Admin | Everything, plus users and Tabelas de referência |
-| Faturamento | Pagamentos, Invoices, reconciliation, Contas a pagar, Resultado da viagem |
-| Propostas e Orçamentos | Calculation, Opções, Preço enviado, Propostas |
+| Faturamento | Reconciliation, Contas a pagar, Resultado da viagem |
+| Propostas e Orçamentos | Calculation, Opções, Preço enviado, Propostas, Invoices, Pagamentos and the Saldo |
 | Itinerários e Produtos | Catálogo and Roteiros. Can see single prices but not totals or Margem |
 | Guiamento | Own Alocações, the Roteiro operacional, Incluso / Não incluso, and the Dados de viagem and Observações para a Equipe needed for them. No prices |
 | Conteúdo | Catálogo read-only and general content |
@@ -91,7 +91,7 @@ If no Tarifário is valid, or one exists but a **Cotação de fornecedor** was r
 30. As Carlos, I want Guiamento users to see only their own Alocações, the Roteiro operacional of those Dias and the Dados de viagem they need (names, flights, emergency contact), so that personal data and prices stay protected.
 31. As Carlos, I want Itinerários e Produtos users to edit the Catálogo and Roteiros and see single-line prices, but not totals, Margem or Preço enviado, so that calculation stays with Propostas.
 32. As Carlos, I want only Propostas e Orçamentos and above to build Orçamentos, set Margem and Preço enviado, and send Propostas, so that pricing is done by the right people.
-33. As Carlos, I want Pagamentos, Invoices, Contas a pagar and the Resultado da viagem visible only to Faturamento and Admin, so that the most sensitive data is limited.
+33. As Carlos, I want Contas a pagar and the Resultado da viagem visible only to Faturamento and Admin, and Invoices, Pagamentos and the Saldo only from Propostas e Orçamentos up (revised 2026-09-24), so that the most sensitive data is limited.
 34. ~~Atendimento Papel~~ Removed on 2026-09-24: whoever takes first contact is Propostas e Orçamentos (Juliano). The Atendimento Papel came only from an unapproved plan (K447) and is not in Carlos's list of 13/09.
 35. As a Guia, I want to see what is and isn't included for each of my Dias without any value, so that I know what to do and what to refuse.
 36. As Carlos, I want only Admin to manage users and Tabelas de referência, so that the rules can't be changed by accident.
@@ -193,6 +193,6 @@ A full read of `../docs/negocio` found gaps, now carried by the tickets in `issu
 - **The +20% outside Seoul** is on the car only (Viagem spec). Museum SAN and Sayuwon's +20% on the car is this regional rule, not a property of the Atração.
 - **Story 50 stays:** a settable general percentage on the Tabelas, for when the exchange rate moves too much, separate from the ×1.10 factor (supersedes K532).
 - **Story 51 (LGPD) is dropped for now.**
-- **Pagamentos** don't appear in the app yet; their access rules come with them.
+- **Salaries of funcionários never appear in the app** (Juliano, 2026-09-24). Every other payment does: the Cliente's Pagamentos and Invoices, and payments to Fornecedores and outside Profissionais. Who sees them follows the Papel table; whether salespeople see the Saldo is settled with the Operação tickets.
 - **Profissionais** are built here (the Custos spec reads them).
 - The known conflicts to enter as "a confirmar" are far more than the four listed above; ticket 20 lists them. Sokcho and the "?" meeting points are Catálogo fields, not Tarifário values.

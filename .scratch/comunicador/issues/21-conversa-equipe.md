@@ -4,7 +4,7 @@
 
 This hooks into the Alocação command and the em viagem and concluída Etapas from the Operação spec, which aren't built or ticketed yet.
 
-**Blocked by:** 10 (Grupo settings, DND and `/urgente` (Admin)), 14 (The Interna conversation), and Alocação with em viagem/concluída from `.scratch/operacao-e-pagamentos/spec.md`.
+**Blocked by:** 10 (Grupo settings, DND and `/urgente` (Admin)), 14 (The Interna conversation), Operação 08 (Fleet and Alocação tracer), Operação 22 (Arrival and send-off move the Etapa).
 
 **Status:** ready-for-agent
 

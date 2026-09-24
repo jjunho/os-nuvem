@@ -6,7 +6,7 @@
 - whether they can drive, and that a guide drives only our own car (K833, K888);
 - the guide licence with number and expiry, legally required, with a warning before it expires (K265, K475);
 - a bio and photo for the Proposta and the Voucher (K310, K311);
-- the fee structure the Custos spec reads: full day, half day, overtime, night;
+- for outside Profissionais only, the fee structure the Custos spec reads: full day, half day, overtime, night. A funcionário's salary is never recorded in the app (Juliano, 2026-09-24);
 - a named substitute for a specialty (K257);
 - the link to a Guiamento Usuário (login and Comunicador specs).
 

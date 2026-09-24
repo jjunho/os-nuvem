@@ -2,7 +2,7 @@
 
 **What to build:** A hotel Reserva shows the Tarifário's cancellation tiers and the last moment to cancel for free, computed with the deadline's time of day and the supplier's office hours (ticket 20). Spec: story 27.
 
-**Blocked by:** 20 (Tarifário extras, group rates, cancellation), and Reserva from `.scratch/operacao-e-pagamentos/spec.md` (not yet ticketed).
+**Blocked by:** 20 (Tarifário extras, group rates, cancellation), Operação 04 (Reservas tracer).
 
 **Status:** ready-for-agent
 

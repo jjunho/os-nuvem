@@ -4,7 +4,7 @@
 
 Needs the Profissionais and their skills from `.scratch/catalogo-fornecedores-acesso/spec.md` and the Alocações from `.scratch/operacao-e-pagamentos/spec.md`. Neither is built or ticketed yet.
 
-**Blocked by:** 12 (Suggested staff lines), Profissionais from the Catálogo spec, Alocação from the Operação spec.
+**Blocked by:** 12 (Suggested staff lines), Catálogo 15 (Profissionais), Operação 08 (Fleet and Alocação tracer).
 
 **Status:** ready-for-agent
 

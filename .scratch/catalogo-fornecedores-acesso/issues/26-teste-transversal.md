@@ -8,7 +8,7 @@
 4. They send the Proposta, which carries the Atração descriptions and usable photos.
 5. After confirmação, a Guia signs in from outside the office and sees only their Dias, without prices.
 
-**Blocked by:** 01–24 (every ticket above except 25), and Alocação from the Operação spec (step 5).
+**Blocked by:** 01–24 (every ticket above except 25), Operação 08 (Fleet and Alocação tracer) for step 5.
 
 **Status:** ready-for-agent
 
