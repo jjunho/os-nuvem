@@ -33,7 +33,7 @@ During the trip the Equipe logs **Ocorrências** and **Despesas de campo**. The 
 
 ### Confirmação and the operational plan
 
-1. As a salesperson, I want confirming a Viagem to copy the accepted Opção's Dias, Viajantes and Linhas de custo into its operational plan, so that operations start from what was sold.
+1. As a salesperson, I want confirming a Viagem to start its operational plan from the accepted Opção's Dias and Linhas de custo and the Viagem's own Viajantes (the same records, never copies; ADR-0008), so that operations start from what was sold and nothing is typed again.
 2. As a salesperson, I want the Código da viagem (created at first contact) printed on every operational document, so that the Voucher and the team use one identifier.
 3. As an operator, I want to collect each Viajante's Dados de viagem (passport name, date of birth, passport number and validity, arrival, departure and internal flights, travel insurance company and policy number, diet, accessibility, emergency contact), so that bookings, DMZ entry and airline lists are right.
 4. As an operator, I want a warning when a passport expires less than 6 months after the trip, or when data needed by a booked item is missing, so that nobody is stopped at a border or a checkpoint.
