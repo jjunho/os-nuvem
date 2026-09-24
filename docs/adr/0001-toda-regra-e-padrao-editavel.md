@@ -5,7 +5,7 @@ CoreaLux negotiates every sale, and the knowledge base (`../docs/AGENTS.md`) sta
 Questions the business has not closed yet (`../docs/negocio/07-questoes-abertas.md`) follow one of two paths:
 
 - **Padrão provisório.** The question gets a sensible default derived from the evidence, marked as provisional until Carlos decides. See `docs/padroes-provisorios.md`.
-- **A informar.** Where Carlos explicitly said not to assume a value, the system leaves it blank and the person fills it in each case. His 13/09/2026 instructions list these: the 4–6h band, children's rates, VAT, bus stacking, and the USD/BRL refund comparison.
+- **A informar.** Where the current rules (`../docs/negocio/05` and `07`) keep a value undecided and there is no number to start from, the system leaves it blank and the person fills it in each case. Carlos answered these items only with "seguir correção recomendada" and no figures. The acervo's consolidation reads "seguir" as approving the direction without the audit's example numbers. The items are the 4–9h band, children's rates, VAT (Carlos: "definir se vamos cobrar sempre ou somente a depender da forma de pagamento"), bus stacking and the USD/BRL refund comparison.
 
 ## Consequences
 
