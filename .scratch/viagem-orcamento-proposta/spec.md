@@ -135,7 +135,7 @@ Sending freezes a **Versão de orçamento** with its **Memória de cálculo** an
 ## Implementation Decisions
 
 - **Build order is by vertical slice**, matching the five parts in Testing Decisions: each part goes from screen to database and passes its tests before the next one starts. The transversal test is written after part 5.
-- **Stack is not chosen in this spec.** The modules below are described so that they can be implemented in any stack. The earlier SOW for this project suggested TypeScript, PostgreSQL and a modular monolith; that remains the working assumption until an ADR says otherwise.
+- **Stack:** see ADR-0003 (TypeScript, React Router, PostgreSQL with Drizzle, Playwright for vertical and transversal tests, Vitest for the pure calculation, PDFs from HTML via headless Chromium).
 - **Modules:**
   - **Viagens**: Viagem, Contato, Agência, Cliente, roles, Responsável history, Etapa, Próxima ação, Origem, notes, Viagens relacionadas. It owns the Etapa transitions and the automatic Próximas ações (first reply, follow-up after Proposta).
   - **Tabelas de referência**: versioned tables. They only read and write reference data; they know nothing about Orçamentos.
