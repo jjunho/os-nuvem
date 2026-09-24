@@ -3,7 +3,7 @@
 Resposta que o Corealux OS dá a cada questão ainda aberta em
 `../docs/negocio/07-questoes-abertas.md`, até que Carlos decida. Tudo aqui é
 **valor sugerido e editável por Orçamento** (ADR-0001), ou **a informar**
-quando não há resposta do Carlos nem número de partida (hoje: IVA).
+quando falta um dado real (custo ainda desconhecido). As questões abertas do Carlos (IVA e as de `negocio/07`) ficam como padrões provisórios ajustáveis, sem bloquear nada (decisão de Juliano, 24/09/2026).
 
 “Seguir correção recomendada” é lido como adoção da recomendação, com seus
 números. As ressalvas “sem confirmação desses números” / “alternativa não
@@ -19,7 +19,7 @@ referência (ADR-0002), e a linha correspondente sai deste arquivo.
 |---|---|---|
 | **KTX — adicional** (K891) | +20% sobre o bilhete KTX quando o trecho cai em dia de feriado nacional coreano, por bilhete, para clientes e equipe; em feriado e véspera, alerta sobre falta de assento em executiva e sugere econômica. | Carlos: “seguir correção recomendada” (B13) para unificar o adicional; K465 (Carlos, 17/07: “adicionar 20% à tarifa se o trecho de KTX cair em dia de feriado”) e K543 e preferem econômica por falta de assento. |
 | **Ônibus — empilhamento** (K894) | `KRW × fator de tamanho × max(temporada do ônibus, fds/feriado) × 1,15`, convertido com a taxa da data. Cotação real do fornecedor, quando existe, substitui a tabela. | Carlos: “seguir correção recomendada” (B16); a fórmula é a da recomendação da auditoria. |
-| **IVA 10%** (K922, K933) | **A informar por Proposta**: não cobrado, sempre, ou conforme forma de pagamento. Quando cobrado, entra em linha própria sobre o total arredondado, antes de cartão/PIX. | Carlos: “Definir se vamos cobrar sempre ou somente a depender da forma de pagamento” (quadro inicial, S152); K933 aberta em `07`. |
+| **IVA 10%** (K922, K933) | Campo em cada Proposta, ajustável: não cobrado (padrão), sempre, ou conforme forma de pagamento. Quando cobrado, entra em linha própria sobre o total arredondado, antes de cartão/PIX. Questão segue aberta para Carlos. | Carlos: “Definir se vamos cobrar sempre ou somente a depender da forma de pagamento” (quadro inicial, S152); K933 aberta em `07`. |
 | **Faixa entre meia e diária** (K927) | Até 4h: 0,60. Mais de 4h até 6h: 0,80. Mais de 6h: diária completa. Mesmo fator para guia, assistente e carro; não vale para transfer. | Carlos: “seguir correção recomendada com faixa intermediaria” (B49); 4–6h = 80% é a faixa da recomendação. |
 | **Margem real mínima** (K920) | No Orçamento a margem é estimada e aparece como **“não verificável”** enquanto faltarem custos reais; o piso de 10% é conferido no Resultado da viagem. Abaixo de 10% (estimado ou real): alerta, motivo registrado e aviso ao Admin; nada impede enviar. Quem aprova exceções segue aberto. | Carlos: “Minimo de 10% de margem” (B42). `negocio/05`/K920: sem custos reais, não declarar o piso verificado; a expressão “margem não verificável” vem do prompt de 13/09. |
 | **Reembolso — base comparável** (K916) | Converte o valor pago em BRL para USD pela taxa do dia do reembolso e devolve o menor entre esse valor e o valor reembolsável contratado em USD; a conversão fica registrada. | Carlos: “seguir correção recomendada” (B38): reembolso em USD ou BRL pela taxa do dia, o que for menor. Comparar exige converter para uma moeda; USD é a moeda do cálculo (K225). |

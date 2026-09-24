@@ -192,7 +192,7 @@ _Avoid_: Tabela de preços (implies fixed prices)
 A Valor sugerido for a question the business has not decided yet, used until Carlos decides.
 
 **A informar**:
-The state of a value the system must not guess: a business decision still missing with no number to start from (today, VAT) or a real cost not yet known. The person enters it; a Versão cannot be sent while a charged value is still "a informar".
+The state of a value the system must not guess: a real cost not yet known. The person enters it; a Versão cannot be sent while a charged value is still "a informar".
 
 **Ajuste manual**:
 A negotiated change to a Valor sugerido (a rate, a percentage, a count, a condition), recorded with who, when and why. It never blocks.

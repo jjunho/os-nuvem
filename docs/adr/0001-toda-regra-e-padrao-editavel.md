@@ -5,7 +5,7 @@ CoreaLux negotiates every sale, and the knowledge base (`../docs/AGENTS.md`) sta
 Questions the business has not closed yet (`../docs/negocio/07-questoes-abertas.md`) follow one of two paths:
 
 - **Padrão provisório.** The question gets a sensible default derived from the evidence, marked as provisional until Carlos decides. See `docs/padroes-provisorios.md`.
-- **A informar.** Where there is neither a decision nor a number to start from, the system leaves the value blank and the person fills it in each case. Today this applies only to VAT; Carlos wrote "definir se vamos cobrar sempre ou somente a depender da forma de pagamento". It also covers real costs that aren't known yet. Carlos's "seguir correção recomendada" is read as adopting the audit's recommendation, numbers included.
+- **A informar.** Where there is neither a decision nor a number to start from, the system leaves the value blank and the person fills it in each case. Today this covers only real costs that aren't known yet. Business questions still open for Carlos, VAT included, stay as adjustable Padrões provisórios that never block. Carlos's "seguir correção recomendada" is read as adopting the audit's recommendation, numbers included.
 
 ## Consequences
 

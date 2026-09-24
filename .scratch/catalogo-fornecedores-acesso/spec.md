@@ -121,7 +121,7 @@ If no Tarifário is valid, or one exists but a **Cotação de fornecedor** was r
 - **Modules** added to the earlier ones:
   - **Catálogo:** Atrações, Tours, Módulos, Roteiros-modelo. It is read by Orçamentos (to suggest lines and warn about closing days) and by Documentos (for descriptions and photos).
   - **Fornecedores:** Fornecedores, contacts, room categories, Tarifários, Cotações de fornecedor and conditions.
-  - **Acesso:** users and their Papel. It is checked at every command and every read, not only in the screens.
+  - **Acesso:** users, their login and password hash (ADR-0005), and their Papel. It is checked at every command and every read, not only in the screens.
 - **Hotel cost suggestion** is part of the Cálculo de orçamento. Its inputs are the hotel line (hotel, category, dates, rooms, occupancy), the valid Tarifário and any Cotação de fornecedor. Its outputs are the KRW cost per night with taxes and extras, the USD value, and warnings: out of validity, "a confirmar" value used, group threshold reached. The calculation stays pure and receives the Tarifário as data.
 - **Tarifário date bands** are stored as explicit date ranges and weekday rules per validity period. Resolving a date to a band follows the Tarifário's own rules, never the CoreaLux Temporadas.
 - **Photos** store their source and usage-rights note. The Proposta only uses photos marked usable.
