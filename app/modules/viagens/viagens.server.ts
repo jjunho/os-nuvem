@@ -320,7 +320,7 @@ export async function buscar(q: string) {
 }
 
 export async function listarUsuarios() {
-  return db.select().from(usuarios).orderBy(asc(usuarios.nome));
+  return db.select({ id: usuarios.id, nome: usuarios.nome }).from(usuarios).where(eq(usuarios.ativo, true)).orderBy(asc(usuarios.nome));
 }
 
 export async function listarIntermediarios() {

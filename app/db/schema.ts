@@ -17,7 +17,6 @@ export const papel = pgEnum("papel", [
   "faturamento",
   "propostas",
   "itinerarios",
-  "atendimento",
   "guiamento",
   "conteudo",
 ]);
@@ -72,18 +71,25 @@ export const usuarios = pgTable(
   {
     id: serial("id").primaryKey(),
     nome: text("nome").notNull(),
-    login: text("login").notNull(),
+    email: text("email").notNull(),
     senhaHash: text("senha_hash").notNull(),
     papel: papel("papel").notNull(),
+    deveTrocarSenha: boolean("deve_trocar_senha").notNull().default(false),
     ativo: boolean("ativo").notNull().default(true),
   },
-  (t) => [uniqueIndex("usuarios_login_idx").on(t.login)],
+  (t) => [uniqueIndex("usuarios_email_idx").on(t.email)],
 );
 
 export const sessoes = pgTable("sessoes", {
   token: text("token").primaryKey(),
   usuarioId: integer("usuario_id").notNull().references(() => usuarios.id, { onDelete: "cascade" }),
   expiraEm: timestamp("expira_em", { withTimezone: true }).notNull(),
+});
+
+export const tentativasEntrada = pgTable("tentativas_entrada", {
+  email: text("email").primaryKey(),
+  falhas: integer("falhas").notNull(),
+  bloqueadoAte: timestamp("bloqueado_ate", { withTimezone: true }),
 });
 
 export const contatos = pgTable(

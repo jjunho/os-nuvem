@@ -1,6 +1,7 @@
 import { type RouteConfig, index, layout, route } from "@react-router/dev/routes";
 
 export default [
+  route("sair", "routes/sair.tsx"),
   route("entrar", "routes/entrar.tsx"),
   route("buscar", "routes/buscar.tsx"),
   route("test/reset", "routes/test-reset.tsx"),

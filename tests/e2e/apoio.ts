@@ -14,7 +14,9 @@ export async function relogio(page: Page, iso: string) {
 
 export async function entrarComo(page: Page, nome: string) {
   await page.goto("/entrar");
-  await page.getByRole("button", { name: nome }).click();
+  await page.getByLabel("E-mail").fill(`${nome.toLowerCase()}@corealux.com`);
+  await page.getByLabel("Senha", { exact: true }).fill("corealux123");
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Pipeline" })).toBeVisible();
 }
 

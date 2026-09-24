@@ -5,8 +5,8 @@ import { T0, entrarComo, novaViagem, reiniciar, relogio } from "./apoio";
 
 test.beforeEach(async ({ page }) => {
   await reiniciar(page);
-  await entrarComo(page, "Carlos");
   await relogio(page, T0);
+  await entrarComo(page, "Carlos");
 });
 
 test("um lead B2C nasce com código, Responsável e prazo de resposta de 2h", async ({ page }) => {
@@ -36,6 +36,8 @@ test("uma Agência tem prazo de 8h, marca CoreaLux e a cadeia comercial registra
 test("sem resposta humana por 24h, a Viagem é destacada até alguém responder", async ({ page }) => {
   await novaViagem(page, { contato: "Luve Viagens — Ana", telefone: "11 90000-0002" });
   await relogio(page, "2026-09-25T10:00:00+09:00");
+  // A new working day requires a new 10-hour session.
+  await entrarComo(page, "Carlos");
   await page.goto("/");
   await expect(page.getByRole("alert")).toHaveText("1 viagem sem resposta há mais de 24h");
 

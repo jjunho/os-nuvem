@@ -1,26 +1,37 @@
-import { redirect } from "react-router";
-import { eq } from "drizzle-orm";
-import { db } from "~/db/client.server";
-import { usuarios } from "~/db/schema";
+import { createCookie, redirect } from "react-router";
+import { now } from "~/clock.server";
+import { usuarioDaSessao } from "~/modules/acesso/acesso.server";
 
-// Login method is not decided yet (ADR-0003). Until it is, a staff member picks
-// who they are on /entrar and we keep their id in a cookie.
-const COOKIE = "usuario";
+const cookie = createCookie("sessao", { httpOnly: true, sameSite: "lax", path: "/" });
 
-export function lerUsuarioId(request: Request): number | null {
-  const m = new RegExp(`(?:^|;\\s*)${COOKIE}=(\\d+)`).exec(request.headers.get("cookie") ?? "");
-  return m ? Number(m[1]) : null;
+export async function lerToken(request: Request): Promise<string | null> {
+  const valor: unknown = await cookie.parse(request.headers.get("cookie"));
+  return typeof valor === "string" && /^[a-f0-9]{64}$/.test(valor) ? valor : null;
+}
+
+export function destinoSeguro(destino: string | null) {
+  if (!destino?.startsWith("/") || destino.startsWith("//") || /[\\\x00-\x20]/.test(destino)) return "/";
+  return destino;
 }
 
 export async function exigirUsuario(request: Request) {
-  const id = lerUsuarioId(request);
-  if (id) {
-    const [u] = await db.select().from(usuarios).where(eq(usuarios.id, id));
-    if (u) return u;
-  }
-  throw redirect("/entrar");
+  const usuario = await usuarioDaSessao(await lerToken(request), now(request));
+  if (usuario) return usuario;
+  const url = new URL(request.url);
+  // React Router's data transport suffix is not a navigable page.
+  const caminho = url.pathname.replace(/\.data$/, "").replace(/^\/_root$/, "/");
+  url.searchParams.delete("_routes");
+  throw redirect(`/entrar?destino=${encodeURIComponent(caminho + url.search)}`);
 }
 
-export function cookieDeUsuario(id: number) {
-  return `${COOKIE}=${id}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000`;
+export function cookieDeSessao(request: Request, sessao: { token: string; expiraEm: Date }) {
+  return cookie.serialize(sessao.token, { maxAge: Math.max(0, Math.floor((sessao.expiraEm.getTime() - now(request).getTime()) / 1000)), secure: usaHttps(request) });
+}
+
+export function apagarCookie(request: Request) {
+  return cookie.serialize("", { maxAge: 0, secure: usaHttps(request) });
+}
+
+function usaHttps(request: Request) {
+  return new URL(request.url).protocol === "https:" || request.headers.get("x-forwarded-proto")?.split(",")[0].trim() === "https";
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, NavLink, Outlet, useFetcher, useNavigate } from "react-router";
+import { Form, Link, NavLink, Outlet, useFetcher, useNavigate } from "react-router";
 import type { Route } from "./+types/app-layout";
 import { exigirUsuario } from "~/session.server";
 import type { loader as buscarLoader } from "./buscar";
@@ -40,6 +40,7 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
           Buscar <kbd>Ctrl K</kbd>
         </button>
         <span className="usuario">{loaderData.usuario.nome}</span>
+        <Form method="post" action="/sair"><button>Sair</button></Form>
       </header>
       <main className="pagina">
         <Outlet />
