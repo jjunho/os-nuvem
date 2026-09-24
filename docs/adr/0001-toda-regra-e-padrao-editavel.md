@@ -12,7 +12,7 @@ Questions the business has not closed yet (`../docs/negocio/07-questoes-abertas.
 - The system never blocks **negotiation**. The hard stops are integrity and data, and there are four:
   - a sent Versão de orçamento cannot change;
   - money always carries its currency;
-  - a Versão cannot be sent while a charged value is still "a informar", for example an Atração with a positive price but no real cost (Carlos, B45);
-  - buying a non-refundable item while the Cliente's payments don't cover it needs a recorded override by Faturamento or Admin (Carlos, B40).
+  - a Versão cannot be sent while a charged value is still "a informar", for example an Atração with a positive price but no real cost (B45: Carlos said "seguir correção recomendada" to the audit's "informar custo real antes de fechar cotação"; K924/K935);
+  - buying a non-refundable item while the Cliente's payments don't cover it needs a recorded override by Faturamento or Admin (B40: Carlos said "seguir correção recomendada" to "saldo antes da emissão de item não reembolsável"; K917–K919).
 - Pricing floors such as the 10% real-margin floor raise a warning and record a reason. They never refuse a value or hold back a Proposta. At quote time the margin is shown as "não verificável" until real costs exist.
 - Every calculated value stores its suggestion, its applied value and an optional reason. A model that stores only the final number would violate this ADR.
