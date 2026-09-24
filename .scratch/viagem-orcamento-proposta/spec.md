@@ -62,7 +62,7 @@ Sending freezes a **Versão de orçamento** with its **Memória de cálculo** an
 34. As a salesperson, I want to mark a Linha de custo as applying to only some Viajantes, so that different hotels per traveller fit in one Viagem.
 35. As a salesperson, I want the Temporada, Korean national holiday window and special events applied to the suggested rates for each date, so that seasonality is not computed by hand.
 36. As a salesperson, I want the regional car surcharge suggested outside Seoul, so that I don't forget it.
-37. As a salesperson, I want to enter a supplier cost in KRW and see it converted to USD with the rule (Naver rate × 1.10), with the rate and its date recorded, so that currency is consistent.
+37. As a salesperson, I want to enter a supplier cost in its own currency (KRW usually; JPY, EUR or BRL for trips and suppliers outside Korea) and see it converted to USD with the rule (rate × 1.10; Naver for KRW), with the rate and its date recorded, so that the Orçamento is always computed in USD.
 38. As a salesperson, I want hotels priced separately from services, per room and night, with taxes, breakfast and the hotel safety factor, so that hotels stay outside the Margem.
 39. As a salesperson, I want to override any Valor sugerido with a reason, and to see the original next to it, so that negotiation is fast and traceable.
 40. As a salesperson, I want to mark a line as a Padrão provisório when it depends on an undecided rule, so that Carlos can see which prices rest on provisional defaults.

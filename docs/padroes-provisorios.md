@@ -128,3 +128,12 @@ Luve Viagens, pronta para pagar, cobrou retorno cinco vezes em sete dias.
 
 Fora do escopo inicial: integrar com o Respond.io/WhatsApp. O sistema registra
 Meio de contato e resumo; a conversa continua no canal de origem.
+
+## Moedas
+
+| Tema | Valor sugerido no sistema | Por quê |
+|---|---|---|
+| **Moeda do cálculo** | Orçamento, Opções e Preço enviado sempre em USD. | Regra vigente K225. |
+| **Moeda de cobrança e recebimento** | Invoice e Pagamento em USD, BRL, EUR, KRW ou JPY, convertidos do Preço enviado em USD pela taxa do dia, registrada. PIX em BRL ×1,035; cartão +5%. | Na prática a cobrança é em USD ou BRL e às vezes em EUR, KRW ou JPY (Juliano, 24/09/2026); os fatores de PIX e cartão são K915–K919. |
+| **Custo de fornecedor em outra moeda** | KRW, JPY, EUR ou BRL convertidos para USD por `taxa × 1,10` (Naver para KRW), com taxa e data na Memória de cálculo. | A regra `× 1,10` está escrita só para KRW (K060); estendê-la a JPY/EUR/BRL mantém o mesmo colchão cambial para viagens ao Japão e fornecedores fora da Coreia. Padrão provisório. |
+| **Saldo com moedas misturadas** | O saldo é sempre apurado em USD: cada Pagamento vale o que sua taxa registrada converte. | Evita que um sinal em BRL e um saldo em USD deixem diferença por variação cambial não registrada. |

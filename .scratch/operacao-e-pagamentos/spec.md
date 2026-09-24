@@ -72,7 +72,7 @@ During the trip the Equipe logs **Ocorrências** and **Despesas de campo**. The 
 
 26. As a salesperson, I want the Sinal and Saldo due dates and amounts set from the accepted Proposta's Condições, so that payment follows what was agreed.
 27. As a salesperson, I want to record each Pagamento with date, amount, currency, method (PIX, Wise, cartão, espécie) and proof, so that screenshots stop being the record.
-28. As a salesperson, I want PIX in BRL computed from the USD amount (rate of the day × 1.035) and card payments with +5%, as editable suggestions, so that I quote the right amount for each method.
+28. As a salesperson, I want to issue an Invoice and receive a Pagamento in USD, BRL, EUR, KRW or JPY, with the amount converted from the USD Preço enviado at the rate of the day, plus the method's factor (PIX in BRL ×1.035, card +5%), all as editable suggestions, so that each Cliente pays in the currency they use.
 29. As a salesperson, I want the Situação de pagamento (sem sinal, sinal recebido, pago) and the open Saldo always visible on the Viagem, so that nobody asks "did they pay?".
 30. As a salesperson, I want a Próxima ação created before the Saldo due date and an alert when it passes, so that balances are chased on time.
 31. As an operator, I want a warning when I mark a non-refundable Reserva as solicitada while the paid amount does not cover it, so that we don't pay for tickets the client hasn't covered.
@@ -114,7 +114,7 @@ During the trip the Equipe logs **Ocorrências** and **Despesas de campo**. The 
   - **Despesas de campo:** expenses per Viagem and Dia, receipts, reconciliation.
   - **Documentos** (from the first spec) gains Voucher, Roteiro operacional, receipt or invoice, lista de passageiros and Aviso do dia. As with the Proposta, each render reads a fixed snapshot, so a Voucher version always renders the same.
 - An **Alteração** reuses the Orçamentos module: it creates a new Versão from the current one, and on acceptance the operational plan is updated from the new Versão. Existing Reservas are matched and kept, and removed items become Reservas to cancel.
-- **Money** stays integer minor units plus currency. Pagamentos may be in USD, BRL or KRW. Each Pagamento stores the exchange rate used to count it against the Preço enviado in USD.
+- **Money** stays integer minor units plus currency (JPY and KRW have no minor unit). The Orçamento and the Preço enviado are always in USD. Invoices and Pagamentos may be in USD, BRL, EUR, KRW or JPY. Each one stores the exchange rate and date used to count it against the USD Preço enviado. Supplier costs and Despesas de campo keep their own currency.
 - **Dados de viagem** are personal data. They are stored per Viajante, shown only to logged-in staff, and exported only through the documents that need them (lista de passageiros, Voucher names).
 - **Availability conflicts and capacity limits warn and never block**, in line with ADR-0001.
 
@@ -142,7 +142,7 @@ The tests are vertical first, then one transversal test at the end.
      - A change followed by reissue gives version 2, and version 1 is kept.
   5. **Pagamentos:**
      - Due dates come from the Condições.
-     - Pagamentos in USD, BRL (PIX ×1.035) and card (+5%).
+     - Invoices and Pagamentos in USD, BRL (PIX ×1.035), EUR, KRW and JPY, and by card (+5%); a Saldo computed correctly when the Sinal was paid in BRL and the Saldo in USD.
      - The Situação de pagamento, the Saldo reminder and the non-refundable-without-cover warning.
      - Dados de faturamento collected; an Invoice for the Sinal issued in the Cliente's name (and one in an Agência's name for a B2B case), as a package and broken down by Dia; a change gives Invoice version 2 with version 1 kept.
      - Pagamentos recorded against the Invoice move it from open to partially paid to paid; a Recibo is generated from each Pagamento.

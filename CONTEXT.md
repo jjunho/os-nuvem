@@ -180,10 +180,10 @@ _Avoid_: Cortesia meaning a free traveller (that is a Gratuidade)
 The season bucket of a date (alta, média, baixa) that adjusts base rates.
 
 **Pagamento**:
-One amount received for a Viagem, with its date, method (PIX, Wise, cartão, espécie), currency and proof. Receipts and invoices are issued against Pagamentos.
+One amount received for a Viagem, with its date, method (PIX, Wise, cartão, espécie), currency (usually USD or BRL; also EUR, KRW, JPY), the exchange rate that counts it against the USD Preço enviado, and proof. Receipts and invoices are issued against Pagamentos.
 
 **Invoice**:
-The request for payment CoreaLux issues to the Cliente before paying: Empresa emissora, the Cliente's Dados de faturamento, the items (as one package or broken down by Dia), the amount due and due date (for the Sinal, the Saldo or the whole), payment methods and bank details, and the Condições. Clients treat it as the contract. It has its own number and is reissued as a new version when anything changes.
+The request for payment CoreaLux issues to the Cliente before paying: Empresa emissora, the Cliente's Dados de faturamento, the items (as one package or broken down by Dia), the amount due in the Cliente's currency (usually USD or BRL; also EUR, KRW, JPY) and due date (for the Sinal, the Saldo or the whole), payment methods and bank details, and the Condições. Clients treat it as the contract. It has its own number and is reissued as a new version when anything changes.
 _Avoid_: Fatura, cobrança, recibo (that comes after payment)
 
 **Recibo**:
