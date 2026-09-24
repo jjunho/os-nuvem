@@ -9,6 +9,7 @@ import {
   primaryKey,
   uniqueIndex,
   index,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 export const papel = pgEnum("papel", [
@@ -66,10 +67,23 @@ export const papelNaViagem = pgEnum("papel_na_viagem", ["solicitante", "viajante
 
 export const tipoIntermediario = pgEnum("tipo_intermediario", ["agencia", "operadora"]);
 
-export const usuarios = pgTable("usuarios", {
-  id: serial("id").primaryKey(),
-  nome: text("nome").notNull(),
-  papel: papel("papel").notNull(),
+export const usuarios = pgTable(
+  "usuarios",
+  {
+    id: serial("id").primaryKey(),
+    nome: text("nome").notNull(),
+    login: text("login").notNull(),
+    senhaHash: text("senha_hash").notNull(),
+    papel: papel("papel").notNull(),
+    ativo: boolean("ativo").notNull().default(true),
+  },
+  (t) => [uniqueIndex("usuarios_login_idx").on(t.login)],
+);
+
+export const sessoes = pgTable("sessoes", {
+  token: text("token").primaryKey(),
+  usuarioId: integer("usuario_id").notNull().references(() => usuarios.id, { onDelete: "cascade" }),
+  expiraEm: timestamp("expira_em", { withTimezone: true }).notNull(),
 });
 
 export const contatos = pgTable(

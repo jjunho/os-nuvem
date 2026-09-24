@@ -56,10 +56,19 @@ CREATE TABLE "responsaveis" (
 	"ate" timestamp with time zone
 );
 --> statement-breakpoint
+CREATE TABLE "sessoes" (
+	"token" text PRIMARY KEY NOT NULL,
+	"usuario_id" integer NOT NULL,
+	"expira_em" timestamp with time zone NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "usuarios" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"nome" text NOT NULL,
-	"papel" "papel" NOT NULL
+	"login" text NOT NULL,
+	"senha_hash" text NOT NULL,
+	"papel" "papel" NOT NULL,
+	"ativo" boolean DEFAULT true NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "viagem_contatos" (
@@ -102,6 +111,7 @@ ALTER TABLE "proximas_acoes" ADD CONSTRAINT "proximas_acoes_viagem_id_viagens_id
 ALTER TABLE "proximas_acoes" ADD CONSTRAINT "proximas_acoes_responsavel_id_usuarios_id_fk" FOREIGN KEY ("responsavel_id") REFERENCES "public"."usuarios"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "responsaveis" ADD CONSTRAINT "responsaveis_viagem_id_viagens_id_fk" FOREIGN KEY ("viagem_id") REFERENCES "public"."viagens"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "responsaveis" ADD CONSTRAINT "responsaveis_usuario_id_usuarios_id_fk" FOREIGN KEY ("usuario_id") REFERENCES "public"."usuarios"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sessoes" ADD CONSTRAINT "sessoes_usuario_id_usuarios_id_fk" FOREIGN KEY ("usuario_id") REFERENCES "public"."usuarios"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "viagem_contatos" ADD CONSTRAINT "viagem_contatos_viagem_id_viagens_id_fk" FOREIGN KEY ("viagem_id") REFERENCES "public"."viagens"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "viagem_contatos" ADD CONSTRAINT "viagem_contatos_contato_id_contatos_id_fk" FOREIGN KEY ("contato_id") REFERENCES "public"."contatos"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "contatos_telefone_idx" ON "contatos" USING btree ("telefone");--> statement-breakpoint
@@ -109,5 +119,6 @@ CREATE INDEX "contatos_email_idx" ON "contatos" USING btree ("email");--> statem
 CREATE INDEX "proximas_acoes_viagem_idx" ON "proximas_acoes" USING btree ("viagem_id");--> statement-breakpoint
 CREATE INDEX "proximas_acoes_prazo_idx" ON "proximas_acoes" USING btree ("prazo");--> statement-breakpoint
 CREATE INDEX "responsaveis_viagem_idx" ON "responsaveis" USING btree ("viagem_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "usuarios_login_idx" ON "usuarios" USING btree ("login");--> statement-breakpoint
 CREATE UNIQUE INDEX "viagens_codigo_idx" ON "viagens" USING btree ("codigo");--> statement-breakpoint
 CREATE INDEX "viagens_etapa_idx" ON "viagens" USING btree ("etapa");
