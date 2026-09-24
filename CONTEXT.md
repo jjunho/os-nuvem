@@ -40,6 +40,14 @@ _Avoid_: Quem atendeu, dono, assignee
 **Fornecedor**:
 A third party CoreaLux buys services from: hotel, airline, bus company, driver, restaurant, attraction, clinic.
 
+**Tarifário**:
+A Fornecedor's rate card for a validity period: room or service categories, date bands (weekday, Friday, Saturday, special dates), currency, whether taxes are included, breakfast and extra-person prices, child age rules, group threshold and cancellation terms. It never carries over to another period.
+_Avoid_: Tabela do hotel, tabela de preços
+
+**Cotação de fornecedor**:
+A price a Fornecedor gave for one specific request (dates, rooms, people), with its source (e-mail, Booking, phone), date and expiry. It overrides the Tarifário for that request.
+_Avoid_: Orçamento (that is CoreaLux's own price)
+
 **Guia**:
 A professional who leads a guided service. Has its own base rate.
 
@@ -48,6 +56,10 @@ A professional who supports a guided service at a lower base rate than a Guia.
 
 **Equipe**:
 The Guias, Assistentes and drivers assigned to a given day of a Viagem.
+
+**Papel**:
+The access level of a staff member, from highest to lowest: Admin, Faturamento, Propostas e Orçamentos, Itinerários e Produtos, Guiamento, Conteúdo. Each Papel sees what the ones below it see.
+_Avoid_: Cargo, perfil, permissão (for the level itself)
 
 ## Comercial
 
@@ -172,8 +184,20 @@ What remains to be paid after the Sinal.
 ## Produto e documentos
 
 **Tour**:
-A guided day or catalogue product (e.g. Tour DMZ, Seul Histórica).
-_Avoid_: Tour meaning the whole Viagem
+A catalogue product: a published guided day with its region, Atrações, duration, group size, languages, days of operation, meeting point, transport and Incluso / Não incluso (e.g. Seul Histórica, Coreia do Norte de Perto). The catalogue has 22.
+_Avoid_: Tour meaning the whole Viagem, passeio (loose)
+
+**Atração**:
+A place or experience a Dia can visit: palace, museum, observatory, shop, market, clinic, restaurant, cable car. It has a client-facing description, an internal note, photos with their source, city, closing days and reference ticket prices.
+_Avoid_: Ponto turístico, lugar
+
+**Módulo**:
+A reusable block of a Dia or of several Dias, built from Atrações and Linhas de custo, that can be dropped into any Roteiro (e.g. "Dia de autocuidados").
+_Avoid_: Bloco, pacote (a Pacote is a whole trip)
+
+**Roteiro-modelo**:
+A ready-made Roteiro to start from (Seul 3 dias; Seul–Busan–Jeju; Seul com criança; the 10-day standard), copied into a Viagem and then adapted.
+_Avoid_: Template, pacote fechado (unless sold as-is)
 
 **Roteiro**:
 The day-by-day programme of a Viagem.

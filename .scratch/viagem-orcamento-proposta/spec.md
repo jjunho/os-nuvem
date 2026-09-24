@@ -138,7 +138,7 @@ Tests are **vertical first, then one transversal test** at the end.
 - Integration with Respond.io, WhatsApp, Typeform or e-mail. Conversations stay in their channel. The Formulário de planejamento answers are pasted or attached.
 - Exchange-rate API, intercity-cost API and any supplier API. Rates are typed with their date.
 - Client or agency portal, e-signature, a polished PDF design (the first Proposta is plain and correct), and importing old spreadsheets.
-- Roles and permissions beyond "logged-in staff" and "Admin edits Tabelas de referência".
+- Access by Papel, the Catálogo of Atrações, and hotel Tarifários: see `.scratch/catalogo-fornecedores-acesso/spec.md`. Until those parts exist, the Proposta prints the Dia's free-text programme and hotel lines are typed by hand.
 
 ## Further Notes
 
