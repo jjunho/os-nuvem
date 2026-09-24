@@ -9,8 +9,8 @@ quando não há resposta do Carlos nem número de partida (hoje: IVA).
 números. As ressalvas “sem confirmação desses números” / “alternativa não
 escolhida” que aparecem em `negocio/05`, `07` e na coluna “Contexto” de S152 são
 síntese editorial posterior, não falas do Carlos; o texto original da auditoria
-não está no acervo. Onde este arquivo diverge de `negocio/05` por isso, a
-divergência é intencional e deve ser corrigida no acervo.
+não está no acervo. O acervo foi corrigido nesse sentido (K891, K894, K916 e
+K927 vigentes desde o commit `407ed21` de `../docs`).
 
 Quando Carlos decidir, a decisão vai para o acervo (K-unit) e para a Tabela de
 referência (ADR-0002), e a linha correspondente sai deste arquivo.
