@@ -9,7 +9,7 @@ Whoever buys the Viagem from CoreaLux: either an Agência or a person buying dir
 _Avoid_: Nome, conta
 
 **Agência**:
-A B2B intermediary (agency or operator) that resells CoreaLux services to its own travellers.
+A B2B intermediary (agency or operator) that resells CoreaLux services to its own travellers. It carries its usual Canal comercial (Interep is its own tier) and how it pays CoreaLux.
 _Avoid_: Parceiro, operadora (as a party; "Interep/operadora" survives only as a Canal comercial)
 
 **Viajante**:
@@ -48,14 +48,25 @@ _Avoid_: Tabela do hotel, tabela de preços
 A price a Fornecedor gave for one specific request (dates, rooms, people), with its source (e-mail, Booking, phone), date and expiry. It overrides the Tarifário for that request.
 _Avoid_: Orçamento (that is CoreaLux's own price)
 
+**Profissional**:
+A person who works on Viagens as Guia, Assistente or motorista, internal staff or external: languages, specialties, home city, contact, what they are paid, and availability.
+_Avoid_: Freelancer, staff (loose)
+
 **Guia**:
-A professional who leads a guided service. Has its own base rate.
+The role of a Profissional who leads a guided service. Has its own base rate; Guia A is the shopping/skincare specialist rate.
 
 **Assistente**:
-A professional who supports a guided service at a lower base rate than a Guia.
+The role of a Profissional who supports a guided service, at a lower base rate than a Guia.
 
 **Equipe**:
-The Guias, Assistentes and drivers assigned to a given day of a Viagem.
+The Profissionais assigned to a given Dia of a Viagem.
+
+**Veículo**:
+A car, van or bus that can be allocated to a Dia: own or rented from a Fornecedor, model, seats, and whether the Guia may drive it.
+_Avoid_: Carro (loose; the internal models and the public fleet names differ)
+
+**Influenciador**:
+A person who brings Viajantes through the Influencer Canal comercial and earns a Comissão, without handling the payment.
 
 **Papel**:
 The access level of a staff member, from highest to lowest: Admin, Faturamento, Propostas e Orçamentos, Itinerários e Produtos, Guiamento, Conteúdo. Each Papel sees what the ones below it see.
@@ -171,9 +182,37 @@ The season bucket of a date (alta, média, baixa) that adjusts base rates.
 **Pagamento**:
 One amount received for a Viagem, with its date, method (PIX, Wise, cartão, espécie), currency and proof. Receipts and invoices are issued against Pagamentos.
 
+**Invoice**:
+The request for payment CoreaLux issues to the Cliente before paying: Empresa emissora, the Cliente's Dados de faturamento, the items (as one package or broken down by Dia), the amount due and due date (for the Sinal, the Saldo or the whole), payment methods and bank details, and the Condições. Clients treat it as the contract. It has its own number and is reissued as a new version when anything changes.
+_Avoid_: Fatura, cobrança, recibo (that comes after payment)
+
+**Recibo**:
+The acknowledgement CoreaLux issues after a Pagamento is received, stating what was paid, when, how, and what remains.
+_Avoid_: Invoice (that comes before payment), comprovante (that is the Cliente's proof of transfer)
+
+**Dados de faturamento**:
+Who the Invoice is addressed to: full legal name, tax ID (CPF or CNPJ in Brazil, or the foreign equivalent), and address. For an Agência, the agency's company data.
+
 **Situação de pagamento**:
 How much of the Preço enviado is paid: sem sinal, sinal recebido, pago. Tracked apart from the Etapa, because a confirmada Viagem can still be waiting for its Sinal, and the Saldo is sometimes collected during the trip.
 _Avoid_: PGTO
+
+**Aceite**:
+The Cliente's acceptance of one Opção of a Proposta, with its date and evidence (message, e-mail, signed document). It makes the Viagem confirmada.
+
+**Conta a pagar**:
+An amount CoreaLux owes for a Viagem: a Reserva with a Fornecedor, the fee of an external Profissional, a Comissão, a Despesa de campo to reimburse. It has a due date and is paid or open.
+_Avoid_: Custo (the estimate in the Orçamento), payable
+
+**Comissão**:
+The share of what the Cliente paid that goes to an Influenciador (5% by reference), owed once the payment is received.
+
+**Gorjeta**:
+An optional suggested amount per Viajante per day for each kind of Profissional, plus a share for the back-office fund split at year end. Off by default, and never inside the Preço enviado.
+
+**Resultado da viagem**:
+What a Viagem actually earned: Pagamentos received minus Contas a pagar. The real Margem is measured on it, not on the Orçamento.
+_Avoid_: Lucro, margem (for the realized figure)
 
 **Sinal**:
 The first payment that confirms a Viagem.
@@ -248,6 +287,9 @@ _Avoid_: Orçamento (for the document sent)
 
 **Condições**:
 The commercial terms stated on a Proposta: Sinal and Saldo due dates, accepted payment methods and bank details, cancellation terms, and validity.
+
+**Empresa emissora**:
+The legal entity that issues Propostas, Vouchers, receipts and invoices, with its registration numbers and bank details (today COREANISSIMA CO., LTD).
 
 **Número da proposta**:
 The identifier of one Proposta as sent (e.g. `260903-1324-2`).
