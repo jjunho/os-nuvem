@@ -180,4 +180,4 @@ Tests are **vertical first, then one transversal test** at the end.
 ## Further Notes
 
 - Glossary: `CONTEXT.md`. Decisions: ADR-0001 (every rule is an editable default) and ADR-0002 (Tabelas de referência live in the system). Defaults and practice-vs-rule notes: `docs/padroes-provisorios.md`.
-- Several values are Padrões provisórios (the 4–6h band at 0.80, the bus formula, the KTX holiday surcharge, children following each supplier's rules, the refund comparison in USD, the margin-floor approvers). The calculation marks every line that used one, so changing it later is a table edit. VAT is "a informar" per Proposta until Carlos decides.
+- Several values are Padrões provisórios (the 4–6h band at 0.80, the bus formula, the KTX surcharge on Korean holidays, children following each supplier's rules, the refund comparison in USD, the margin-floor approvers). The calculation marks every line that used one, so changing it later is a table edit. VAT is "a informar" per Proposta until Carlos decides.
