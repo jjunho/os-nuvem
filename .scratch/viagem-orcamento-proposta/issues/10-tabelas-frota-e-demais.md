@@ -4,7 +4,11 @@
 
 **Blocked by:** 08 (Versioned Tabelas de referência: Guia and Assistente rates).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Each table is seeded from `negocio/05` and the Padrões provisórios, shown and editable.
-- [ ] Each edit creates a new version and leaves earlier ones unchanged.
+- [x] Each table is seeded from `negocio/05` and the Padrões provisórios, shown and editable.
+- [x] Each edit creates a new version and leaves earlier ones unchanged.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte3-tabelas.spec.ts.

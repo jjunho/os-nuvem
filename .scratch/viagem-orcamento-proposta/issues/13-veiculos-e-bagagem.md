@@ -6,10 +6,14 @@ Luggage (default two 23 kg bags plus hand luggage, reducible) is recorded on eac
 
 **Blocked by:** 02 (The Viagem's Viajantes), 10 (Tabelas: fleet and the rest), 12 (Suggested staff lines).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Fixture: bus eligible base 468 → 538.20, with no second markup. Bus penalty 100 → 110.
-- [ ] Scenario (5): 14 pax Premium in a Solati → seat warning, and the luggage truck is not offered as the fix.
-- [ ] Scenario (7): VIP 13 pax in a Sprinter → capacity warning (11 seated).
-- [ ] A Dia outside Seoul suggests the +20% on the car.
-- [ ] Reducing a Viajante's luggage changes the suggestion. The value shows on that Viajante's record.
+- [x] Fixture: bus eligible base 468 → 538.20, with no second markup. Bus penalty 100 → 110.
+- [x] Scenario (5): 14 pax Premium in a Solati → seat warning, and the luggage truck is not offered as the fix.
+- [x] Scenario (7): VIP 13 pax in a Sprinter → capacity warning (11 seated).
+- [x] A Dia outside Seoul suggests the +20% on the car.
+- [x] Reducing a Viajante's luggage changes the suggestion. The value shows on that Viajante's record.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte4-veiculos.spec.ts; transportes.test.ts; revisao.test.ts.

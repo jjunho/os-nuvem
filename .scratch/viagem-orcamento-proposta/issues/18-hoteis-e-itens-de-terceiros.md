@@ -4,12 +4,16 @@
 
 **Blocked by:** 17 (Viajantes in the Orçamento).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Fixture: hotel 3,000 with a 20% general markup → 3,150 (outside the markup, × 1.05).
-- [ ] On a Busan Dia, the hotel picker offers only Busan hotels, and no Seoul hotel appears. A Seoul hotel typed under "Outro…" links to its existing record.
-- [ ] A hotel recorded on the Viagem appears as the default hotel line, with its name and address already filled in.
-- [ ] A hotel line without a known price takes the Booking price, and the line shows "Booking" and the date as its source.
-- [ ] Preço por pessoa shows for duplo and single.
-- [ ] An Item de terceiros hotel adds nothing to the price and keeps its address.
-- [ ] Scenario (1): hotel not quoted gives a services-only Orçamento.
+- [x] Fixture: hotel 3,000 with a 20% general markup → 3,150 (outside the markup, × 1.05).
+- [x] On a Busan Dia, the hotel picker offers only Busan hotels, and no Seoul hotel appears. A Seoul hotel typed under "Outro…" links to its existing record.
+- [x] A hotel recorded on the Viagem appears as the default hotel line, with its name and address already filled in.
+- [x] A hotel line without a known price takes the Booking price, and the line shows "Booking" and the date as its source.
+- [x] Preço por pessoa shows for duplo and single.
+- [x] An Item de terceiros hotel adds nothing to the price and keeps its address.
+- [x] Scenario (1): hotel not quoted gives a services-only Orçamento.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte4-hoteis.spec.ts; calculo.test.ts.

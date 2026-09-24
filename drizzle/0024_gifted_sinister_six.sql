@@ -1,0 +1,1 @@
+ALTER TABLE "viagens" ADD COLUMN "sem_resposta_desde" timestamp with time zone;

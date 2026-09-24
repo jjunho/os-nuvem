@@ -4,7 +4,11 @@
 
 **Blocked by:** 11 (Orçamento tracer).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Fixture: a new B2C quote has no USD 200 fee by default.
-- [ ] Turned on, the fee shows. Once the Viagem is confirmada, it appears as a Desconto.
+- [x] Fixture: a new B2C quote has no USD 200 fee by default.
+- [x] Turned on, the fee shows. Once the Viagem is confirmada, it appears as a Desconto.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte5-taxa.spec.ts.

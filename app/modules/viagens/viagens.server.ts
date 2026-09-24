@@ -1,11 +1,35 @@
-import { and, asc, desc, eq, ilike, inArray, isNull, ne, or, sql } from "drizzle-orm";
+import { registrarFato } from "./etapas.server";
+import {
+  criarTarefaAutomatica,
+  concluirAutomaticas,
+  transferirAutomaticas,
+  cancelarAutomaticas,
+  tarefasDaViagem,
+  proximasTarefas,
+} from "~/modules/tarefas/tarefas.server";
+import {
+  criarViajantes,
+  listarViajantes,
+  resumirViajantes,
+} from "./viajantes.server";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  isNull,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm";
 import { db } from "~/db/client.server";
 import {
   cadeiaComercial,
   contatos,
   intermediarios,
   notas,
-  proximasAcoes,
   responsaveis,
   usuarios,
   viagemContatos,
@@ -22,6 +46,7 @@ import {
 } from "./regras";
 
 export type ContatoInput = {
+  contatoId?: number;
   nome: string;
   telefone?: string | null;
   email?: string | null;
@@ -31,12 +56,12 @@ export type ContatoInput = {
 export type NovaViagem = {
   responsavelId: number;
   canalComercial: CanalComercial;
-  categoria: "economico" | "padrao" | "premium" | "vip";
-  marca: "corealux" | "guia_na_coreia";
-  origem: "instagram" | "site" | "indicacao" | "agencia" | "operadora" | "influenciador" | "outra";
+  categoria: string;
+  marca: string;
+  origem: string;
   indicadoPor?: string | null;
-  idiomaCliente: "pt" | "es" | "en" | "fr";
-  idiomaGuiamento: "pt" | "es" | "en" | "fr";
+  idiomaCliente: string;
+  idiomaGuiamento: string;
   meiosContato: string[];
   dataInicio?: string | null;
   dataFim?: string | null;
@@ -53,22 +78,27 @@ export type NovaViagem = {
 
 export class RegraViolada extends Error {}
 
-const normalizaTelefone = (t?: string | null) => (t ? t.replace(/\D/g, "") || null : null);
-const normalizaEmail = (e?: string | null) => (e ? e.trim().toLowerCase() || null : null);
+const normalizaTelefone = (t?: string | null) =>
+  t ? t.replace(/\D/g, "") || null : null;
+const normalizaEmail = (e?: string | null) =>
+  e ? e.trim().toLowerCase() || null : null;
 
-export async function criarViagem(input: NovaViagem, autorId: number, agora: Date) {
-  if (!input.responsavelId) throw new RegraViolada("Toda Viagem nasce com um Responsável.");
-  if (input.contatos.length === 0) throw new RegraViolada("Informe ao menos um Contato.");
+export async function criarViagem(
+  input: NovaViagem,
+  autorId: number,
+  agora: Date,
+) {
+  if (!input.responsavelId)
+    throw new RegraViolada("Toda Viagem nasce com um Responsável.");
+  if (input.contatos.length === 0)
+    throw new RegraViolada("Informe ao menos um Contato.");
 
   return db.transaction(async (tx) => {
     const ano = agora.getFullYear();
-    // Serialize code generation per year.
-    await tx.execute(sql`select pg_advisory_xact_lock(${ano})`);
-    const [{ n }] = await tx
-      .select({ n: sql<number>`count(*)::int` })
-      .from(viagens)
-      .where(sql`${viagens.codigo} like ${`V${String(ano % 100).padStart(2, "0")}-%`}`);
-    const codigo = codigoDaViagem(ano, n + 1);
+    const sequencia = await tx.execute(
+      sql`select proximo_identificador(${`viagem:${ano}`}) as numero`,
+    );
+    const codigo = codigoDaViagem(ano, Number(sequencia.rows[0].numero));
 
     const [viagem] = await tx
       .insert(viagens)
@@ -84,36 +114,64 @@ export async function criarViagem(input: NovaViagem, autorId: number, agora: Dat
         meiosContato: input.meiosContato,
         dataInicio: input.dataInicio || null,
         dataFim: input.dataFim || null,
-        pagantes: input.pagantes ?? null,
-        gratuidades: input.gratuidades ?? 0,
-        adultos: input.adultos ?? null,
-        idadesCriancas: input.idadesCriancas ?? [],
-        bebes: input.bebes ?? 0,
         cidades: input.cidades ?? [],
         criadaEm: agora,
       })
       .returning();
 
+    const contatoIdsViajantes: number[] = [];
     for (const c of input.contatos) {
       const telefone = normalizaTelefone(c.telefone);
       const email = normalizaEmail(c.email);
       let contatoId: number | undefined;
-      if (telefone || email) {
+      if (c.contatoId) {
+        const [existente] = await tx
+          .select()
+          .from(contatos)
+          .where(eq(contatos.id, c.contatoId));
+        if (!existente) throw new RegraViolada("Contato não encontrado.");
+        contatoId = existente.id;
+      }
+      if (!contatoId && (telefone || email)) {
         const existentes = await tx
           .select({ id: contatos.id })
           .from(contatos)
-          .where(or(telefone ? eq(contatos.telefone, telefone) : undefined, email ? eq(contatos.email, email) : undefined))
+          .where(
+            or(
+              telefone ? eq(contatos.telefone, telefone) : undefined,
+              email ? eq(contatos.email, email) : undefined,
+            ),
+          )
           .limit(1);
         contatoId = existentes[0]?.id;
       }
       if (!contatoId) {
-        const [novo] = await tx.insert(contatos).values({ nome: c.nome, telefone, email }).returning({ id: contatos.id });
+        const conhecidos = await tx
+          .select({ id: contatos.id })
+          .from(contatos)
+          .where(sql`lower(trim(${contatos.nome}))=lower(trim(${c.nome}))`)
+          .limit(2);
+        if (conhecidos.length > 1)
+          throw new RegraViolada("Selecione o contato na lista.");
+        contatoId = conhecidos[0]?.id;
+      }
+      if (!contatoId) {
+        const [novo] = await tx
+          .insert(contatos)
+          .values({ nome: c.nome, telefone, email })
+          .returning({ id: contatos.id });
         contatoId = novo.id;
       }
+      if (c.papeis.includes("viajante")) contatoIdsViajantes.push(contatoId);
       for (const papel of new Set(c.papeis)) {
-        await tx.insert(viagemContatos).values({ viagemId: viagem.id, contatoId, papel }).onConflictDoNothing();
+        await tx
+          .insert(viagemContatos)
+          .values({ viagemId: viagem.id, contatoId, papel })
+          .onConflictDoNothing();
       }
     }
+
+    await criarViajantes(tx, viagem.id, input, contatoIdsViajantes);
 
     for (const [i, elo] of input.cadeia.entries()) {
       await tx.insert(cadeiaComercial).values({
@@ -124,16 +182,32 @@ export async function criarViagem(input: NovaViagem, autorId: number, agora: Dat
       });
     }
 
-    await tx.insert(responsaveis).values({ viagemId: viagem.id, usuarioId: input.responsavelId, desde: agora });
-    await tx.insert(proximasAcoes).values({
+    await tx
+      .insert(responsaveis)
+      .values({
+        viagemId: viagem.id,
+        usuarioId: input.responsavelId,
+        desde: agora,
+      });
+    await criarTarefaAutomatica(tx, {
       viagemId: viagem.id,
       tipo: "responder",
-      descricao: "Responder o primeiro contato",
+      titulo: "Responder o primeiro contato",
+      autorId,
+      agora,
+      chave: "responder:inicial",
       responsavelId: input.responsavelId,
       prazo: prazoPrimeiraResposta(input.canalComercial, agora),
     });
     if (input.nota?.trim()) {
-      await tx.insert(notas).values({ viagemId: viagem.id, autorId, texto: input.nota.trim(), criadaEm: agora });
+      await tx
+        .insert(notas)
+        .values({
+          viagemId: viagem.id,
+          autorId,
+          texto: input.nota.trim(),
+          criadaEm: agora,
+        });
     }
 
     return { id: viagem.id, codigo };
@@ -170,59 +244,80 @@ export async function conflitosDeCanal(viagemId: number) {
       .join(">");
   const minha = await cadeiaDe(viagemId);
   const conflitos = [];
-  for (const o of outras) if ((await cadeiaDe(o.id)) !== minha) conflitos.push(o);
+  for (const o of outras)
+    if ((await cadeiaDe(o.id)) !== minha) conflitos.push(o);
   return conflitos;
 }
 
-export async function registrarResposta(viagemId: number, agora: Date) {
+export async function registrarResposta(
+  viagemId: number,
+  agora: Date,
+  autorId: number | null = null,
+) {
   await db.transaction(async (tx) => {
     await tx
       .update(viagens)
       .set({ primeiraRespostaEm: agora })
       .where(and(eq(viagens.id, viagemId), isNull(viagens.primeiraRespostaEm)));
-    await tx
-      .update(proximasAcoes)
-      .set({ concluidaEm: agora })
-      .where(and(eq(proximasAcoes.viagemId, viagemId), eq(proximasAcoes.tipo, "responder"), isNull(proximasAcoes.concluidaEm)));
+    await concluirAutomaticas(tx, viagemId, "responder", autorId, agora);
   });
 }
 
-export async function trocarResponsavel(viagemId: number, novoId: number, agora: Date) {
+export async function trocarResponsavel(
+  viagemId: number,
+  novoId: number,
+  agora: Date,
+  autorId: number | null = null,
+) {
   await db.transaction(async (tx) => {
     const [atual] = await tx
       .select()
       .from(responsaveis)
-      .where(and(eq(responsaveis.viagemId, viagemId), isNull(responsaveis.ate)));
+      .where(
+        and(eq(responsaveis.viagemId, viagemId), isNull(responsaveis.ate)),
+      );
     if (atual?.usuarioId === novoId) return;
-    if (atual) await tx.update(responsaveis).set({ ate: agora }).where(eq(responsaveis.id, atual.id));
-    await tx.insert(responsaveis).values({ viagemId, usuarioId: novoId, desde: agora });
+    if (atual)
+      await tx
+        .update(responsaveis)
+        .set({ ate: agora })
+        .where(eq(responsaveis.id, atual.id));
     await tx
-      .update(proximasAcoes)
-      .set({ responsavelId: novoId })
-      .where(and(eq(proximasAcoes.viagemId, viagemId), isNull(proximasAcoes.concluidaEm)));
+      .insert(responsaveis)
+      .values({ viagemId, usuarioId: novoId, desde: agora });
+    await transferirAutomaticas(tx, viagemId, novoId, autorId, agora);
   });
 }
 
-export async function descartar(viagemId: number, motivo: string, agora: Date) {
-  const [v] = await db.select({ etapa: viagens.etapa }).from(viagens).where(eq(viagens.id, viagemId));
-  if (!v) throw new RegraViolada("Viagem não encontrada.");
-  if (!podeDescartar(v.etapa)) throw new RegraViolada("Só um lead pode ser descartado.");
+export async function descartar(
+  viagemId: number,
+  motivo: string,
+  agora: Date,
+  autorId: number | null = null,
+) {
   if (!motivo.trim()) throw new RegraViolada("Informe o motivo.");
-  await db.transaction(async (tx) => {
-    await tx.update(viagens).set({ etapa: "descartada", motivoEncerramento: motivo.trim() }).where(eq(viagens.id, viagemId));
-    await tx
-      .update(proximasAcoes)
-      .set({ concluidaEm: agora })
-      .where(and(eq(proximasAcoes.viagemId, viagemId), isNull(proximasAcoes.concluidaEm)));
-  });
+  await db.transaction((tx) =>
+    registrarFato(tx, viagemId, "descarte", autorId, agora, motivo),
+  );
 }
 
-export async function adicionarNota(viagemId: number, autorId: number, texto: string, agora: Date) {
+export async function adicionarNota(
+  viagemId: number,
+  autorId: number,
+  texto: string,
+  agora: Date,
+) {
   if (!texto.trim()) return;
-  await db.insert(notas).values({ viagemId, autorId, texto: texto.trim(), criadaEm: agora });
+  await db
+    .insert(notas)
+    .values({ viagemId, autorId, texto: texto.trim(), criadaEm: agora });
 }
 
-export async function pipeline(agora: Date) {
+export async function pipeline(
+  agora: Date,
+  pagina: number,
+  usuario: { id: number; papel: string },
+) {
   const rows = await db
     .select({
       id: viagens.id,
@@ -231,69 +326,124 @@ export async function pipeline(agora: Date) {
       canalComercial: viagens.canalComercial,
       criadaEm: viagens.criadaEm,
       primeiraRespostaEm: viagens.primeiraRespostaEm,
+      semRespostaDesde: viagens.semRespostaDesde,
       dataInicio: viagens.dataInicio,
       responsavel: usuarios.nome,
-      contato: sql<string | null>`(select c.nome from viagem_contatos vc join contatos c on c.id = vc.contato_id where vc.viagem_id = ${viagens.id} order by vc.papel limit 1)`,
-      acao: sql<string | null>`(select pa.descricao from proximas_acoes pa where pa.viagem_id = ${viagens.id} and pa.concluida_em is null order by pa.prazo limit 1)`,
-      prazo: sql<Date | null>`(select min(pa.prazo) from proximas_acoes pa where pa.viagem_id = ${viagens.id} and pa.concluida_em is null)`,
+      contato: sql<
+        string | null
+      >`(select c.nome from viagem_contatos vc join contatos c on c.id = vc.contato_id where vc.viagem_id = ${viagens.id} order by vc.papel limit 1)`,
     })
     .from(viagens)
-    .innerJoin(responsaveis, and(eq(responsaveis.viagemId, viagens.id), isNull(responsaveis.ate)))
+    .innerJoin(
+      responsaveis,
+      and(eq(responsaveis.viagemId, viagens.id), isNull(responsaveis.ate)),
+    )
     .innerJoin(usuarios, eq(usuarios.id, responsaveis.usuarioId))
     .where(inArray(viagens.etapa, [...ETAPAS_ABERTAS]))
-    .orderBy(desc(viagens.criadaEm))
-    .limit(500);
+    .orderBy(desc(viagens.criadaEm), desc(viagens.id))
+    .limit(51)
+    .offset((pagina - 1) * 50);
 
+  const proximas = await proximasTarefas(
+    rows.map((r) => r.id),
+    usuario,
+  );
   return rows.map((r) => {
-    const prazo = r.prazo ? new Date(r.prazo) : null;
+    const proxima = proximas.find((t) => t.viagemId === r.id);
+    const prazo = proxima?.prazo ?? null;
     return {
       ...r,
+      acao: proxima?.titulo ?? null,
       prazo,
       atrasada: prazo ? prazo.getTime() < agora.getTime() : false,
       semResposta24h: semRespostaHumana(
-        { etapa: r.etapa as Etapa, criadaEm: r.criadaEm, primeiraRespostaEm: r.primeiraRespostaEm },
+        {
+          etapa: r.etapa as Etapa,
+          criadaEm: r.criadaEm,
+          primeiraRespostaEm: r.primeiraRespostaEm,
+        },
         agora,
       ),
     };
   });
 }
 
-export async function detalhe(id: number) {
+export async function detalhe(
+  id: number,
+  usuario: { id: number; papel: string },
+) {
   const [v] = await db.select().from(viagens).where(eq(viagens.id, id));
   if (!v) return null;
-  const [pessoas, cadeia, historico, acoes, notasDaViagem, conflitos] = await Promise.all([
+  const [
+    pessoas,
+    cadeia,
+    historico,
+    acoes,
+    notasDaViagem,
+    conflitos,
+    listaViajantes,
+  ] = await Promise.all([
     db
-      .select({ id: contatos.id, nome: contatos.nome, telefone: contatos.telefone, email: contatos.email, papel: viagemContatos.papel })
+      .select({
+        id: contatos.id,
+        nome: contatos.nome,
+        numero: contatos.numero,
+        telefone: contatos.telefone,
+        email: contatos.email,
+        papel: viagemContatos.papel,
+      })
       .from(viagemContatos)
       .innerJoin(contatos, eq(contatos.id, viagemContatos.contatoId))
       .where(eq(viagemContatos.viagemId, id)),
     db
-      .select({ ordem: cadeiaComercial.ordem, nome: intermediarios.nome, tipo: intermediarios.tipo, especificou: cadeiaComercial.especificou })
+      .select({
+        ordem: cadeiaComercial.ordem,
+        nome: intermediarios.nome,
+        tipo: intermediarios.tipo,
+        especificou: cadeiaComercial.especificou,
+      })
       .from(cadeiaComercial)
-      .innerJoin(intermediarios, eq(intermediarios.id, cadeiaComercial.intermediarioId))
+      .innerJoin(
+        intermediarios,
+        eq(intermediarios.id, cadeiaComercial.intermediarioId),
+      )
       .where(eq(cadeiaComercial.viagemId, id))
       .orderBy(asc(cadeiaComercial.ordem)),
     db
-      .select({ nome: usuarios.nome, usuarioId: responsaveis.usuarioId, desde: responsaveis.desde, ate: responsaveis.ate })
+      .select({
+        nome: usuarios.nome,
+        usuarioId: responsaveis.usuarioId,
+        desde: responsaveis.desde,
+        ate: responsaveis.ate,
+      })
       .from(responsaveis)
       .innerJoin(usuarios, eq(usuarios.id, responsaveis.usuarioId))
       .where(eq(responsaveis.viagemId, id))
       .orderBy(asc(responsaveis.desde)),
+    tarefasDaViagem(id, usuario),
     db
-      .select({ id: proximasAcoes.id, descricao: proximasAcoes.descricao, prazo: proximasAcoes.prazo, concluidaEm: proximasAcoes.concluidaEm, responsavel: usuarios.nome })
-      .from(proximasAcoes)
-      .innerJoin(usuarios, eq(usuarios.id, proximasAcoes.responsavelId))
-      .where(eq(proximasAcoes.viagemId, id))
-      .orderBy(asc(proximasAcoes.prazo)),
-    db
-      .select({ texto: notas.texto, criadaEm: notas.criadaEm, autor: usuarios.nome })
+      .select({
+        texto: notas.texto,
+        criadaEm: notas.criadaEm,
+        autor: usuarios.nome,
+      })
       .from(notas)
       .innerJoin(usuarios, eq(usuarios.id, notas.autorId))
       .where(eq(notas.viagemId, id))
       .orderBy(desc(notas.criadaEm)),
     conflitosDeCanal(id),
+    listarViajantes(id),
   ]);
-  return { viagem: v, pessoas, cadeia, historico, acoes, notas: notasDaViagem, conflitos };
+  return {
+    viagem: { ...v, ...resumirViajantes(listaViajantes) },
+    viajantes: listaViajantes,
+    pessoas,
+    cadeia,
+    historico,
+    acoes,
+    notas: notasDaViagem,
+    conflitos,
+  };
 }
 
 export async function buscar(q: string) {
@@ -301,12 +451,20 @@ export async function buscar(q: string) {
   if (termo.length < 2) return [];
   const like = `%${termo}%`;
   return db
-    .selectDistinct({ id: viagens.id, codigo: viagens.codigo, etapa: viagens.etapa, contato: contatos.nome })
+    .selectDistinct({
+      id: viagens.id,
+      codigo: viagens.codigo,
+      etapa: viagens.etapa,
+      contato: contatos.nome,
+    })
     .from(viagens)
     .leftJoin(viagemContatos, eq(viagemContatos.viagemId, viagens.id))
     .leftJoin(contatos, eq(contatos.id, viagemContatos.contatoId))
     .leftJoin(cadeiaComercial, eq(cadeiaComercial.viagemId, viagens.id))
-    .leftJoin(intermediarios, eq(intermediarios.id, cadeiaComercial.intermediarioId))
+    .leftJoin(
+      intermediarios,
+      eq(intermediarios.id, cadeiaComercial.intermediarioId),
+    )
     .where(
       or(
         ilike(viagens.codigo, like),
@@ -320,9 +478,21 @@ export async function buscar(q: string) {
 }
 
 export async function listarUsuarios() {
-  return db.select({ id: usuarios.id, nome: usuarios.nome }).from(usuarios).where(eq(usuarios.ativo, true)).orderBy(asc(usuarios.nome));
+  return db
+    .select({ id: usuarios.id, nome: usuarios.nome })
+    .from(usuarios)
+    .where(eq(usuarios.ativo, true))
+    .orderBy(asc(usuarios.nome));
 }
 
 export async function listarIntermediarios() {
   return db.select().from(intermediarios).orderBy(asc(intermediarios.nome));
+}
+
+export async function listarContatos() {
+  return db
+    .select()
+    .from(contatos)
+    .where(ne(contatos.nome, ""))
+    .orderBy(asc(contatos.nome));
 }

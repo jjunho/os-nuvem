@@ -11,10 +11,14 @@ Spec: stories 64, 75, 86–88.
 
 **Blocked by:** 26 (The Proposta, HTML and PDF).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Detail per Dia shows per-Dia prices that sum to the Preço enviado, with any Desconto.
-- [ ] B2B notes show only on the B2B Proposta.
-- [ ] The light B2B output can be copied as text.
-- [ ] A Proposta genérica is marked as such on the document and on the Viagem.
-- [ ] With Atrações present (Catálogo spec), generic names show before confirmação and detailed ones after. Until then, the free-text programme shows.
+- [x] Detail per Dia shows per-Dia prices that sum to the Preço enviado, with any Desconto.
+- [x] B2B notes show only on the B2B Proposta.
+- [x] The light B2B output can be copied as text.
+- [x] A Proposta genérica is marked as such on the document and on the Viagem.
+- [x] With Atrações present (Catálogo spec), generic names show before confirmação and detailed ones after. Until then, the free-text programme shows.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte5-proposta.spec.ts; apresentação derivada da memória congelada.

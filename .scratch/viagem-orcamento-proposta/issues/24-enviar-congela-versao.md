@@ -4,13 +4,17 @@
 
 **Blocked by:** 15 (Ajuste manual, Padrão provisório and "a informar"), 19 (Opções and Margem), Comunicador 09 (Web push basics).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Sending freezes Versão 1 with its Número da proposta. Editing afterwards starts Versão 2, and Versão 1 reads the same.
-- [ ] Fixture: a Proposta on table v1 keeps v1 after the table changes.
-- [ ] The Envio and new Versão are facts passed to the Inferência: proposta enviada, then em negociação.
-- [ ] Scenario (8): sending is refused until the exhibition's real cost is entered.
-- [ ] A send under 10% records a push to Carlos, with the reason given.
-- [ ] The Envio form opens with the recipient and channel already filled in from the Viagem.
-- [ ] Every Envio is listed on the Viagem.
-- [ ] Vertical tests in `parte5-*.spec.ts`.
+- [x] Sending freezes Versão 1 with its Número da proposta. Editing afterwards starts Versão 2, and Versão 1 reads the same.
+- [x] Fixture: a Proposta on table v1 keeps v1 after the table changes.
+- [x] The Envio and new Versão are facts passed to the Inferência: proposta enviada, then em negociação.
+- [x] Scenario (8): sending is refused until the exhibition's real cost is entered.
+- [x] A send under 10% records a push to Carlos, with the reason given.
+- [x] The Envio form opens with the recipient and channel already filled in from the Viagem.
+- [x] Every Envio is listed on the Viagem.
+- [x] Vertical tests in `parte5-*.spec.ts`.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte5-envio.spec.ts; parte5-revisao.spec.ts.

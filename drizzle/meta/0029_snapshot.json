@@ -1,0 +1,3130 @@
+{
+  "id": "e9fbafa0-cdaa-456d-a1b1-7c906d3b3ab4",
+  "prevId": "5265e7a6-5d64-4e68-829d-a0d036e7605e",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.aceites": {
+      "name": "aceites",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "orcamento_id": {
+          "name": "orcamento_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "opcao_id": {
+          "name": "opcao_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "desconto_elaboracao": {
+          "name": "desconto_elaboracao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "preco_acordado": {
+          "name": "preco_acordado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "moeda": {
+          "name": "moeda",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'USD'"
+        },
+        "aceito_em": {
+          "name": "aceito_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "autor_id": {
+          "name": "autor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fato_id": {
+          "name": "fato_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "anulado_em": {
+          "name": "anulado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "aceites_viagem_aberto_idx": {
+          "name": "aceites_viagem_aberto_idx",
+          "columns": [
+            {
+              "expression": "viagem_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"aceites\".\"anulado_em\" is null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "aceites_viagem_id_viagens_id_fk": {
+          "name": "aceites_viagem_id_viagens_id_fk",
+          "tableFrom": "aceites",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "aceites_orcamento_id_orcamentos_id_fk": {
+          "name": "aceites_orcamento_id_orcamentos_id_fk",
+          "tableFrom": "aceites",
+          "tableTo": "orcamentos",
+          "columnsFrom": [
+            "orcamento_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "aceites_autor_id_usuarios_id_fk": {
+          "name": "aceites_autor_id_usuarios_id_fk",
+          "tableFrom": "aceites",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "autor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "aceites_fato_id_fatos_etapa_id_fk": {
+          "name": "aceites_fato_id_fatos_etapa_id_fk",
+          "tableFrom": "aceites",
+          "tableTo": "fatos_etapa",
+          "columnsFrom": [
+            "fato_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.alocacoes": {
+      "name": "alocacoes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "profissional_id": {
+          "name": "profissional_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "inicio": {
+          "name": "inicio",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fim": {
+          "name": "fim",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "periodo": {
+          "name": "periodo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'inteiro'"
+        },
+        "confirmada": {
+          "name": "confirmada",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "autor_id": {
+          "name": "autor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "alocacoes_profissional_datas_idx": {
+          "name": "alocacoes_profissional_datas_idx",
+          "columns": [
+            {
+              "expression": "profissional_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "inicio",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "fim",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "alocacoes_profissional_id_profissionais_id_fk": {
+          "name": "alocacoes_profissional_id_profissionais_id_fk",
+          "tableFrom": "alocacoes",
+          "tableTo": "profissionais",
+          "columnsFrom": [
+            "profissional_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "alocacoes_viagem_id_viagens_id_fk": {
+          "name": "alocacoes_viagem_id_viagens_id_fk",
+          "tableFrom": "alocacoes",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "alocacoes_autor_id_usuarios_id_fk": {
+          "name": "alocacoes_autor_id_usuarios_id_fk",
+          "tableFrom": "alocacoes",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "autor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.anexos_planejamento": {
+      "name": "anexos_planejamento",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "autor_id": {
+          "name": "autor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "conteudo": {
+          "name": "conteudo",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "anexos_planejamento_viagem_id_viagens_id_fk": {
+          "name": "anexos_planejamento_viagem_id_viagens_id_fk",
+          "tableFrom": "anexos_planejamento",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "anexos_planejamento_autor_id_usuarios_id_fk": {
+          "name": "anexos_planejamento_autor_id_usuarios_id_fk",
+          "tableFrom": "anexos_planejamento",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "autor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cadeia_comercial": {
+      "name": "cadeia_comercial",
+      "schema": "",
+      "columns": {
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordem": {
+          "name": "ordem",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "intermediario_id": {
+          "name": "intermediario_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "especificou": {
+          "name": "especificou",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cadeia_comercial_viagem_id_viagens_id_fk": {
+          "name": "cadeia_comercial_viagem_id_viagens_id_fk",
+          "tableFrom": "cadeia_comercial",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "cadeia_comercial_intermediario_id_intermediarios_id_fk": {
+          "name": "cadeia_comercial_intermediario_id_intermediarios_id_fk",
+          "tableFrom": "cadeia_comercial",
+          "tableTo": "intermediarios",
+          "columnsFrom": [
+            "intermediario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "cadeia_comercial_viagem_id_ordem_pk": {
+          "name": "cadeia_comercial_viagem_id_ordem_pk",
+          "columns": [
+            "viagem_id",
+            "ordem"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.contatos": {
+      "name": "contatos",
+      "schema": "",
+      "columns": {
+        "numero": {
+          "name": "numero",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "numero_cliente()"
+        },
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "telefone": {
+          "name": "telefone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nascimento": {
+          "name": "nascimento",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preferencias": {
+          "name": "preferencias",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mobilidade": {
+          "name": "mobilidade",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "alimentacao": {
+          "name": "alimentacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "contatos_telefone_idx": {
+          "name": "contatos_telefone_idx",
+          "columns": [
+            {
+              "expression": "telefone",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "contatos_email_idx": {
+          "name": "contatos_email_idx",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "contatos_numero_unique": {
+          "name": "contatos_numero_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "numero"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.desejos_viagem": {
+      "name": "desejos_viagem",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "texto": {
+          "name": "texto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_por": {
+          "name": "criado_por",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "aprovado_por": {
+          "name": "aprovado_por",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aprovado_em": {
+          "name": "aprovado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "descartado_por": {
+          "name": "descartado_por",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "descartado_em": {
+          "name": "descartado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "desejos_viagem_viagem_id_viagens_id_fk": {
+          "name": "desejos_viagem_viagem_id_viagens_id_fk",
+          "tableFrom": "desejos_viagem",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "desejos_viagem_criado_por_usuarios_id_fk": {
+          "name": "desejos_viagem_criado_por_usuarios_id_fk",
+          "tableFrom": "desejos_viagem",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "criado_por"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "desejos_viagem_aprovado_por_usuarios_id_fk": {
+          "name": "desejos_viagem_aprovado_por_usuarios_id_fk",
+          "tableFrom": "desejos_viagem",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "aprovado_por"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "desejos_viagem_descartado_por_usuarios_id_fk": {
+          "name": "desejos_viagem_descartado_por_usuarios_id_fk",
+          "tableFrom": "desejos_viagem",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "descartado_por"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.envios_proposta": {
+      "name": "envios_proposta",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "orcamento_id": {
+          "name": "orcamento_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "destinatario": {
+          "name": "destinatario",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "canal": {
+          "name": "canal",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "enviado_em": {
+          "name": "enviado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "autor_id": {
+          "name": "autor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "envios_orcamento_idx": {
+          "name": "envios_orcamento_idx",
+          "columns": [
+            {
+              "expression": "orcamento_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "envios_proposta_orcamento_id_orcamentos_id_fk": {
+          "name": "envios_proposta_orcamento_id_orcamentos_id_fk",
+          "tableFrom": "envios_proposta",
+          "tableTo": "orcamentos",
+          "columnsFrom": [
+            "orcamento_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "envios_proposta_autor_id_usuarios_id_fk": {
+          "name": "envios_proposta_autor_id_usuarios_id_fk",
+          "tableFrom": "envios_proposta",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "autor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.fatos_etapa": {
+      "name": "fatos_etapa",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "em": {
+          "name": "em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "autor_id": {
+          "name": "autor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motivo": {
+          "name": "motivo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "corrige_id": {
+          "name": "corrige_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "etapa_anterior": {
+          "name": "etapa_anterior",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "etapa_resultante": {
+          "name": "etapa_resultante",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "fatos_etapa_viagem_idx": {
+          "name": "fatos_etapa_viagem_idx",
+          "columns": [
+            {
+              "expression": "viagem_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fatos_etapa_viagem_id_viagens_id_fk": {
+          "name": "fatos_etapa_viagem_id_viagens_id_fk",
+          "tableFrom": "fatos_etapa",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "fatos_etapa_autor_id_usuarios_id_fk": {
+          "name": "fatos_etapa_autor_id_usuarios_id_fk",
+          "tableFrom": "fatos_etapa",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "autor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.formularios_planejamento": {
+      "name": "formularios_planejamento",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revogado_em": {
+          "name": "revogado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "formularios_planejamento_viagem_id_viagens_id_fk": {
+          "name": "formularios_planejamento_viagem_id_viagens_id_fk",
+          "tableFrom": "formularios_planejamento",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "formularios_planejamento_token_hash_unique": {
+          "name": "formularios_planejamento_token_hash_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token_hash"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.inscricoes_push": {
+      "name": "inscricoes_push",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "endpoint": {
+          "name": "endpoint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chaves": {
+          "name": "chaves",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "inscricoes_push_usuario_id_usuarios_id_fk": {
+          "name": "inscricoes_push_usuario_id_usuarios_id_fk",
+          "tableFrom": "inscricoes_push",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "inscricoes_push_endpoint_unique": {
+          "name": "inscricoes_push_endpoint_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "endpoint"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.intermediarios": {
+      "name": "intermediarios",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_intermediario",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "canal_comercial": {
+          "name": "canal_comercial",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.modelos_resposta": {
+      "name": "modelos_resposta",
+      "schema": "",
+      "columns": {
+        "idioma": {
+          "name": "idioma",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "texto": {
+          "name": "texto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.notas": {
+      "name": "notas",
+      "schema": "",
+      "columns": {
+        "contato_id": {
+          "name": "contato_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'negociacao'"
+        },
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "autor_id": {
+          "name": "autor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "texto": {
+          "name": "texto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criada_em": {
+          "name": "criada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "notas_contato_id_contatos_id_fk": {
+          "name": "notas_contato_id_contatos_id_fk",
+          "tableFrom": "notas",
+          "tableTo": "contatos",
+          "columnsFrom": [
+            "contato_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "notas_viagem_id_viagens_id_fk": {
+          "name": "notas_viagem_id_viagens_id_fk",
+          "tableFrom": "notas",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "notas_autor_id_usuarios_id_fk": {
+          "name": "notas_autor_id_usuarios_id_fk",
+          "tableFrom": "notas",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "autor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.notificacoes": {
+      "name": "notificacoes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "titulo": {
+          "name": "titulo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "texto": {
+          "name": "texto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chave": {
+          "name": "chave",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criada_em": {
+          "name": "criada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "enviada_em": {
+          "name": "enviada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lida_em": {
+          "name": "lida_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "notificacoes_usuario_chave_idx": {
+          "name": "notificacoes_usuario_chave_idx",
+          "columns": [
+            {
+              "expression": "usuario_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "chave",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "notificacoes_usuario_id_usuarios_id_fk": {
+          "name": "notificacoes_usuario_id_usuarios_id_fk",
+          "tableFrom": "notificacoes",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.opcoes_conhecidas": {
+      "name": "opcoes_conhecidas",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "campo": {
+          "name": "campo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "valor": {
+          "name": "valor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "normalizado": {
+          "name": "normalizado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome_pt": {
+          "name": "nome_pt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome_ko": {
+          "name": "nome_ko",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "regular": {
+          "name": "regular",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "contexto": {
+          "name": "contexto",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        }
+      },
+      "indexes": {
+        "opcoes_campo_valor_idx": {
+          "name": "opcoes_campo_valor_idx",
+          "columns": [
+            {
+              "expression": "campo",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "valor",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "opcoes_campo_nome_idx": {
+          "name": "opcoes_campo_nome_idx",
+          "columns": [
+            {
+              "expression": "campo",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "normalizado",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.orcamentos": {
+      "name": "orcamentos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "versao": {
+          "name": "versao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "revisao": {
+          "name": "revisao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'rascunho'"
+        },
+        "dados": {
+          "name": "dados",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "referencias": {
+          "name": "referencias",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "memoria": {
+          "name": "memoria",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criada_por": {
+          "name": "criada_por",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criada_em": {
+          "name": "criada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "orcamentos_viagem_versao_idx": {
+          "name": "orcamentos_viagem_versao_idx",
+          "columns": [
+            {
+              "expression": "viagem_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "versao",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "orcamentos_viagem_id_viagens_id_fk": {
+          "name": "orcamentos_viagem_id_viagens_id_fk",
+          "tableFrom": "orcamentos",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "orcamentos_criada_por_usuarios_id_fk": {
+          "name": "orcamentos_criada_por_usuarios_id_fk",
+          "tableFrom": "orcamentos",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "criada_por"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.participantes_viagem": {
+      "name": "participantes_viagem",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "adicionado_por": {
+          "name": "adicionado_por",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "desde": {
+          "name": "desde",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "removido_em": {
+          "name": "removido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "removido_por": {
+          "name": "removido_por",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "participantes_ativos_idx": {
+          "name": "participantes_ativos_idx",
+          "columns": [
+            {
+              "expression": "viagem_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "usuario_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"participantes_viagem\".\"removido_em\" is null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "participantes_viagem_viagem_id_viagens_id_fk": {
+          "name": "participantes_viagem_viagem_id_viagens_id_fk",
+          "tableFrom": "participantes_viagem",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "participantes_viagem_usuario_id_usuarios_id_fk": {
+          "name": "participantes_viagem_usuario_id_usuarios_id_fk",
+          "tableFrom": "participantes_viagem",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "participantes_viagem_adicionado_por_usuarios_id_fk": {
+          "name": "participantes_viagem_adicionado_por_usuarios_id_fk",
+          "tableFrom": "participantes_viagem",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "adicionado_por"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "participantes_viagem_removido_por_usuarios_id_fk": {
+          "name": "participantes_viagem_removido_por_usuarios_id_fk",
+          "tableFrom": "participantes_viagem",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "removido_por"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.profissionais": {
+      "name": "profissionais",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "papel": {
+          "name": "papel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "idiomas": {
+          "name": "idiomas",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "especialidades": {
+          "name": "especialidades",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "profissionais_nome_unique": {
+          "name": "profissionais_nome_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "nome"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.responsaveis": {
+      "name": "responsaveis",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "desde": {
+          "name": "desde",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ate": {
+          "name": "ate",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "responsaveis_viagem_idx": {
+          "name": "responsaveis_viagem_idx",
+          "columns": [
+            {
+              "expression": "viagem_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "responsaveis_viagem_id_viagens_id_fk": {
+          "name": "responsaveis_viagem_id_viagens_id_fk",
+          "tableFrom": "responsaveis",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "responsaveis_usuario_id_usuarios_id_fk": {
+          "name": "responsaveis_usuario_id_usuarios_id_fk",
+          "tableFrom": "responsaveis",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.respostas_conflitantes": {
+      "name": "respostas_conflitantes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "viajante_id": {
+          "name": "viajante_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "campo": {
+          "name": "campo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "anterior": {
+          "name": "anterior",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recebido": {
+          "name": "recebido",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "resolvida_em": {
+          "name": "resolvida_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "respostas_conflitantes_viagem_id_viagens_id_fk": {
+          "name": "respostas_conflitantes_viagem_id_viagens_id_fk",
+          "tableFrom": "respostas_conflitantes",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "respostas_conflitantes_viajante_id_viajantes_id_fk": {
+          "name": "respostas_conflitantes_viajante_id_viajantes_id_fk",
+          "tableFrom": "respostas_conflitantes",
+          "tableTo": "viajantes",
+          "columnsFrom": [
+            "viajante_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.sequencias_identificador": {
+      "name": "sequencias_identificador",
+      "schema": "",
+      "columns": {
+        "chave": {
+          "name": "chave",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "valor": {
+          "name": "valor",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.sessoes": {
+      "name": "sessoes",
+      "schema": "",
+      "columns": {
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expira_em": {
+          "name": "expira_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sessoes_usuario_id_usuarios_id_fk": {
+          "name": "sessoes_usuario_id_usuarios_id_fk",
+          "tableFrom": "sessoes",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tabelas_referencia": {
+      "name": "tabelas_referencia",
+      "schema": "",
+      "columns": {
+        "codigo": {
+          "name": "codigo",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "titulo": {
+          "name": "titulo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tarefas": {
+      "name": "tarefas",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "codigo": {
+          "name": "codigo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "generated": {
+            "as": "'TAR-' || lpad(\"id\"::text, 6, '0')",
+            "type": "stored"
+          }
+        },
+        "titulo": {
+          "name": "titulo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "descricao": {
+          "name": "descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'manual'"
+        },
+        "responsavel_id": {
+          "name": "responsavel_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prazo": {
+          "name": "prazo",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'aberta'"
+        },
+        "criada_em": {
+          "name": "criada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "criada_por": {
+          "name": "criada_por",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "concluida_em": {
+          "name": "concluida_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancelada_em": {
+          "name": "cancelada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motivo_cancelamento": {
+          "name": "motivo_cancelamento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chave_automatica": {
+          "name": "chave_automatica",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "tarefas_viagem_idx": {
+          "name": "tarefas_viagem_idx",
+          "columns": [
+            {
+              "expression": "viagem_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tarefas_responsavel_prazo_idx": {
+          "name": "tarefas_responsavel_prazo_idx",
+          "columns": [
+            {
+              "expression": "responsavel_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "prazo",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "tarefas_responsavel_id_usuarios_id_fk": {
+          "name": "tarefas_responsavel_id_usuarios_id_fk",
+          "tableFrom": "tarefas",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "responsavel_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tarefas_viagem_id_viagens_id_fk": {
+          "name": "tarefas_viagem_id_viagens_id_fk",
+          "tableFrom": "tarefas",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "tarefas_criada_por_usuarios_id_fk": {
+          "name": "tarefas_criada_por_usuarios_id_fk",
+          "tableFrom": "tarefas",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "criada_por"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "tarefas_codigo_unique": {
+          "name": "tarefas_codigo_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "codigo"
+          ]
+        },
+        "tarefas_chave_automatica_unique": {
+          "name": "tarefas_chave_automatica_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "chave_automatica"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tarefas_copias": {
+      "name": "tarefas_copias",
+      "schema": "",
+      "columns": {
+        "tarefa_id": {
+          "name": "tarefa_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tarefas_copias_tarefa_id_tarefas_id_fk": {
+          "name": "tarefas_copias_tarefa_id_tarefas_id_fk",
+          "tableFrom": "tarefas_copias",
+          "tableTo": "tarefas",
+          "columnsFrom": [
+            "tarefa_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "tarefas_copias_usuario_id_usuarios_id_fk": {
+          "name": "tarefas_copias_usuario_id_usuarios_id_fk",
+          "tableFrom": "tarefas_copias",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "tarefas_copias_tarefa_id_usuario_id_pk": {
+          "name": "tarefas_copias_tarefa_id_usuario_id_pk",
+          "columns": [
+            "tarefa_id",
+            "usuario_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tarefas_historico": {
+      "name": "tarefas_historico",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tarefa_id": {
+          "name": "tarefa_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "autor_id": {
+          "name": "autor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motivo": {
+          "name": "motivo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criada_em": {
+          "name": "criada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tarefas_historico_tarefa_id_tarefas_id_fk": {
+          "name": "tarefas_historico_tarefa_id_tarefas_id_fk",
+          "tableFrom": "tarefas_historico",
+          "tableTo": "tarefas",
+          "columnsFrom": [
+            "tarefa_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "tarefas_historico_autor_id_usuarios_id_fk": {
+          "name": "tarefas_historico_autor_id_usuarios_id_fk",
+          "tableFrom": "tarefas_historico",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "autor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.taxas_elaboracao": {
+      "name": "taxas_elaboracao",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "valor": {
+          "name": "valor",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "paga_em": {
+          "name": "paga_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "autor_id": {
+          "name": "autor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "taxas_elaboracao_viagem_id_viagens_id_fk": {
+          "name": "taxas_elaboracao_viagem_id_viagens_id_fk",
+          "tableFrom": "taxas_elaboracao",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "taxas_elaboracao_autor_id_usuarios_id_fk": {
+          "name": "taxas_elaboracao_autor_id_usuarios_id_fk",
+          "tableFrom": "taxas_elaboracao",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "autor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "taxas_elaboracao_viagem_id_unique": {
+          "name": "taxas_elaboracao_viagem_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "viagem_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tentativas_entrada": {
+      "name": "tentativas_entrada",
+      "schema": "",
+      "columns": {
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "falhas": {
+          "name": "falhas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bloqueado_ate": {
+          "name": "bloqueado_ate",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.usuarios": {
+      "name": "usuarios",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "idioma_interface": {
+          "name": "idioma_interface",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pt'"
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "senha_hash": {
+          "name": "senha_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "papel": {
+          "name": "papel",
+          "type": "papel",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "deve_trocar_senha": {
+          "name": "deve_trocar_senha",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "ativo": {
+          "name": "ativo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        }
+      },
+      "indexes": {
+        "usuarios_email_idx": {
+          "name": "usuarios_email_idx",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.versoes_referencia": {
+      "name": "versoes_referencia",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tabela": {
+          "name": "tabela",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "versao": {
+          "name": "versao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dados": {
+          "name": "dados",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "autor_id": {
+          "name": "autor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criada_em": {
+          "name": "criada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "versoes_referencia_tabela_versao_idx": {
+          "name": "versoes_referencia_tabela_versao_idx",
+          "columns": [
+            {
+              "expression": "tabela",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "versao",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "versoes_referencia_tabela_tabelas_referencia_codigo_fk": {
+          "name": "versoes_referencia_tabela_tabelas_referencia_codigo_fk",
+          "tableFrom": "versoes_referencia",
+          "tableTo": "tabelas_referencia",
+          "columnsFrom": [
+            "tabela"
+          ],
+          "columnsTo": [
+            "codigo"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "versoes_referencia_autor_id_usuarios_id_fk": {
+          "name": "versoes_referencia_autor_id_usuarios_id_fk",
+          "tableFrom": "versoes_referencia",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "autor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.viagem_contatos": {
+      "name": "viagem_contatos",
+      "schema": "",
+      "columns": {
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contato_id": {
+          "name": "contato_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "papel": {
+          "name": "papel",
+          "type": "papel_na_viagem",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "viagem_contatos_viagem_id_viagens_id_fk": {
+          "name": "viagem_contatos_viagem_id_viagens_id_fk",
+          "tableFrom": "viagem_contatos",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "viagem_contatos_contato_id_contatos_id_fk": {
+          "name": "viagem_contatos_contato_id_contatos_id_fk",
+          "tableFrom": "viagem_contatos",
+          "tableTo": "contatos",
+          "columnsFrom": [
+            "contato_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "viagem_contatos_viagem_id_contato_id_papel_pk": {
+          "name": "viagem_contatos_viagem_id_contato_id_papel_pk",
+          "columns": [
+            "viagem_id",
+            "contato_id",
+            "papel"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.viagens": {
+      "name": "viagens",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "codigo": {
+          "name": "codigo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "etapa": {
+          "name": "etapa",
+          "type": "etapa",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'lead'"
+        },
+        "canal_comercial": {
+          "name": "canal_comercial",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "categoria": {
+          "name": "categoria",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'padrao'"
+        },
+        "idioma_cliente": {
+          "name": "idioma_cliente",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pt'"
+        },
+        "idioma_guiamento": {
+          "name": "idioma_guiamento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pt'"
+        },
+        "marca": {
+          "name": "marca",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "origem": {
+          "name": "origem",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "indicado_por": {
+          "name": "indicado_por",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "meios_contato": {
+          "name": "meios_contato",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "hotel_nome": {
+          "name": "hotel_nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hotel_endereco": {
+          "name": "hotel_endereco",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nivel_restaurante": {
+          "name": "nivel_restaurante",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ritmo": {
+          "name": "ritmo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "interesses": {
+          "name": "interesses",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pontos_desejados": {
+          "name": "pontos_desejados",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "data_inicio": {
+          "name": "data_inicio",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "data_fim": {
+          "name": "data_fim",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cidades": {
+          "name": "cidades",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "motivo_encerramento": {
+          "name": "motivo_encerramento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sem_resposta_desde": {
+          "name": "sem_resposta_desde",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "primeira_resposta_em": {
+          "name": "primeira_resposta_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criada_em": {
+          "name": "criada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "viagens_codigo_idx": {
+          "name": "viagens_codigo_idx",
+          "columns": [
+            {
+              "expression": "codigo",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "viagens_etapa_idx": {
+          "name": "viagens_etapa_idx",
+          "columns": [
+            {
+              "expression": "etapa",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.viagens_relacionadas": {
+      "name": "viagens_relacionadas",
+      "schema": "",
+      "columns": {
+        "menor_id": {
+          "name": "menor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "maior_id": {
+          "name": "maior_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "viagens_relacionadas_menor_id_viagens_id_fk": {
+          "name": "viagens_relacionadas_menor_id_viagens_id_fk",
+          "tableFrom": "viagens_relacionadas",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "menor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "viagens_relacionadas_maior_id_viagens_id_fk": {
+          "name": "viagens_relacionadas_maior_id_viagens_id_fk",
+          "tableFrom": "viagens_relacionadas",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "maior_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "viagens_relacionadas_menor_id_maior_id_pk": {
+          "name": "viagens_relacionadas_menor_id_maior_id_pk",
+          "columns": [
+            "menor_id",
+            "maior_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.viajantes": {
+      "name": "viajantes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "viagem_id": {
+          "name": "viagem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contato_id": {
+          "name": "contato_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pagante": {
+          "name": "pagante",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "faixa": {
+          "name": "faixa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'adulto'"
+        },
+        "idade": {
+          "name": "idade",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "malas": {
+          "name": "malas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 2
+        },
+        "bagagem_mao": {
+          "name": "bagagem_mao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        }
+      },
+      "indexes": {
+        "viajantes_viagem_idx": {
+          "name": "viajantes_viagem_idx",
+          "columns": [
+            {
+              "expression": "viagem_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "viajantes_pessoa_idx": {
+          "name": "viajantes_pessoa_idx",
+          "columns": [
+            {
+              "expression": "viagem_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "contato_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "viajantes_viagem_id_viagens_id_fk": {
+          "name": "viajantes_viagem_id_viagens_id_fk",
+          "tableFrom": "viajantes",
+          "tableTo": "viagens",
+          "columnsFrom": [
+            "viagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "viajantes_contato_id_contatos_id_fk": {
+          "name": "viajantes_contato_id_contatos_id_fk",
+          "tableFrom": "viajantes",
+          "tableTo": "contatos",
+          "columnsFrom": [
+            "contato_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.canal_comercial": {
+      "name": "canal_comercial",
+      "schema": "public",
+      "values": [
+        "operadora",
+        "agencia",
+        "cliente_final",
+        "influencer"
+      ]
+    },
+    "public.categoria_atendimento": {
+      "name": "categoria_atendimento",
+      "schema": "public",
+      "values": [
+        "economico",
+        "padrao",
+        "premium",
+        "vip"
+      ]
+    },
+    "public.etapa": {
+      "name": "etapa",
+      "schema": "public",
+      "values": [
+        "lead",
+        "em_orcamento",
+        "proposta_enviada",
+        "em_negociacao",
+        "confirmada",
+        "em_viagem",
+        "concluida",
+        "perdida",
+        "cancelada",
+        "descartada"
+      ]
+    },
+    "public.idioma": {
+      "name": "idioma",
+      "schema": "public",
+      "values": [
+        "pt",
+        "es",
+        "en",
+        "fr"
+      ]
+    },
+    "public.marca": {
+      "name": "marca",
+      "schema": "public",
+      "values": [
+        "corealux",
+        "guia_na_coreia"
+      ]
+    },
+    "public.origem": {
+      "name": "origem",
+      "schema": "public",
+      "values": [
+        "instagram",
+        "site",
+        "indicacao",
+        "agencia",
+        "operadora",
+        "influenciador",
+        "outra"
+      ]
+    },
+    "public.papel": {
+      "name": "papel",
+      "schema": "public",
+      "values": [
+        "admin",
+        "faturamento",
+        "propostas",
+        "itinerarios",
+        "guiamento",
+        "conteudo"
+      ]
+    },
+    "public.papel_na_viagem": {
+      "name": "papel_na_viagem",
+      "schema": "public",
+      "values": [
+        "solicitante",
+        "viajante"
+      ]
+    },
+    "public.tipo_intermediario": {
+      "name": "tipo_intermediario",
+      "schema": "public",
+      "values": [
+        "agencia",
+        "operadora"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

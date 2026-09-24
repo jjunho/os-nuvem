@@ -11,12 +11,16 @@ The rest:
 
 **Blocked by:** 07 (Inferência de etapa, Cliente's reply, perdida, Correção), 08 (Versioned Tabelas de referência: Guia and Assistente rates).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Creating an Orçamento moves the Viagem to em orçamento.
-- [ ] A Viagem with dates 28/10–01/11 in Seul and Busan opens its first Orçamento with those 5 Dias and cities filled in, and nothing already known is asked.
-- [ ] Inserting a Dia in the middle renumbers the rest and keeps the total right. Switching to Dia 0 relabels the Dias.
-- [ ] A quick single-Dia Orçamento prices in a few actions.
-- [ ] The step-by-step shows services, Margem and total. Preço enviado 1,233 becomes 1,240 and can be edited to 1,200, with the difference shown.
-- [ ] 10 pagantes + 2 gratuidades divide the price by 10.
-- [ ] Vitest table tests for the Cálculo. Vertical tests in `parte4-*.spec.ts`. Speed tests for opening an Orçamento and recomputing after a change in `parte4-velocidade.spec.ts` (ADR-0003).
+- [x] Creating an Orçamento moves the Viagem to em orçamento.
+- [x] A Viagem with dates 28/10–01/11 in Seul and Busan opens its first Orçamento with those 5 Dias and cities filled in, and nothing already known is asked.
+- [x] Inserting a Dia in the middle renumbers the rest and keeps the total right. Switching to Dia 0 relabels the Dias.
+- [x] A quick single-Dia Orçamento prices in a few actions.
+- [x] The step-by-step shows services, Margem and total. Preço enviado 1,233 becomes 1,240 and can be edited to 1,200, with the difference shown.
+- [x] 10 pagantes + 2 gratuidades divide the price by 10.
+- [x] Vitest table tests for the Cálculo. Vertical tests in `parte4-*.spec.ts`. Speed tests for opening an Orçamento and recomputing after a change in `parte4-velocidade.spec.ts` (ADR-0003).
+
+## Entrega
+
+Implementado e revisado. Verificação: parte4-orcamento.spec.ts; parte4-velocidade.spec.ts.

@@ -6,9 +6,13 @@ An import fills the Viagem's existing records. Viajantes already on the Viagem a
 
 **Blocked by:** 19 (Opções and Margem).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The export has one sheet per Opção, with Dias, lines, suggested and applied values, and the price steps.
-- [ ] Exporting then importing the same file gives the same Orçamento.
-- [ ] Importing into a Viagem that already has Viajantes reuses them.
-- [ ] A file off the template is refused with the reason.
+- [x] The export has one sheet per Opção, with Dias, lines, suggested and applied values, and the price steps.
+- [x] Exporting then importing the same file gives the same Orçamento.
+- [x] Importing into a Viagem that already has Viajantes reuses them.
+- [x] A file off the template is refused with the reason.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte4-excel.spec.ts; parte5-revisao.spec.ts.

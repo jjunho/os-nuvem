@@ -6,9 +6,14 @@ If an outside API (e.g. Gemini) is used, it sits behind an adapter with a record
 
 **Blocked by:** 17 (Viajantes in the Orçamento).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A pasted request with dates, cities and headcount gives a draft of Dias and suggested lines to review.
-- [ ] Nothing is saved until the salesperson confirms.
-- [ ] Headcount already on the Viagem is matched, not duplicated.
-- [ ] With the outside service down, the screen says so, and manual entry still works.
+- [x] A pasted request with dates, cities and headcount gives a draft of Dias and suggested lines to review.
+- [x] Nothing is saved until the salesperson confirms.
+- [x] Headcount already on the Viagem is matched, not duplicated.
+- [x] With the outside service down, the screen says so, and manual entry still works.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte4-pedido.spec.ts.
+Preparação determinística local, sem dependência de serviço externo: revisão antes de gravar e edição manual continuam disponíveis offline.

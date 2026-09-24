@@ -4,8 +4,12 @@
 
 **Blocked by:** 08 (Versioned Tabelas de referência: Guia and Assistente rates).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Each calendar is seeded, shown and editable, and an edit creates a new version.
-- [ ] Holidays can be added for a new year without touching past years' versions.
-- [ ] A special event with dates and an effect can be added.
+- [x] Each calendar is seeded, shown and editable, and an edit creates a new version.
+- [x] Holidays can be added for a new year without touching past years' versions.
+- [x] A special event with dates and an effect can be added.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte3-tabelas.spec.ts.

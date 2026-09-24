@@ -6,10 +6,14 @@ The module only reads and writes reference data and knows nothing about Orçamen
 
 **Blocked by:** 01 (Known options: a filtered list with an open last option).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The rates table shows the seeded values, marking those that are Padrões provisórios.
-- [ ] Editing a value creates version 2. Version 1 still reads exactly as before.
-- [ ] The history lists each version with who and when.
-- [ ] Only the Admin can edit. Others can read.
-- [ ] Vertical tests in `parte3-*.spec.ts`.
+- [x] The rates table shows the seeded values, marking those that are Padrões provisórios.
+- [x] Editing a value creates version 2. Version 1 still reads exactly as before.
+- [x] The history lists each version with who and when.
+- [x] Only the Admin can edit. Others can read.
+- [x] Vertical tests in `parte3-*.spec.ts`.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte3-tabelas.spec.ts.

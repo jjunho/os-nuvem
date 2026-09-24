@@ -4,12 +4,18 @@ import { T0, entrarComo, relogio } from "./apoio";
 
 // ADR-0003 budgets, measured on the production build with realistic volume.
 
-test.beforeAll(async ({ request }) => { await semearVolume(request); });
+test.beforeAll(async ({ request }) => {
+  await semearVolume(request);
+});
 
 test("leitura no servidor em até 100 ms", async ({ page }) => {
   await entrarComo(page, "Carlos");
   await relogio(page, T0);
-  for (const url of ["/buscar?q=Contato%204999", "/buscar?q=V26-4321", "/buscar?q=5511000031"]) {
+  for (const url of [
+    "/buscar?q=Contato%204999",
+    "/buscar?q=V26-4321",
+    "/buscar?q=5511000031",
+  ]) {
     await page.request.get(url); // warm-up
     const inicio = Date.now();
     const r = await page.request.get(url);
@@ -39,16 +45,33 @@ test("resposta visível a um clique em até 100 ms", async ({ page }) => {
   const botao = page.getByRole("button", { name: "Respondi o contato" });
   await expect(botao).toBeVisible();
   const ms = await page.evaluate(async () => {
-    const b = [...document.querySelectorAll("button")].find((x) => x.textContent === "Respondi o contato")!;
+    const b = [...document.querySelectorAll("button")].find(
+      (x) => x.textContent === "Respondi o contato",
+    )!;
     const inicio = performance.now();
     b.click();
     await new Promise<void>((resolve) => {
-      const check = () => (document.body.textContent?.includes("Respondi o contato") ? requestAnimationFrame(check) : resolve());
+      const check = () =>
+        document.body.textContent?.includes("Respondi o contato")
+          ? requestAnimationFrame(check)
+          : resolve();
       check();
     });
     return performance.now() - inicio;
   });
   expect(ms, `feedback levou ${ms} ms`).toBeLessThan(100);
+});
+
+test("o Pipeline pagina as viagens sem repetir a primeira página", async ({
+  page,
+}) => {
+  await entrarComo(page, "Carlos");
+  await expect(page.locator("tbody tr")).toHaveCount(50);
+  const primeiro = await page.locator("tbody tr").first().textContent();
+  await page.getByRole("link", { name: "Próxima página", exact: true }).click();
+  await expect(page).toHaveURL(/pagina=2/);
+  await expect(page.locator("tbody tr")).toHaveCount(50);
+  await expect(page.locator("tbody tr").first()).not.toHaveText(primeiro!);
 });
 
 test.afterAll(async ({ request }) => {

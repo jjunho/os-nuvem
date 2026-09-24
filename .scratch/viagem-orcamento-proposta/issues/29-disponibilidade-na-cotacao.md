@@ -6,9 +6,14 @@ Needs the Profissionais and their skills from `.scratch/catalogo-fornecedores-ac
 
 **Blocked by:** 12 (Suggested staff lines), Catálogo 15 (Profissionais), Operação 08 (Fleet and Alocação tracer).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A Dia whose dates clash with a Guia's confirmed Alocação shows that Guia as busy.
-- [ ] A Tour requiring Jessica warns when she is busy or doesn't speak the Idioma de guiamento.
-- [ ] The Guia picker on a Dia offers only Guias who speak the Idioma de guiamento, the busy ones marked as busy.
-- [ ] Warnings never block the Orçamento.
+- [x] A Dia whose dates clash with a Guia's confirmed Alocação shows that Guia as busy.
+- [x] A Tour requiring Jessica warns when she is busy or doesn't speak the Idioma de guiamento.
+- [x] The Guia picker on a Dia offers only Guias who speak the Idioma de guiamento, the busy ones marked as busy.
+- [x] Warnings never block the Orçamento.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte5-disponibilidade.spec.ts.
+Pré-requisitos limitados ao cadastro de profissionais, idiomas/especialidades e alocações por período, necessários à disponibilidade.

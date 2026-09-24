@@ -4,7 +4,11 @@
 
 **Blocked by:** 13 (Vehicles and luggage), 19 (Opções and Margem).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Each warning shows on the Opção it concerns, with its reason.
-- [ ] None of them stops the Orçamento from being saved or sent.
+- [x] Each warning shows on the Opção it concerns, with its reason.
+- [x] None of them stops the Orçamento from being saved or sent.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte4-avisos.spec.ts; parte5-revisao.spec.ts.

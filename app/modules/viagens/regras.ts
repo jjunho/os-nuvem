@@ -1,7 +1,7 @@
 // Pure rules for the first-contact part of a Viagem. No I/O, no clock:
 // callers pass "now" in. Values here are Valores sugeridos (ADR-0001).
 
-export type CanalComercial = "operadora" | "agencia" | "cliente_final" | "influencer";
+export type CanalComercial = string;
 export type Etapa =
   | "lead"
   | "em_orcamento"
@@ -23,7 +23,12 @@ export const ETAPAS_ABERTAS: readonly Etapa[] = [
   "em_viagem",
 ];
 
-export const ETAPAS_ENCERRADAS: readonly Etapa[] = ["concluida", "perdida", "cancelada", "descartada"];
+export const ETAPAS_ENCERRADAS: readonly Etapa[] = [
+  "concluida",
+  "perdida",
+  "cancelada",
+  "descartada",
+];
 
 const HORA = 60 * 60 * 1000;
 
@@ -38,18 +43,28 @@ export const PRAZO_PRIMEIRA_RESPOSTA_HORAS: Record<CanalComercial, number> = {
 
 export const ALERTA_SEM_RESPOSTA_HORAS = 24;
 
-export function prazoPrimeiraResposta(canal: CanalComercial, criadaEm: Date): Date {
-  return new Date(criadaEm.getTime() + PRAZO_PRIMEIRA_RESPOSTA_HORAS[canal] * HORA);
+export function prazoPrimeiraResposta(
+  canal: CanalComercial,
+  criadaEm: Date,
+): Date {
+  return new Date(
+    criadaEm.getTime() + (PRAZO_PRIMEIRA_RESPOSTA_HORAS[canal] ?? 8) * HORA,
+  );
 }
 
-export function semRespostaHumana(v: {
-  etapa: Etapa;
-  criadaEm: Date;
-  primeiraRespostaEm: Date | null;
-}, agora: Date): boolean {
+export function semRespostaHumana(
+  v: {
+    etapa: Etapa;
+    criadaEm: Date;
+    primeiraRespostaEm: Date | null;
+  },
+  agora: Date,
+): boolean {
   if (v.primeiraRespostaEm) return false;
   if (!ETAPAS_ABERTAS.includes(v.etapa)) return false;
-  return agora.getTime() - v.criadaEm.getTime() >= ALERTA_SEM_RESPOSTA_HORAS * HORA;
+  return (
+    agora.getTime() - v.criadaEm.getTime() >= ALERTA_SEM_RESPOSTA_HORAS * HORA
+  );
 }
 
 export function codigoDaViagem(ano: number, sequencia: number): string {
@@ -57,10 +72,14 @@ export function codigoDaViagem(ano: number, sequencia: number): string {
   return `V${aa}-${String(sequencia).padStart(4, "0")}`;
 }
 
-export function marcaSugerida(canal: CanalComercial): "corealux" | "guia_na_coreia" {
-  return canal === "agencia" || canal === "operadora" ? "corealux" : "guia_na_coreia";
+export function marcaSugerida(
+  canal: CanalComercial,
+): "corealux" | "guia_na_coreia" {
+  return canal === "agencia" || canal === "operadora"
+    ? "corealux"
+    : "guia_na_coreia";
 }
 
 export function podeDescartar(etapa: Etapa): boolean {
-  return etapa === "lead";
+  return ETAPAS_ABERTAS.includes(etapa);
 }

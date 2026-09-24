@@ -4,8 +4,12 @@
 
 **Blocked by:** 10 (Tabelas: fleet and the rest), 12 (Suggested staff lines).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Fixtures: 4 clients Busan kit 30 + 1 Sky Capsule → 180, and 5 clients → 2 capsules. Jeju Saturday flight → 100. Tip padrão 4 clients → 44, Premium/VIP → 80. Team flight 200 with markup 20% → 230.
-- [ ] Scenario (1)'s senior tickets apply only when the Viajantes qualify.
-- [ ] The guide's ticket shows as a separate line.
+- [x] Fixtures: 4 clients Busan kit 30 + 1 Sky Capsule → 180, and 5 clients → 2 capsules. Jeju Saturday flight → 100. Tip padrão 4 clients → 44, Premium/VIP → 80. Team flight 200 with markup 20% → 230.
+- [x] Scenario (1)'s senior tickets apply only when the Viajantes qualify.
+- [x] The guide's ticket shows as a separate line.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte4-itens.spec.ts; itens.test.ts.

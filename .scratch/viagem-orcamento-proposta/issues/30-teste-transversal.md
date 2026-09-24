@@ -6,7 +6,11 @@ It also checks ADR-0008 at every step: dates, cities, Viajantes' names and ages,
 
 **Blocked by:** 01–28 (every ticket above except 29).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] One transversal e2e test per case runs the steps above, checking what the user sees at each step, and passes.
-- [ ] All vertical and speed tests of this spec, the login tests and the Comunicador tests still pass.
+- [x] One transversal e2e test per case runs the steps above, checking what the user sees at each step, and passes.
+- [x] All vertical and speed tests of this spec, the login tests and the Comunicador tests still pass.
+
+## Entrega
+
+Implementado e revisado. Verificação: spec1-transversal.spec.ts; suíte vertical completa e regressões corrigidas.

@@ -4,8 +4,12 @@
 
 **Blocked by:** 26 (The Proposta, HTML and PDF).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Accepting Opção 12 + 2 of Versão 2 makes the Viagem confirmada with that price.
-- [ ] With the test clock past the validity date, a warning shows, and confirming still works.
-- [ ] Only one Aceite is open per Viagem. A wrong one is undone by a Correção de etapa.
+- [x] Accepting Opção 12 + 2 of Versão 2 makes the Viagem confirmada with that price.
+- [x] With the test clock past the validity date, a warning shows, and confirming still works.
+- [x] Only one Aceite is open per Viagem. A wrong one is undone by a Correção de etapa.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte5-aceite.spec.ts.

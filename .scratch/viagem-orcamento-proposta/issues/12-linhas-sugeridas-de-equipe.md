@@ -4,9 +4,13 @@
 
 **Blocked by:** 09 (Tabelas: Temporadas, holidays and events), 11 (Orçamento tracer).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Carlos's fixtures pass as table tests and through the screen: base 320 + 20% add-on at half day → 230.40; car base 200 at 9h / 9h30 / 10h → overtime 0 / 0 / 16; Premium staffing 7 / 14 / 21 pax → 1+0 / 1+1 / 2+1.
-- [ ] Scenario (4): a holiday on 15/08 puts services on 14–16/08 inside the ±2-day window.
-- [ ] Scenario (6): "manhã" without hours asks for the hours instead of assuming them.
-- [ ] Changing the Categoria or the Período re-suggests untouched lines and leaves adjusted ones alone.
+- [x] Carlos's fixtures pass as table tests and through the screen: base 320 + 20% add-on at half day → 230.40; car base 200 at 9h / 9h30 / 10h → overtime 0 / 0 / 16; Premium staffing 7 / 14 / 21 pax → 1+0 / 1+1 / 2+1.
+- [x] Scenario (4): a holiday on 15/08 puts services on 14–16/08 inside the ±2-day window.
+- [x] Scenario (6): "manhã" without hours asks for the hours instead of assuming them.
+- [x] Changing the Categoria or the Período re-suggests untouched lines and leaves adjusted ones alone.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte4-sugestoes.spec.ts; sugestoes.test.ts.

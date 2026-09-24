@@ -4,9 +4,13 @@
 
 **Blocked by:** 02 (The Viagem's Viajantes: one record, reused everywhere).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Linking an existing Contato to a new Viagem, as Solicitante or Viajante, shows "cliente conhecido" with their past Viagens.
-- [ ] Restrictions and preferences recorded on the person in an earlier Viagem show on the new one without retyping.
-- [ ] A note on how an itinerary was received can be added, and appears in later Viagens.
-- [ ] An upcoming birthday during the trip dates is highlighted.
+- [x] Linking an existing Contato to a new Viagem, as Solicitante or Viajante, shows "cliente conhecido" with their past Viagens.
+- [x] Restrictions and preferences recorded on the person in an earlier Viagem show on the new one without retyping.
+- [x] A note on how an itinerary was received can be added, and appears in later Viagens.
+- [x] An upcoming birthday during the trip dates is highlighted.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte1-perfil.spec.ts.

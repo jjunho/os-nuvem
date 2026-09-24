@@ -6,11 +6,15 @@ The checklist reads what is already recorded (the Viagem and its Viajantes from 
 
 **Blocked by:** 02 (The Viagem's Viajantes: one record, reused everywhere).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A lead with only a name shows every item missing. Filling dates and Viajantes removes those items.
-- [ ] The ready message lists only the missing items, in the Idioma do cliente, for all four languages.
-- [ ] The first-reply template shows in the Idioma do cliente and can be copied in one click.
-- [ ] An Admin edits a template, and the next copy uses the edit.
-- [ ] Recording the hotel on the Viagem, or a diet on a Viajante, removes that item and makes the value available to later steps.
-- [ ] Scenario fixture (2) produces the expected missing questions.
+- [x] A lead with only a name shows every item missing. Filling dates and Viajantes removes those items.
+- [x] The ready message lists only the missing items, in the Idioma do cliente, for all four languages.
+- [x] The first-reply template shows in the Idioma do cliente and can be copied in one click.
+- [x] An Admin edits a template, and the next copy uses the edit.
+- [x] Recording the hotel on the Viagem, or a diet on a Viajante, removes that item and makes the value available to later steps.
+- [x] Scenario fixture (2) produces the expected missing questions.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte1-briefing.spec.ts.

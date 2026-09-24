@@ -1,6 +1,7 @@
+import type { ChaveTraducao } from "~/modules/idiomas/catalogo";
 // Display labels in Portuguese, using the glossary's words (CONTEXT.md).
 
-export const rotuloEtapa: Record<string, string> = {
+export const rotuloEtapa: Record<string, ChaveTraducao> = {
   lead: "Lead",
   em_orcamento: "Em orçamento",
   proposta_enviada: "Proposta enviada",
@@ -13,21 +14,21 @@ export const rotuloEtapa: Record<string, string> = {
   descartada: "Descartada",
 };
 
-export const rotuloCanal: Record<string, string> = {
+export const rotuloCanal: Record<string, ChaveTraducao> = {
   operadora: "Interep/Operadora",
   agencia: "Agência",
   cliente_final: "Cliente final",
   influencer: "Influencer",
 };
 
-export const rotuloCategoria: Record<string, string> = {
+export const rotuloCategoria: Record<string, ChaveTraducao> = {
   economico: "Econômico",
   padrao: "Padrão",
   premium: "Premium",
   vip: "VIP",
 };
 
-export const rotuloOrigem: Record<string, string> = {
+export const rotuloOrigem: Record<string, ChaveTraducao> = {
   instagram: "Instagram",
   site: "Site",
   indicacao: "Indicação",
@@ -37,19 +38,19 @@ export const rotuloOrigem: Record<string, string> = {
   outra: "Outra",
 };
 
-export const rotuloIdioma: Record<string, string> = {
+export const rotuloIdioma: Record<string, ChaveTraducao> = {
   pt: "Português",
   es: "Espanhol",
   en: "Inglês",
   fr: "Francês",
 };
 
-export const rotuloMarca: Record<string, string> = {
+export const rotuloMarca: Record<string, ChaveTraducao> = {
   corealux: "CoreaLux (B2B)",
   guia_na_coreia: "Guia na Coreia (B2C)",
 };
 
-export const MEIOS_DE_CONTATO = [
+export const MEIOS_DE_CONTATO: ChaveTraducao[] = [
   "WhatsApp",
   "WhatsApp pessoal",
   "Respond.io",

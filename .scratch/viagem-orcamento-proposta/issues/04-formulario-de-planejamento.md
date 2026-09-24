@@ -6,11 +6,15 @@ Answers never create a second record of a person or a date. When an answer disag
 
 **Blocked by:** 02 (The Viagem's Viajantes: one record, reused everywhere).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] "Enviar formulário" gives a link with an unguessable token, tied to one Viagem. It can be revoked.
-- [ ] Signed out, the link opens the form in the Idioma do cliente, without asking what the Viagem already knows.
-- [ ] Submitting fills the Viagem and its Viajantes. A second submission updates the same records.
-- [ ] A conflicting answer is shown beside the recorded value for the salesperson to choose.
-- [ ] The form shows no price, no internal note, and no data from any other Viagem.
-- [ ] Pasted answers or an attached file can be added to the Viagem.
+- [x] "Enviar formulário" gives a link with an unguessable token, tied to one Viagem. It can be revoked.
+- [x] Signed out, the link opens the form in the Idioma do cliente, without asking what the Viagem already knows.
+- [x] Submitting fills the Viagem and its Viajantes. A second submission updates the same records.
+- [x] A conflicting answer is shown beside the recorded value for the salesperson to choose.
+- [x] The form shows no price, no internal note, and no data from any other Viagem.
+- [x] Pasted answers or an attached file can be added to the Viagem.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte1-formulario.spec.ts.

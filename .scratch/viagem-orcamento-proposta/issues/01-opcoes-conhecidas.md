@@ -14,14 +14,18 @@ The rest:
 
 **Blocked by:** Comunicador 01 (Idioma da interface and the PT/KO catalogue).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Typing "ins" in Origem narrows the list to Instagram. Choosing it takes one key.
-- [ ] A field with a context filter shows only the options that fit the context before anything is typed (tested here on the intermediary picker: with Canal comercial Agência it lists only Agências, never Operadoras; later tickets test their own fields).
-- [ ] "Outro…" accepts "Feira em Lisboa" as an Origem. The next Viagem offers "Feira em Lisboa" in the list.
-- [ ] An exceptional Canal comercial saves the Viagem. Rate-dependent values show "a informar", and nothing crashes.
-- [ ] The Admin merges an exceptional value into a regular option, and the Viagens using it now show the regular one.
-- [ ] The Etapa and the Papel offer no open option.
-- [ ] Options and the "Outro…" label show in the Usuário's Idioma da interface. Values the person typed show as typed.
-- [ ] The part 1 tests pass, adjusted only where a free-text field became a picker.
-- [ ] Keyboard-only use works: type, arrow, Enter.
+- [x] Typing "ins" in Origem narrows the list to Instagram. Choosing it takes one key.
+- [x] A field with a context filter shows only the options that fit the context before anything is typed (tested here on the intermediary picker: with Canal comercial Agência it lists only Agências, never Operadoras; later tickets test their own fields).
+- [x] "Outro…" accepts "Feira em Lisboa" as an Origem. The next Viagem offers "Feira em Lisboa" in the list.
+- [x] An exceptional Canal comercial saves the Viagem. Rate-dependent values show "a informar", and nothing crashes.
+- [x] The Admin merges an exceptional value into a regular option, and the Viagens using it now show the regular one.
+- [x] The Etapa and the Papel offer no open option.
+- [x] Options and the "Outro…" label show in the Usuário's Idioma da interface. Values the person typed show as typed.
+- [x] The part 1 tests pass, adjusted only where a free-text field became a picker.
+- [x] Keyboard-only use works: type, arrow, Enter.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte1-opcoes.spec.ts; idioma-interface.spec.ts.

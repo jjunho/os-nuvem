@@ -1,0 +1,1 @@
+ALTER TABLE "opcoes_conhecidas" ADD COLUMN "contexto" jsonb DEFAULT '{}'::jsonb NOT NULL;

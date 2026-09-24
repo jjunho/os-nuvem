@@ -22,13 +22,23 @@ describe("prazo da primeira resposta", () => {
 });
 
 describe("alerta de 24h sem resposta humana", () => {
-  const lead = { etapa: "lead" as const, criadaEm: t0, primeiraRespostaEm: null };
-  it("não alerta antes de 24h", () => expect(semRespostaHumana(lead, horas(23.9))).toBe(false));
-  it("alerta a partir de 24h", () => expect(semRespostaHumana(lead, horas(24))).toBe(true));
+  const lead = {
+    etapa: "lead" as const,
+    criadaEm: t0,
+    primeiraRespostaEm: null,
+  };
+  it("não alerta antes de 24h", () =>
+    expect(semRespostaHumana(lead, horas(23.9))).toBe(false));
+  it("alerta a partir de 24h", () =>
+    expect(semRespostaHumana(lead, horas(24))).toBe(true));
   it("não alerta depois de respondida", () =>
-    expect(semRespostaHumana({ ...lead, primeiraRespostaEm: horas(1) }, horas(30))).toBe(false));
+    expect(
+      semRespostaHumana({ ...lead, primeiraRespostaEm: horas(1) }, horas(30)),
+    ).toBe(false));
   it("não alerta Viagem encerrada", () =>
-    expect(semRespostaHumana({ ...lead, etapa: "descartada" }, horas(30))).toBe(false));
+    expect(semRespostaHumana({ ...lead, etapa: "descartada" }, horas(30))).toBe(
+      false,
+    ));
 });
 
 describe("código da viagem", () => {
@@ -48,8 +58,9 @@ describe("marca sugerida", () => {
 });
 
 describe("descartar", () => {
-  it("só um lead pode ser descartado", () => {
+  it("qualquer etapa aberta pode ser descartada", () => {
     expect(podeDescartar("lead")).toBe(true);
-    expect(podeDescartar("confirmada")).toBe(false);
+    expect(podeDescartar("confirmada")).toBe(true);
+    expect(podeDescartar("perdida")).toBe(false);
   });
 });

@@ -4,9 +4,13 @@
 
 **Blocked by:** 24 (Sending freezes a Versão).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] With the test clock, follow-ups appear at 3, 6 and 9 days, then every 3 days.
-- [ ] After the third unanswered one, "sem resposta" shows on the Pipeline and a push is recorded for the Responsável and the Admin, once.
-- [ ] The system never sets perdida.
-- [ ] Recording a reply removes the mark and concludes the open follow-up.
+- [x] With the test clock, follow-ups appear at 3, 6 and 9 days, then every 3 days.
+- [x] After the third unanswered one, "sem resposta" shows on the Pipeline and a push is recorded for the Responsável and the Admin, once.
+- [x] The system never sets perdida.
+- [x] Recording a reply removes the mark and concludes the open follow-up.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte5-followups.spec.ts.

@@ -4,9 +4,13 @@
 
 **Blocked by:** 12 (Suggested staff lines).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] An override without a reason is refused. With one, the line shows both values, who and why.
-- [ ] Re-suggesting after a table change leaves overridden lines alone and shows the new suggestion beside them.
-- [ ] A view lists every line resting on a Padrão provisório.
-- [ ] Scenario (8): an unlisted exhibition estimated at USD 30 is allowed in the draft and flagged as needing its real cost.
+- [x] An override without a reason is refused. With one, the line shows both values, who and why.
+- [x] Re-suggesting after a table change leaves overridden lines alone and shows the new suggestion beside them.
+- [x] A view lists every line resting on a Padrão provisório.
+- [x] Scenario (8): an unlisted exhibition estimated at USD 30 is allowed in the draft and flagged as needing its real cost.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte4-ajustes.spec.ts; parte5-envio.spec.ts.

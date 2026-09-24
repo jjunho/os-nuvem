@@ -6,14 +6,18 @@
 
 **Blocked by:** 01 (Known options: a filtered list with an open last option).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The new-Viagem form still accepts a quick headcount (e.g. 10 pagantes + 2 gratuidades, 1 child of 8), which creates that many Viajante records.
-- [ ] The Viagem screen lists its Viajantes. Naming one, linking one to a Contato, changing age or Pagante/Gratuidade edits that record, and the counts follow.
-- [ ] A Contato linked as Viajante on one Viagem is the same person when linked on another. No second person record is created.
-- [ ] Removing or adding a Viajante changes the counts everywhere they're shown.
-- [ ] Existing Viagens migrate: their numbers become unnamed Viajantes, and their Viajante Contatos become named ones, with nobody counted twice.
-- [ ] No count column remains that can disagree with the list.
-- [ ] The part 1 tests pass, adjusted only where the form's headcount fields changed shape.
-- [ ] Strings in PT and KO.
-- [ ] ADR-0008 check: no screen in this ticket asks for anything the Viagem already knows.
+- [x] The new-Viagem form still accepts a quick headcount (e.g. 10 pagantes + 2 gratuidades, 1 child of 8), which creates that many Viajante records.
+- [x] The Viagem screen lists its Viajantes. Naming one, linking one to a Contato, changing age or Pagante/Gratuidade edits that record, and the counts follow.
+- [x] A Contato linked as Viajante on one Viagem is the same person when linked on another. No second person record is created.
+- [x] Removing or adding a Viajante changes the counts everywhere they're shown.
+- [x] Existing Viagens migrate: their numbers become unnamed Viajantes, and their Viajante Contatos become named ones, with nobody counted twice.
+- [x] No count column remains that can disagree with the list.
+- [x] The part 1 tests pass, adjusted only where the form's headcount fields changed shape.
+- [x] Strings in PT and KO.
+- [x] ADR-0008 check: no screen in this ticket asks for anything the Viagem already knows.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte1-viajantes.spec.ts; migrações preservadoras.

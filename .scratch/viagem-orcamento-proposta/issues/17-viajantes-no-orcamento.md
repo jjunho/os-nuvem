@@ -4,10 +4,14 @@
 
 **Blocked by:** 02 (The Viagem's Viajantes), 11 (Orçamento tracer).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A Dia with 6 of 8 Viajantes prices its per-person lines for 6.
-- [ ] A line for 2 named Viajantes is charged only for them.
-- [ ] A child of 8 gets the child price where a rule has one.
-- [ ] Naming a Viajante on the Viagem shows the name in the Orçamento without any other step.
-- [ ] Removing a Viajante from the Viagem shows which Dias and lines change before confirming.
+- [x] A Dia with 6 of 8 Viajantes prices its per-person lines for 6.
+- [x] A line for 2 named Viajantes is charged only for them.
+- [x] A child of 8 gets the child price where a rule has one.
+- [x] Naming a Viajante on the Viagem shows the name in the Orçamento without any other step.
+- [x] Removing a Viajante from the Viagem shows which Dias and lines change before confirming.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte4-viajantes.spec.ts.

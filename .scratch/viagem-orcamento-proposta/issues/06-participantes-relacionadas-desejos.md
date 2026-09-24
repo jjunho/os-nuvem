@@ -4,8 +4,12 @@
 
 **Blocked by:** 01 (Known options: a filtered list with an open last option).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Adding a participant shows them on the Viagem. Removing them keeps the history.
-- [ ] Linking two Viagens shows each on the other. Unlinking works from either side.
-- [ ] A wanted item can be added, marked approved (with who and when) or dropped. The list shows both states.
+- [x] Adding a participant shows them on the Viagem. Removing them keeps the history.
+- [x] Linking two Viagens shows each on the other. Unlinking works from either side.
+- [x] A wanted item can be added, marked approved (with who and when) or dropped. The list shows both states.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte1-participantes.spec.ts.

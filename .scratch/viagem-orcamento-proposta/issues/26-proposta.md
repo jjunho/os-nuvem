@@ -6,12 +6,16 @@ It renders only frozen data, so the same Versão always renders the same Propost
 
 **Blocked by:** 24 (Sending freezes a Versão).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The Proposta shows each Opção's Preço enviado, Preço por pessoa, Incluso and Não incluso, the Condições and the validity date (content checks, no pixel comparison).
-- [ ] Editing the Condições on one Proposta leaves the defaults unchanged.
-- [ ] A Spanish-speaking Cliente gets the Proposta in Spanish.
-- [ ] The PDF downloads with the expected name, and re-rendering the same Versão gives the same content.
-- [ ] Fixtures: card on total 2,100 → 2,205, on one 420 instalment → 441; PIX USD 100 at 5 BRL → BRL 517.50.
-- [ ] Margem and Ajustes manuais never appear.
-- [ ] Speed test for opening the Proposta in `parte5-velocidade.spec.ts`.
+- [x] The Proposta shows each Opção's Preço enviado, Preço por pessoa, Incluso and Não incluso, the Condições and the validity date (content checks, no pixel comparison).
+- [x] Editing the Condições on one Proposta leaves the defaults unchanged.
+- [x] A Spanish-speaking Cliente gets the Proposta in Spanish.
+- [x] The PDF downloads with the expected name, and re-rendering the same Versão gives the same content.
+- [x] Fixtures: card on total 2,100 → 2,205, on one 420 instalment → 441; PIX USD 100 at 5 BRL → BRL 517.50.
+- [x] Margem and Ajustes manuais never appear.
+- [x] Speed test for opening the Proposta in `parte5-velocidade.spec.ts`.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte5-proposta.spec.ts; parte5-velocidade.spec.ts; pagamento.test.ts.

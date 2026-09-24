@@ -4,8 +4,12 @@
 
 **Blocked by:** 10 (Tabelas: fleet and the rest, which holds the exchange rule), 11 (Orçamento tracer).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Fixture: 632,000 KRW at 1,350 × 1.10 → USD 514.96.
-- [ ] The line shows the original amount, currency, rate and rate date.
-- [ ] Changing the rate recomputes the line and the total.
+- [x] Fixture: 632,000 KRW at 1,350 × 1.10 → USD 514.96.
+- [x] The line shows the original amount, currency, rate and rate date.
+- [x] Changing the rate recomputes the line and the total.
+
+## Entrega
+
+Implementado e revisado. Verificação: parte4-cambio.spec.ts; calculo.test.ts.
