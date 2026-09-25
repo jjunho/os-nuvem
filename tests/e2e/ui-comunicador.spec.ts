@@ -428,14 +428,19 @@ test("dois submits síncronos de tarefa produzem uma única operação", async (
   expect(dados.cartoes.filter((cartao: { titulo: string }) => cartao.titulo.endsWith(" · Tarefa única"))).toHaveLength(1);
 });
 
-test("recusa definitiva mantém a primeira saída e interrompe a fila", async ({ page }) => {
-  await preparar(page);
-  let chamadas = 0;
+test("recusa definitiva preserva a primeira saída e libera as demais pendentes", async ({ page }) => {
+  const { a } = await preparar(page);
+  let recusas = 0;
   await page.route("**/comunicador/api", async (route) => {
-    if (route.request().method() !== "POST" || route.request().postDataJSON()?.acao !== "enviar")
+    const corpo = route.request().postDataJSON();
+    if (route.request().method() !== "POST" || corpo?.acao !== "enviar")
       return route.continue();
-    chamadas++;
-    await route.fulfill({ status: 400, body: "Recusa definitiva" });
+    if (corpo.texto === "Primeira recusada") {
+      recusas++;
+      await route.fulfill({ status: 400, body: "Recusa definitiva" });
+      return;
+    }
+    await route.continue();
   });
   const mensagem = page.getByLabel("Mensagem", { exact: true });
   await mensagem.fill("Primeira recusada");
@@ -445,8 +450,20 @@ test("recusa definitiva mantém a primeira saída e interrompe a fila", async ({
   await mensagem.fill("Segunda em espera");
   await page.getByRole("button", { name: "Enviar", exact: true }).click();
   await expect(page.getByText("Segunda em espera", { exact: true })).toBeVisible();
-  await expect.poll(() => chamadas).toBe(1);
+  await expect
+    .poll(async () => {
+      const dados = await (
+        await page.request.get(`/comunicador/api?conversa=${a.id}`)
+      ).json();
+      return dados.mensagens.some(
+        (item: { texto: string }) => item.texto === "Segunda em espera",
+      );
+    })
+    .toBe(true);
+  // A recusa continua visível para retentativa e não é reenviada sozinha.
   await expect(page.getByRole("button", { name: "Falhou. Tentar novamente" })).toBeVisible();
+  await expect(page.getByText("Primeira recusada", { exact: true })).toBeVisible();
+  expect(recusas).toBe(1);
 });
 
 test("confirmação de fila não sincroniza conversa diferente da selecionada", async ({ page }) => {

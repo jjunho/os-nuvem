@@ -37,7 +37,7 @@ export function criarCaixa(deps: {
     try {
       const fila = await listarSaidas(deps.usuarioId);
       for (const item of fila) {
-        if (item.falhou) break;
+        if (item.falhou) continue;
         const escopo = deps.selecao();
         let confirmado: { id: number; conversaId: number };
         try {
@@ -61,15 +61,22 @@ export function criarCaixa(deps: {
             });
           confirmado = confirmarEnvio(resultado, item.conversaId, !!item.arquivo);
         } catch (erro) {
-          if (navigator.onLine && !(erro instanceof TypeError) && !(erro instanceof ConfirmacaoInvalida)) {
-            try {
-              await guardarSaida({ ...item, falhou: true });
-              if (montado) deps.aoMudar(await listarSaidas(deps.usuarioId));
-            } catch (persistencia) {
-              if (montado) deps.aoFalhar(persistencia instanceof Error ? persistencia.message : String(persistencia));
-            }
+          // Padrão 2: a recusa definitiva conserva apenas esta operação na
+          // projeção e libera as demais pendentes. Transporte incerto ou
+          // confirmação inválida mantêm a ordem e param a drenagem.
+          const recusaDefinitiva =
+            navigator.onLine &&
+            !(erro instanceof TypeError) &&
+            !(erro instanceof ConfirmacaoInvalida);
+          if (!recusaDefinitiva) break;
+          try {
+            await guardarSaida({ ...item, falhou: true });
+            if (montado) deps.aoMudar(await listarSaidas(deps.usuarioId));
+          } catch (persistencia) {
+            if (montado) deps.aoFalhar(persistencia instanceof Error ? persistencia.message : String(persistencia));
+            break;
           }
-          break;
+          continue;
         }
         try {
           if (item.ordem !== undefined) await apagarSaida(item.ordem);
