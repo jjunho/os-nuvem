@@ -396,3 +396,86 @@ test("trocar conversa aborta a leitura antiga e preserva a seleção nova", asyn
   liberar.liberar();
   await expect(page.locator(`#mensagem-${b.mensagemId}`)).toBeVisible();
 });
+
+test("dois submits síncronos de tarefa produzem uma única operação", async ({ page }) => {
+  const { a } = await preparar(page);
+  await page.getByLabel("Mensagem", { exact: true }).fill("/tarefa Tarefa única");
+  await page.getByRole("button", { name: "Enviar", exact: true }).click();
+  const form = page.getByRole("form", { name: "Nova tarefa" });
+  await expect(form).toBeVisible();
+  await form.locator('[name="prazo"]').fill("2030-01-01T10:00");
+  let chamadas = 0;
+  const iniciou = barreira();
+  const liberar = barreira();
+  await page.route("**/comunicador/api", async (route) => {
+    if (route.request().method() !== "POST" || route.request().postDataJSON()?.acao !== "tarefa")
+      return route.continue();
+    chamadas++;
+    const resposta = await route.fetch();
+    iniciou.liberar();
+    await liberar.espera;
+    await route.fulfill({ response: resposta });
+  });
+  await form.evaluate((elemento) => {
+    (elemento as HTMLFormElement).requestSubmit();
+    (elemento as HTMLFormElement).requestSubmit();
+  });
+  await iniciou.espera;
+  expect(chamadas).toBe(1);
+  liberar.liberar();
+  await expect(form).toHaveCount(0);
+  const dados = await (await page.request.get(`/comunicador/api?conversa=${a.id}`)).json();
+  expect(dados.cartoes.filter((cartao: { titulo: string }) => cartao.titulo.endsWith(" · Tarefa única"))).toHaveLength(1);
+});
+
+test("recusa definitiva mantém a primeira saída e interrompe a fila", async ({ page }) => {
+  await preparar(page);
+  let chamadas = 0;
+  await page.route("**/comunicador/api", async (route) => {
+    if (route.request().method() !== "POST" || route.request().postDataJSON()?.acao !== "enviar")
+      return route.continue();
+    chamadas++;
+    await route.fulfill({ status: 400, body: "Recusa definitiva" });
+  });
+  const mensagem = page.getByLabel("Mensagem", { exact: true });
+  await mensagem.fill("Primeira recusada");
+  await page.getByRole("button", { name: "Enviar", exact: true }).click();
+  await expect(page.getByText("Primeira recusada", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Falhou. Tentar novamente" })).toBeVisible();
+  await mensagem.fill("Segunda em espera");
+  await page.getByRole("button", { name: "Enviar", exact: true }).click();
+  await expect(page.getByText("Segunda em espera", { exact: true })).toBeVisible();
+  await expect.poll(() => chamadas).toBe(1);
+  await expect(page.getByRole("button", { name: "Falhou. Tentar novamente" })).toBeVisible();
+});
+
+test("confirmação de fila não sincroniza conversa diferente da selecionada", async ({ page }) => {
+  const { a, b } = await preparar(page);
+  await page.evaluate(() =>
+    Object.defineProperty(navigator, "onLine", { configurable: true, value: false }),
+  );
+  const mensagem = page.getByLabel("Mensagem", { exact: true });
+  await mensagem.fill("Fila da Lia");
+  await page.getByRole("button", { name: "Enviar", exact: true }).click();
+  await expect(page.getByText("Fila da Lia", { exact: true })).toBeVisible();
+  await navegar(page, "Jessica");
+  await expect(page.locator(`#mensagem-${b.mensagemId}`)).toBeVisible();
+  await page.evaluate(() =>
+    Object.defineProperty(navigator, "onLine", { configurable: true, value: true }),
+  );
+  await expect
+    .poll(
+      async () => {
+        const dados = await (
+          await page.request.get(`/comunicador/api?conversa=${a.id}`)
+        ).json();
+        return dados.mensagens.some(
+          (item: { texto: string }) => item.texto === "Fila da Lia",
+        );
+      },
+      { timeout: 15000 },
+    )
+    .toBe(true);
+  await page.waitForTimeout(100);
+  await expect(page.getByText("Fila da Lia", { exact: true })).toHaveCount(0);
+});

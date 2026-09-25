@@ -135,3 +135,25 @@ test("Ctrl+K encontra a Viagem pelo telefone e abre", async ({ page }) => {
   await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { name: "V26-0001" })).toBeVisible();
 });
+test("Busca sem resultados conserva índice válido ao navegar e confirmar", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.keyboard.press("Control+k");
+  const dialogo = page.getByRole("dialog", { name: "Buscar viagem" });
+  const termo = "consulta inexistente 987654";
+  const resposta = page.waitForResponse((r) => {
+    const url = new URL(r.url());
+    return url.pathname === "/buscar.data" && url.searchParams.get("q") === termo;
+  });
+  await dialogo
+    .getByPlaceholder("Código, contato, telefone, e-mail ou agência")
+    .fill(termo);
+  await resposta;
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowUp");
+  await page.keyboard.press("Enter");
+  await expect(dialogo).toBeVisible();
+  await expect(page).toHaveURL("/");
+});

@@ -362,8 +362,8 @@ test("replay de geração de formulário recupera o mesmo link", async ({
   expect(primeira.ok()).toBeTruthy();
   expect(segunda.ok()).toBeTruthy();
   const link = /\/planejamento\/[a-f0-9]{64}/.exec(await primeira.text())?.[0];
-  expect(link).toBeTruthy();
-  expect(await segunda.text()).toContain(link!);
+  if (!link) throw new Error("Resposta sem link de planejamento");
+  expect(await segunda.text()).toContain(link);
 });
 
 test("revogação confirmada encerra geração sem confirmação e permite novo link", async ({

@@ -386,3 +386,81 @@ test("preparação de pedido é independente de salvamento pendente", async ({
   resposta.liberar();
   await expect(salvar(page)).toBeEnabled();
 });
+test("dois submits antes do render enviam somente uma gravação", async ({ page }) => {
+  await abrir(page);
+  await page.getByLabel("Manhã", { exact: true }).fill("Uma só operação");
+  const iniciou = porta(),
+    resposta = porta();
+  let requisicoes = 0;
+  await page.route("**/orcamentos/*.data*", async (route) => {
+    if (route.request().method() !== "POST") {
+      await route.continue();
+      return;
+    }
+    requisicoes++;
+    const response = await route.fetch();
+    iniciou.liberar();
+    await resposta.espera;
+    await route.fulfill({ response });
+  });
+  await page.evaluate(() => {
+    const botao = [...document.querySelectorAll("button")].find(
+      (elemento) => elemento.textContent?.trim() === "Salvar orçamento",
+    );
+    botao?.click();
+    botao?.click();
+  });
+  await iniciou.espera;
+  resposta.liberar();
+  await expect(page.getByRole("status")).toHaveText("Orçamento salvo");
+  expect(requisicoes).toBe(1);
+  await page.reload();
+  await expect(page.getByLabel("Manhã", { exact: true })).toHaveValue(
+    "Uma só operação",
+  );
+});
+
+test("conflito 409 da gravação conserva draft e impede envio", async ({
+  page,
+  context,
+}) => {
+  await abrir(page);
+  const outra = await context.newPage();
+  await outra.goto(page.url());
+  await page.getByLabel("Manhã", { exact: true }).fill("Draft local");
+  await outra.getByLabel("Manhã", { exact: true }).fill("Alteração remota");
+  await salvar(outra).click();
+  await expect(outra.getByRole("status")).toHaveText("Orçamento salvo");
+  await salvar(page).click();
+  await expect(page.getByRole("alert")).toContainText("O orçamento mudou");
+  await expect(page.getByLabel("Manhã", { exact: true })).toHaveValue(
+    "Draft local",
+  );
+  await expect(
+    page.getByRole("button", { name: "Registrar envio", exact: true }),
+  ).toBeDisabled();
+  await outra.close();
+});
+
+test("copiar opção mantém origem e IDs distintos ao editar, salvar e reabrir", async ({
+  page,
+}) => {
+  await abrir(page);
+  const opcoes = page.locator(".opcao-orcamento");
+  const original = opcoes.nth(0);
+  await original.getByLabel("Pagantes", { exact: true }).fill("4");
+  await original.getByRole("button", { name: "Copiar opção", exact: true }).click();
+  await expect(opcoes).toHaveCount(2);
+  const copia = opcoes.nth(1);
+  await expect(original.getByLabel("Pagantes", { exact: true })).toHaveValue("4");
+  await expect(copia.getByLabel("Pagantes", { exact: true })).toHaveValue("4");
+  await copia.getByLabel("Pagantes", { exact: true }).fill("5");
+  await expect(original.getByLabel("Pagantes", { exact: true })).toHaveValue("4");
+  await salvar(page).click();
+  await expect(page.getByRole("status")).toHaveText("Orçamento salvo");
+  await page.reload();
+  const reabertas = page.locator(".opcao-orcamento");
+  await expect(reabertas).toHaveCount(2);
+  await expect(reabertas.nth(0).getByLabel("Pagantes", { exact: true })).toHaveValue("4");
+  await expect(reabertas.nth(1).getByLabel("Pagantes", { exact: true })).toHaveValue("5");
+});

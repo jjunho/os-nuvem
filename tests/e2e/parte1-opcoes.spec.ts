@@ -82,6 +82,7 @@ test("categoria, idiomas, marca, cidades e meios de contato aceitam opções nov
   }
   await page.getByRole("button", { name: "Criar viagem", exact: true }).click();
   await expect(page.getByTestId("etapa")).toBeVisible();
+  const viagem = page.url();
   for (const [, valor] of escolhas)
     await expect(
       page.getByRole("definition").filter({ hasText: valor }),
@@ -92,6 +93,25 @@ test("categoria, idiomas, marca, cidades e meios de contato aceitam opções nov
     await expect(
       page.getByRole("option", { name: valor, exact: true }),
     ).toBeVisible();
+  }
+  for (const [valor, destino] of [
+    ["Gwangju", "Seul"],
+    ["Telegram", "WhatsApp"],
+  ]) {
+    await page.goto("/opcoes");
+    const linha = page.getByRole("row").filter({
+      has: page.getByRole("cell", { name: valor, exact: true }),
+    });
+    await linha.getByLabel("Mesclar com").selectOption({ label: destino });
+    await linha.getByRole("button", { name: "Mesclar", exact: true }).click();
+    await expect(linha).toHaveCount(0);
+    await page.goto(viagem);
+    await expect(
+      page.getByRole("definition").filter({ hasText: destino }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("definition").filter({ hasText: valor }),
+    ).toHaveCount(0);
   }
 });
 
