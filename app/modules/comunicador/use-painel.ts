@@ -181,7 +181,7 @@ export function usePainel(opcoes: OpcoesPainel): GruposPainel {
   if (!consultasRef.current) {
     consultasRef.current = criarConsultas({
       usuarioId: opcoes.usuarioId,
-      selecao: selecaoAtual,
+      vigente,
       montado: () => montado.current,
       primeiroId: () => maquinaConteudo.atual().mensagens[0]?.id ?? null,
       aoPagina: (escopo, pagina, substituir) => {

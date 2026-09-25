@@ -1,6 +1,6 @@
 import { leituraOffline } from "./offline.client";
 import { RespostaHttp, lerApi } from "./api.client";
-import { mesmaSelecao, type Selecao } from "./estado-ui";
+import type { Selecao } from "./estado-ui";
 import type { Pagina } from "./estado-painel";
 import type { Conversa, Pessoa } from "./tipos";
 import type { PreferenciaComunicador } from "./preferencias.server";
@@ -45,7 +45,7 @@ export type Consultas = {
 };
 export function criarConsultas(deps: {
   usuarioId: number;
-  selecao(): Selecao;
+  vigente(escopo: Selecao): boolean;
   montado(): boolean;
   primeiroId(): number | null;
   aoPagina(escopo: Selecao, pagina: Pagina, substituir: boolean): void;
@@ -58,7 +58,8 @@ export function criarConsultas(deps: {
   const abrindo = new Map<string, number>();
   const syncPendente = new Map<string, boolean>();
   const chave = (escopo: Selecao) => `${escopo.conversaId}:${escopo.geracao}`;
-  const vigente = (escopo: Selecao) => deps.montado() && mesmaSelecao(deps.selecao(), escopo);
+  // A regra de vigência (Padrão 6) tem um único dono: quem cria as consultas.
+  const vigente = deps.vigente;
   function abortarChave(key: string) {
     controllers.get(key)?.controller.abort();
     controllers.delete(key);
