@@ -1,4 +1,5 @@
 import { expect, it } from "vitest";
+import { createFormControl } from "react-hook-form";
 import {
   iniciarEditor,
   editor,
@@ -134,4 +135,34 @@ it("conflito só aparece com operação ociosa e sincronização preserva ediç�
       confirmacao: true,
     }),
   ).toEqual({ reset: { valor: "confirmado" }, manter: null });
+});
+
+it("reconhecimento sobre react-hook-form preserva a edição concorrente e o dirty", () => {
+  const formulario = createFormControl({
+    defaultValues: { dados: { valor: "original" } },
+  });
+  let dirty = false;
+  const cancelar = formulario.subscribe({
+    formState: { isDirty: true },
+    callback: (estado) => {
+      if (estado.isDirty !== undefined) dirty = estado.isDirty;
+    },
+  });
+  formulario.setValue("dados", { valor: "A" }, { shouldDirty: true });
+  const snapshot = structuredClone(formulario.getValues("dados"));
+  formulario.setValue("dados", { valor: "B" }, { shouldDirty: true });
+  const sincronizado = sincronizarFormulario({
+    snapshot,
+    atual: formulario.getValues("dados"),
+    salvo: { valor: "A normalizado" },
+    confirmacao: false,
+  });
+  formulario.reset({ dados: sincronizado.reset });
+  if (sincronizado.manter !== null)
+    formulario.setValue("dados", sincronizado.manter, { shouldDirty: true });
+  expect(formulario.getValues("dados")).toEqual({ valor: "B" });
+  expect(dirty).toBe(true);
+  formulario.reset({ dados: { valor: "B" } });
+  expect(dirty).toBe(false);
+  cancelar();
 });
