@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import type { Route } from "./+types/notificacoes";
 import { exigirUsuario } from "~/session.server";
@@ -8,11 +8,9 @@ import {
 } from "~/modules/notificacoes/push.server";
 import { listarNotificacoes } from "~/modules/notificacoes/leituras.server";
 import { useIdioma } from "~/modules/idiomas/idioma";
-import { useMaquina } from "~/modules/interface/use-maquina";
-import {
-  transicionarInscricao,
-} from "~/modules/notificacoes/estado-inscricao";
 import { ativarPush } from "~/modules/notificacoes/push.client";
+// Protocolo §1.4: fase linear de um único campo permanece um valor de estado simples.
+type FaseInscricao = "inativa" | "ativando" | "recusada" | "ativa" | "erro";
 export async function loader({ request }: Route.LoaderArgs) {
   const u = await exigirUsuario(request);
   await entregarPush();
@@ -34,10 +32,8 @@ export async function action({ request }: Route.ActionArgs) {
 }
 export default function Notificacoes({ loaderData: d }: Route.ComponentProps) {
   const { t } = useIdioma();
-  const { estado, emitir, atual } = useMaquina(
-    transicionarInscricao,
-    "inativa",
-  );
+  const [estado, setEstado] = useState<FaseInscricao>("inativa");
+  const pendente = useRef(false);
   const ativo = useRef(true);
   const abortar = useRef<AbortController | null>(null);
   useEffect(() => {
@@ -48,12 +44,17 @@ export default function Notificacoes({ loaderData: d }: Route.ComponentProps) {
     };
   }, []);
   async function ativar() {
-    if (!d.chave || atual() === "ativando" || !ativo.current) return;
+    if (!d.chave || pendente.current || !ativo.current) return;
+    pendente.current = true;
     const controle = new AbortController();
     abortar.current = controle;
-    emitir({ tipo: "ativando" });
-    const fase = await ativarPush(d.chave, controle.signal);
-    if (ativo.current) emitir({ tipo: "resultado", fase });
+    setEstado("ativando");
+    try {
+      const fase = await ativarPush(d.chave, controle.signal);
+      if (ativo.current) setEstado(fase);
+    } finally {
+      pendente.current = false;
+    }
   }
   const feedback = (
     {
