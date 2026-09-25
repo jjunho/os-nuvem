@@ -434,13 +434,14 @@ Este mapa registra a aplicação do protocolo neste repositório; não acrescent
 | --- | --- | --- | --- |
 | Orçamento | `orcamentos/editor.ts`, `em-voo.ts` e `editor-transicoes.ts` guardam revisão, slots por tentativa e transformações sem IO | `use-editor-orcamento.ts` coordena formulários/fetchers; `routes/orcamento.tsx` mantém loader/action; `orcamentos/*.server.ts` persistem | `EditorOrcamento.tsx` e folhas `*Editor.tsx` recebem ações e escritores do seu segmento |
 | Comunicador | `estado-painel.ts`, `conteudo.ts`, `estado-ui.ts` e `use-maquina.ts` decidem seleção, conteúdo e compositor | `use-painel.ts` compõe `consultas.client.ts`, `caixa.client.ts`, `api.client.ts`, `presenca.client.ts` e `eventos.client.ts`; `api.server.ts` despacha sobre serviços server | `Painel.tsx` compõe as folhas `Lista*`, `Compositor`, `Midia`, `GrupoForm`, `Preferencias` e `PainelTarefa` |
-| Regras operacionais | `quadros/decisoes.ts`, `tarefas/decisoes.ts`, `acesso/regras.ts`, `opcoes/normalizacao.ts`, `notificacoes/inscricao.ts` recebem dados e devolvem decisões | Os respectivos `*.server.ts` mantêm autenticação, locks, transações, SQL e publicação; consultas da rota foram movidas a `notificacoes/leituras.server.ts` e `documentos/proposta.server.ts` | Rotas adaptam HTTP e componentes exibem resultados; não executam SQL |
+| Regras operacionais | `quadros/decisoes.ts`, `tarefas/decisoes.ts`, `acesso/regras.ts`, `opcoes/normalizacao.ts`, `notificacoes/inscricao.ts`, `profissionais/alocacao.ts` e `profissionais/profissional.ts` recebem dados e devolvem decisões | Os respectivos `*.server.ts` mantêm autenticação, locks, transações, SQL e publicação; consultas da rota foram movidas a `notificacoes/leituras.server.ts` e `documentos/proposta.server.ts` | Rotas adaptam HTTP e componentes exibem resultados; não executam SQL |
+| Tabelas de referência | `tabelas/linha.ts` interpreta e valida uma linha (nome, número, data, período) sem IO | `tabelas/tabelas.server.ts` mantém transações, versões e SQL; `db/schema.ts` reusa `DadosReferencia` | `routes/tabelas.tsx` adapta HTTP e as folhas exibem colunas e linhas |
 | Planejamento e shell | `viagens/tentativa-planejamento.ts` identifica tentativa; `idiomas/idioma.ts` usa DTO de root | `tentativa-planejamento.client.ts` assina/persiste tentativa; `comunicador/shell.client.ts` e `notificacoes/push.client.ts` detêm APIs do navegador | Formulário e layout apresentam erro recuperável e preservam idioma/estado |
 | Ferramentas | `tests/e2e/ambiente.ts` define somente a URL do banco de teste | `scripts/db.sh` gerencia o cluster; configuração E2E inicia servidor de teste na porta 5179 | `.claude` aponta a `.agents`, sem elo circular de retorno |
 
 ### Registro de fechamento da separação de responsabilidades
 
-Cada linha associa o achado ao seu dono e à verificação executada. A bateria completa E2E teve 167 aprovações e quatro falhas localizadas de sincronização/seletores nos testes; os quatro cenários corrigidos passaram em execução direcionada. `pnpm typecheck` passou, o caso unitário corrigido passou e `pnpm build` passou. A navegação real em 390 px confirmou `documentElement.scrollWidth === clientWidth === 390` após ajustar a quebra do cabeçalho.
+Cada linha associa o achado ao seu dono e à verificação executada. A bateria completa E2E teve 167 aprovações e quatro falhas localizadas de sincronização/seletores nos testes; os quatro cenários corrigidos passaram em execução direcionada. `pnpm typecheck` passou, o caso unitário corrigido passou e `pnpm build` passou. O cabeçalho do shell foi medido em 390 px: `header.topo` mantém `scrollWidth === clientWidth === 390` e a navegação conserva largura própria; sem a quebra (`flex-wrap`) o mesmo caso mede 420 e falha, o que fixa a regressão. A tabela de `Pipeline` nessa rota continua mais larga que 390 px: é conteúdo de página, não o shell.
 
 | ID | Arquivo/símbolo e cenário | Resultado observado |
 | --- | --- | --- |
@@ -456,7 +457,10 @@ Cada linha associa o achado ao seu dono e à verificação executada. A bateria 
 | E10 | `.agents/.claude`; remoção do elo circular | Elo removido; link raiz `.claude -> .agents` preservado. |
 | E11 | `.gitignore`; preferências locais e arquivos Finder | `git check-ignore` confirmou `.agents/settings.local.json` e `.DS_Store`; `.scratch` continua disponível. |
 | E12 | `tests/e2e/ambiente.ts`; URL do teste | Configuração e sete consumidores usam `corealux_test`; E2E executou no banco isolado. |
-| P01 | `interface/use-maquina.ts` e `orcamentos/em-voo.ts`; dois submits síncronos | Regressão E2E direcionada passou, sem duas tarefas criadas. |
+| E13 | `profissionais/alocacao.ts` / `profissionais/profissional.ts`; um arquivo por formulário | Casos unitários de `alocacao.test.ts` e `profissional.test.ts` passaram; `pnpm typecheck` passou. |
+| E14 | `tabelas/linha.ts`; tipos e leitura de linha | Casos unitários de `linha.test.ts` e fluxos E2E de tabelas passaram. |
+| E15 | `app/app.css` / `routes/app-layout.tsx`; cabeçalho em 390 px | `ui-navegacao.spec.ts` mede `header.topo` com `scrollWidth === clientWidth === 390` e navegação acima de 300 px; sem `flex-wrap` o caso mede 420 e falha. |
+| P01 | `comunicador/use-painel.ts` (`tarefasEnviando`) para a tarefa; `interface/use-maquina.ts` e `orcamentos/em-voo.ts` para o orçamento | Regressões E2E `ui-comunicador.spec.ts` (dois submits de tarefa) e `ui-orcamento.spec.ts` (dois submits antes do render) passaram, cada uma com uma única operação. |
 | P02 | `orcamentos/*Editor.tsx` / `comunicador/ListaMensagens.tsx`; ações por segmento | Typecheck e fluxo real do orçamento renderizado passaram. |
 | P03 | `comunicador/consultas.client.ts`; cursor, geração e sincronização durante abertura | Casos E2E do comunicador passaram. |
 | P04 | `comunicador/api.client.ts`; status HTTP e perda de confirmação | Cenários E2E de fila/erro passaram. |
@@ -468,3 +472,17 @@ Cada linha associa o achado ao seu dono e à verificação executada. A bateria 
 | P10 | Rotas adaptadoras e módulos de domínio citados acima; dependências orientadas | Checagens estruturais não acharam imports de rotas/root/+types em módulos nem SQL nas rotas extraídas. |
 | P11 | `comunicador/use-painel.ts`, `presenca.client.ts`, `caixa.client.ts`; grupo/DND/interna/reconexão | Casos E2E de comunicador e offline direcionado passaram. |
 | P12 | `opcoes/normalizacao.ts`, `tarefas/decisoes.ts`, `viagens/tentativa-planejamento.client.ts`; mesclagem/recusa/JSON | Testes de regras e fluxos E2E passaram. |
+
+### Correções da revisão de código
+
+A revisão de dois eixos (padrões do repositório e aderência ao protocolo) apontou sete achados; cada um virou uma correção verificada.
+
+| ID | Achado | Correção e verificação |
+| --- | --- | --- |
+| R01 | Strings de interface escritas direto em `PainelTarefa.tsx` e `ListaMensagens.tsx`, contra o ADR-0006 | As etiquetas de viagem e o marcador `(você)` entraram no catálogo de `textos.ts`; `pnpm typecheck` e os E2E de idioma passaram. |
+| R02 | Fase linear de inscrição push virou máquina de transições, contra o §1.4 | `routes/notificacoes.tsx` voltou ao valor de estado simples com guarda síncrona e `estado-inscricao.ts` foi removido; E2E de notificações passou. |
+| R03 | Predicado de vigência (Padrão 6) tinha duas cópias com donos diferentes, contra o §1.7 | `consultas.client.ts` recebe `vigente` de `use-painel.ts`, dono único da regra; E2E de resultado tardio e seleção passaram. |
+| R04 | `decidirMovimento` redeclarava linhas e misturava `quadro_id` com `quadroId` | `decisoes.ts` declara `TarefaPosicionada`/`ListaDeDestino` com as chaves do banco e `quadros.server.ts` passa a linha direto; casos unitários e E2E de quadros passaram. |
+| R05 | Recusa definitiva de uma saída travava a fila, contra o Padrão 2 | `caixa.client.ts` conserva apenas a operação recusada na projeção e segue drenando as demais; E2E de fila offline e de recusa passaram. |
+| R06 | Cobertura do reconhecimento de save sobre react-hook-form havia sido substituída por asserção pura (F01) | `editor.test.ts` volta a exercitar `reset` e `setValue` reais, preservando edição concorrente e dirty; o caso unitário passou. |
+| R07 | Ajuste de cabeçalho em 390 px não tinha verificação | O caso E2E mede `header.topo` na largura de 390 px e falha sem `flex-wrap`, fixando a regressão (ver E15). |
