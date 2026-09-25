@@ -309,7 +309,8 @@ test("cabeçalho do shell em 390 px cabe na largura e mantém a navegação", as
   expect(medidas.scrollWidth).toBe(medidas.clientWidth);
   expect(medidas.direita).toBeLessThanOrEqual(390);
   const navegacao = page.locator("header.topo nav");
-  await expect(navegacao).toBeInViewport();
   const caixa = await navegacao.boundingBox();
+  expect(caixa).not.toBeNull();
+  expect((caixa?.x ?? 0) + (caixa?.width ?? 0)).toBeLessThanOrEqual(390);
   expect(caixa?.width ?? 0).toBeGreaterThan(300);
 });
