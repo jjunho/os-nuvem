@@ -80,7 +80,6 @@ export function Painel({
           pessoas={painel.conversas.pessoas}
           usuarioId={painel.perfil.usuario}
           traduzirErro={(erro) => erroTraduzido(idioma, erro)}
-          idioma={idioma}
           referencias={painel.tarefa.referencias}
           salvar={painel.tarefa.salvar}
           cancelar={painel.tarefa.cancelar}

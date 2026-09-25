@@ -52,6 +52,10 @@ const ko = {
   Concluir: "완료",
   Referências: "참조 검색",
   "Conversa interna": "내부 대화",
+  "Viagem (opcional)": "여행 (선택 사항)",
+  "Buscar viagem": "여행 검색",
+  Viagem: "여행",
+  "(você)": "(나)",
 
   "Notificações do grupo": "그룹 알림",
   Todas: "모든 메시지",

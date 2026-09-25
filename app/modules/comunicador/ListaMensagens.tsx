@@ -118,7 +118,7 @@ export function ListaMensagens({
                         <mark key={indice}>
                           {segmento.texto}
                           {segmento.tipo === "usuario" && segmentoId === usuarioId
-                            ? idioma === "ko" ? " (나)" : " (você)"
+                            ? <>{" "}{t("(você)")}</>
                             : ""}
                         </mark>
                       );

@@ -9,7 +9,6 @@ type Props = Omit<
   Pick<GruposPainel["conversas"], "pessoas"> & {
     usuarioId: number;
     traduzirErro: (erro: string) => string;
-    idioma: "pt" | "ko";
     mostrarBuscaViagem: boolean;
     t: TradutorComunicador;
   };
@@ -22,7 +21,6 @@ export function PainelTarefa({
   carregarReferencias,
   usuarioId,
   traduzirErro,
-  idioma,
   referencias,
   mostrarBuscaViagem,
   t,
@@ -71,14 +69,14 @@ export function PainelTarefa({
         </label>
         {mostrarBuscaViagem && (
           <label>
-            {idioma === "ko" ? "여행 (선택 사항)" : "Viagem (opcional)"}
+            {t("Viagem (opcional)")}
             <input
-              aria-label={idioma === "ko" ? "여행 검색" : "Buscar viagem"}
+              aria-label={t("Buscar viagem")}
               onChange={(evento) => { void carregarReferencias(evento.target.value); }}
             />
             <select
               name="viagemId"
-              aria-label={idioma === "ko" ? "여행" : "Viagem"}
+              aria-label={t("Viagem")}
             >
               <option value="">—</option>
               {referencias
