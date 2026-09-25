@@ -39,7 +39,7 @@ describe("decisões administrativas de Quadro", () => {
 });
 
 describe("movimento de Tarefa em Quadro", () => {
-  const destino = { id: 8, quadroId: 4, conclusao: true };
+  const destino = { id: 8, quadro_id: 4, conclusao: true };
 
   it("exige fato para Tarefa automática, sem alterar seu estado", () => {
     expect(
@@ -70,7 +70,7 @@ describe("movimento de Tarefa em Quadro", () => {
     expect(
       decidirMovimento(
         { tipo: "manual", estado: "concluida", lista_id: 8, quadro_id: 4 },
-        { id: 7, quadroId: 4, conclusao: false },
+        { id: 7, quadro_id: 4, conclusao: false },
       ).estado,
     ).toBe("aberta");
   });

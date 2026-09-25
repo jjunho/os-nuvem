@@ -21,9 +21,22 @@ export function decidirAdministracao(
   return null;
 }
 
+export type TarefaPosicionada = {
+  tipo: string;
+  estado: string;
+  lista_id: number;
+  quadro_id: number;
+};
+
+export type ListaDeDestino = {
+  id: number;
+  quadro_id: number;
+  conclusao: boolean;
+};
+
 export function decidirMovimento(
-  t: { tipo: string; estado: string; lista_id: number; quadro_id: number },
-  destino: { id: number; quadroId: number; conclusao: boolean },
+  t: TarefaPosicionada,
+  destino: ListaDeDestino,
 ): {
   exigeFato: boolean;
   estado: "concluida" | "aberta" | null;
@@ -43,6 +56,6 @@ export function decidirMovimento(
     guardarListaAnterior:
       destino.conclusao &&
       t.lista_id !== destino.id &&
-      t.quadro_id === destino.quadroId,
+      t.quadro_id === destino.quadro_id,
   };
 }

@@ -9,7 +9,11 @@ import { publicar } from "~/modules/notificacoes/eventos.server";
 import { criarTarefa, detalheTarefa } from "~/modules/tarefas/tarefas.server";
 import { notificar } from "~/modules/comunicador/leitura";
 import { leituraAtual } from "~/modules/comunicador/presenca.server";
-import { decidirAdministracao, decidirMovimento } from "./decisoes";
+import {
+  decidirAdministracao,
+  decidirMovimento,
+  type TarefaPosicionada,
+} from "./decisoes";
 export type Leitor = { id: number; papel: string };
 export type Quadro = {
   id: number;
@@ -305,15 +309,13 @@ export async function acaoQuadro(
       const tid = numero(f, "tarefaId"),
         lid = numero(f, "listaId");
       const t = (
-        await c.query<{
-          id: number;
-          tipo: string;
-          estado: string;
-          viagem_id: number | null;
-          lista_id: number;
-          quadro_id: number;
-          posicao: string;
-        }>(
+        await c.query<
+          TarefaPosicionada & {
+            id: number;
+            viagem_id: number | null;
+            posicao: string;
+          }
+        >(
           "select t.id,t.tipo,t.estado,t.viagem_id,p.lista_id,p.quadro_id,p.posicao from tarefas t join tarefas_posicoes p on p.tarefa_id=t.id where t.id=$1 and tarefa_visivel(t.id,$2,$3) for update of t,p",
           [tid, u.id, u.papel],
         )
@@ -327,7 +329,7 @@ export async function acaoQuadro(
         )
       ).rows[0];
       if (!l) erro();
-      const decisao = decidirMovimento(t, { id: l.id, quadroId: l.quadro_id, conclusao: l.conclusao });
+      const decisao = decidirMovimento(t, l);
       if (decisao.exigeFato) {
         if (t.viagem_id)
           throw redirect(await acaoDaTarefaEtapa(t.id, t.viagem_id));
