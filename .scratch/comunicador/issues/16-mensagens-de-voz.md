@@ -6,10 +6,14 @@ The **Transcrição** adapter uses Gemini in production and a recording fake in 
 
 **Blocked by:** 07 (Search), 15 (Photos).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A voice note sent by one context plays in the other before any transcript exists.
-- [ ] The fake's transcript appears under it, live.
-- [ ] Search finds a word from the transcript, with the same access rules as text.
-- [ ] With the fake failing, the voice note plays, and it is transcribed on a later retry.
-- [ ] Download rights and the Admin purge work as for photos.
+- [x] A voice note sent by one context plays in the other before any transcript exists.
+- [x] The fake's transcript appears under it, live.
+- [x] Search finds a word from the transcript, with the same access rules as text.
+- [x] With the fake failing, the voice note plays, and it is transcribed on a later retry.
+- [x] Download rights and the Admin purge work as for photos.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-parte6-midia.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

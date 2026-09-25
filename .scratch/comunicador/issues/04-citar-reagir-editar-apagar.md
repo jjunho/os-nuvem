@@ -6,10 +6,14 @@ Edits append a version and never overwrite. A delete sets a mark and keeps the o
 
 **Blocked by:** 02 (Tracer bullet: a live Conversa direta), Login 07 (Deactivate and reactivate a Usuário).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Quote-reply shows the quoted Mensagem, and tapping it scrolls to the original, loading it if needed.
-- [ ] Reactions show counts and who reacted. The same Usuário can't add the same emoji twice.
-- [ ] Only the author can edit. The other window shows "editada" and the version history.
-- [ ] After a delete, members see "apagada", the Admin sees the original, and the server never sends the original to others.
-- [ ] A deactivated author's Mensagens stay, with their name marked inactive.
+- [x] Quote-reply shows the quoted Mensagem, and tapping it scrolls to the original, loading it if needed.
+- [x] Reactions show counts and who reacted. The same Usuário can't add the same emoji twice.
+- [x] Only the author can edit. The other window shows "editada" and the version history.
+- [x] After a delete, members see "apagada", the Admin sees the original, and the server never sends the original to others.
+- [x] A deactivated author's Mensagens stay, with their name marked inactive.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-parte1-conversas.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

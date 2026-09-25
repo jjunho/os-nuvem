@@ -1,6 +1,10 @@
 export type IdiomaInterface = "pt" | "ko";
 
 const coreano = {
+  "Documentos do Viajante":"여행자 문서",
+  "Abrir documento":"문서 열기",
+  "Conversa interna": "내부 대화",
+  "Mensagem de origem": "원본 메시지",
   "Alternativas de transporte": "교통 대안",
   "Estimativa: informe o custo real antes de enviar":
     "예상 금액: 발송 전 실제 원가를 입력하세요",

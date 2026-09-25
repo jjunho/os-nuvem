@@ -6,9 +6,13 @@ The Viajante is the one record per traveller from Viagem ticket 02 (`.scratch/vi
 
 **Blocked by:** 15 (Photos), Viagem 02 (The Viagem's Viajantes: one record, reused everywhere).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The action lists the Viajantes of the conversation's Viagem, and any Viajante by search elsewhere.
-- [ ] After moving, the file is among the Viajante's documents, and the chat shows a placeholder for everyone.
-- [ ] Guiamento doesn't get the action.
-- [ ] The file's access follows the Viajante's rules from then on.
+- [x] The action lists the Viajantes of the conversation's Viagem, and any Viajante by search elsewhere.
+- [x] After moving, the file is among the Viajante's documents, and the chat shows a placeholder for everyone.
+- [x] Guiamento doesn't get the action.
+- [x] The file's access follows the Viajante's rules from then on.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-parte6-midia.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

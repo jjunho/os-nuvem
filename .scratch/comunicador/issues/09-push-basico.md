@@ -9,11 +9,15 @@ The rest:
 
 **Blocked by:** 08 (Leitura de mensagem and trigger keys).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Table tests of the decision: conversation kind × mention kind × currently reading.
-- [ ] A Mensagem in a Conversa direta records a push for the other person, with the Mensagem's link.
-- [ ] `@lia` in a Grupo records a push for Lia only. `@todos` for every member but the author. `@aqui` only for those active.
-- [ ] No push is recorded for a member with the conversation open.
-- [ ] Opening the push's link lands on that Mensagem.
-- [ ] A subscription the push service rejects is removed.
+- [x] Table tests of the decision: conversation kind × mention kind × currently reading.
+- [x] A Mensagem in a Conversa direta records a push for the other person, with the Mensagem's link.
+- [x] `@lia` in a Grupo records a push for Lia only. `@todos` for every member but the author. `@aqui` only for those active.
+- [x] No push is recorded for a member with the conversation open.
+- [x] Opening the push's link lands on that Mensagem.
+- [x] A subscription the push service rejects is removed.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-parte3-notificacoes.spec.ts e comunicador-parte2-leitura.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

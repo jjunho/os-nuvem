@@ -1,3 +1,5 @@
+import { publicar } from "~/modules/notificacoes/eventos.server";
+import { avisar } from "~/modules/notificacoes/push.server";
 import { and, asc, eq, exists, inArray, lt, ne, or, sql } from "drizzle-orm";
 import { db } from "~/db/client.server";
 import {
@@ -35,17 +37,15 @@ async function evento(
   motivo?: string,
 ) {
   if (ids.length)
-    await tx
-      .insert(tarefasHistorico)
-      .values(
-        ids.map((tarefaId) => ({
-          tarefaId,
-          tipo,
-          autorId,
-          criadaEm: agora,
-          motivo,
-        })),
-      );
+    await tx.insert(tarefasHistorico).values(
+      ids.map((tarefaId) => ({
+        tarefaId,
+        tipo,
+        autorId,
+        criadaEm: agora,
+        motivo,
+      })),
+    );
 }
 export async function criarTarefaAutomatica(
   tx: Transacao,
@@ -161,6 +161,8 @@ export async function criarTarefa(
   usuario: Usuario,
   form: FormData,
   agora: Date,
+  origemMensagemId?: number,
+  transacao?: Transacao,
 ) {
   const titulo = String(form.get("titulo") ?? "").trim();
   const prazo = new Date(String(form.get("prazo")));
@@ -174,7 +176,7 @@ export async function criarTarefa(
     !copias.includes(usuario.id)
   )
     throw new Response("Acesso restrito", { status: 403 });
-  return db.transaction(async (tx) => {
+  const executar = async (tx: Transacao) => {
     const ids = [...new Set([responsavelId, ...copias])];
     const ativos = await tx
       .select()
@@ -186,6 +188,7 @@ export async function criarTarefa(
       .insert(tarefas)
       .values({
         titulo,
+        origemMensagemId,
         descricao: String(form.get("descricao") ?? ""),
         responsavelId,
         prazo,
@@ -202,8 +205,16 @@ export async function criarTarefa(
           copias.map((usuarioId) => ({ tarefaId: tarefa.id, usuarioId })),
         );
     await evento(tx, [tarefa.id], "criada", usuario.id, agora);
+    await avisar(tx, ids, {
+      titulo: tarefa.codigo,
+      texto: titulo,
+      url: `/tarefas/${tarefa.id}`,
+      chave: `tarefa:${tarefa.id}:atribuida`,
+      criadaEm: agora,
+    });
     return tarefa;
-  });
+  };
+  return transacao ? executar(transacao) : db.transaction(executar);
 }
 export async function listarTarefas(
   usuario: Usuario,
@@ -334,6 +345,7 @@ export async function mudarEstadoTarefa(
       motivo.trim(),
     );
   });
+  publicar(0);
 }
 export async function tarefasDaViagem(viagemId: number, usuario: Usuario) {
   return db
@@ -369,4 +381,14 @@ export async function proximasTarefas(ids: number[], usuario: Usuario) {
       ),
     )
     .orderBy(asc(tarefas.viagemId), asc(tarefas.prazo), asc(tarefas.id));
+}
+
+/** Persistent keys keep deadline notifications idempotent across requests/restarts. */
+export async function avisarPrazos(agora: Date) {
+  await db.execute(sql`insert into notificacoes(usuario_id,titulo,texto,url,chave,criada_em)
+    select destinatario.usuario_id,t.codigo,t.titulo,'/tarefas/'||t.id,'tarefa:'||t.id||':vencida',${agora}
+    from tarefas t join lateral (
+      select t.responsavel_id as usuario_id union select c.usuario_id from tarefas_copias c where c.tarefa_id=t.id
+    ) destinatario on true join usuarios u on u.id=destinatario.usuario_id and u.ativo
+    where t.estado='aberta' and t.prazo<${agora} on conflict do nothing`);
 }

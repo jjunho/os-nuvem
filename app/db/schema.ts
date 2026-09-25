@@ -373,6 +373,9 @@ export const desejosViagem = pgTable("desejos_viagem", {
 export const tarefas = pgTable(
   "tarefas",
   {
+    origemMensagemId: integer("origem_mensagem_id").references(
+      () => mensagens.id,
+    ),
     id: serial("id").primaryKey(),
     codigo: text("codigo")
       .generatedAlwaysAs(sql`'TAR-' || lpad("id"::text, 6, '0')`)
@@ -628,4 +631,107 @@ export const alocacoes = pgTable(
 export const sequenciasIdentificador = pgTable("sequencias_identificador", {
   chave: text("chave").primaryKey(),
   valor: integer("valor").notNull(),
+});
+
+// Comunicador: conversation ownership and per-user reading points.
+export const conversas = pgTable("conversas", {
+  id: serial("id").primaryKey(),
+  chave: text("chave").notNull().unique(),
+  tipo: text("tipo")
+    .$type<"direta" | "grupo" | "interna" | "equipe">()
+    .notNull(),
+  nome: text("nome").notNull(),
+  descricao: text("descricao").notNull().default(""),
+  privada: boolean("privada").notNull().default(true),
+  arquivada: boolean("arquivada").notNull().default(false),
+  criadorId: integer("criador_id")
+    .notNull()
+    .references(() => usuarios.id),
+  viagemId: integer("viagem_id").references(() => viagens.id, {
+    onDelete: "cascade",
+  }),
+  atualizadaEm: timestamp("atualizada_em", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+export const membrosConversa = pgTable(
+  "membros_conversa",
+  {
+    conversaId: integer("conversa_id")
+      .notNull()
+      .references(() => conversas.id, { onDelete: "cascade" }),
+    usuarioId: integer("usuario_id")
+      .notNull()
+      .references(() => usuarios.id, { onDelete: "cascade" }),
+    lidaAte: integer("lida_ate").notNull().default(0),
+    notificacao: text("notificacao").notNull().default("mencoes"),
+  },
+  (t) => [
+    primaryKey({ columns: [t.conversaId, t.usuarioId] }),
+    index("membros_usuario_idx").on(t.usuarioId, t.conversaId),
+  ],
+);
+export const mensagens = pgTable(
+  "mensagens",
+  {
+    id: serial("id").primaryKey(),
+    clientId: text("client_id").notNull().unique(),
+    conversaId: integer("conversa_id")
+      .notNull()
+      .references(() => conversas.id, { onDelete: "cascade" }),
+    autorId: integer("autor_id")
+      .notNull()
+      .references(() => usuarios.id),
+    texto: text("texto").notNull(),
+    segmentos: jsonb("segmentos").notNull().default([]),
+    criadaEm: timestamp("criada_em", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    citadaId: integer("citada_id"),
+    versoes: jsonb("versoes")
+      .$type<{ texto: string; em: string }[]>()
+      .notNull()
+      .default([]),
+    apagada: boolean("apagada").notNull().default(false),
+    urgente: boolean("urgente").notNull().default(false),
+    transcricao: text("transcricao").notNull().default(""),
+  },
+  (t) => [index("mensagens_conversa_id_idx").on(t.conversaId, t.id)],
+);
+export const reacoesMensagem = pgTable(
+  "reacoes_mensagem",
+  {
+    mensagemId: integer("mensagem_id")
+      .notNull()
+      .references(() => mensagens.id, { onDelete: "cascade" }),
+    usuarioId: integer("usuario_id")
+      .notNull()
+      .references(() => usuarios.id, { onDelete: "cascade" }),
+    emoji: text("emoji").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.mensagemId, t.usuarioId, t.emoji] })],
+);
+export const preferenciasComunicador = pgTable("preferencias_comunicador", {
+  usuarioId: integer("usuario_id")
+    .primaryKey()
+    .references(() => usuarios.id, { onDelete: "cascade" }),
+  avisoVisto: boolean("aviso_visto").notNull().default(false),
+  dndInicio: text("dnd_inicio").notNull().default(""),
+  dndFim: text("dnd_fim").notNull().default(""),
+  fuso: text("fuso").notNull().default("Asia/Seoul"),
+});
+export const midiasComunicador = pgTable("midias_comunicador", {
+  id: text("id").primaryKey(),
+  mensagemId: integer("mensagem_id")
+    .notNull()
+    .unique()
+    .references(() => mensagens.id, { onDelete: "cascade" }),
+  caminho: text("caminho").notNull(),
+  mime: text("mime").notNull(),
+  tamanho: integer("tamanho").notNull(),
+  removida: boolean("removida").notNull().default(false),
+  viajanteId: integer("viajante_id").references(() => viajantes.id),
+  tentativas: integer("tentativas").notNull().default(0),
+  proximaTranscricao: timestamp("proxima_transcricao", { withTimezone: true }),
+  transcrita: boolean("transcrita").notNull().default(false),
 });

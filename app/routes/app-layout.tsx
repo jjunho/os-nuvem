@@ -1,3 +1,9 @@
+import { Instalacao } from "~/modules/comunicador/Instalacao";
+import { preferencia } from "~/modules/comunicador/notificacoes.server";
+import { limparOffline } from "~/modules/comunicador/offline.client";
+import { iniciarTranscricoes } from "~/modules/comunicador/transcricao.server";
+import { Painel } from "~/modules/comunicador/Painel";
+import { textos } from "~/modules/comunicador/textos";
 import { iniciarFollowups } from "~/modules/orcamentos/agendador.server";
 import { rotuloEtapa } from "~/modules/viagens/rotulos";
 import { useEffect, useRef, useState } from "react";
@@ -8,6 +14,7 @@ import {
   Outlet,
   useFetcher,
   useNavigate,
+  useLocation,
   data,
 } from "react-router";
 import { eq } from "drizzle-orm";
@@ -21,8 +28,9 @@ import type { loader as buscarLoader } from "./buscar";
 
 export async function loader({ request }: Route.LoaderArgs) {
   iniciarFollowups();
+  iniciarTranscricoes();
   const usuario = await exigirUsuario(request);
-  return { usuario };
+  return { usuario, preferencia: await preferencia(usuario) };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -44,9 +52,42 @@ export async function action({ request }: Route.ActionArgs) {
 export default function AppLayout({ loaderData }: Route.ComponentProps) {
   const { idioma, t } = useIdioma();
   const preferencia = useFetcher();
+  const location = useLocation();
+  useEffect(() => {
+    if (location.pathname !== "/comunicador")
+      sessionStorage.setItem("comunicador-pagina", window.location.href);
+    const q = new URLSearchParams(location.search);
+    if (
+      location.pathname === "/comunicador" ||
+      q.has("conversa") ||
+      q.has("interna") ||
+      q.has("mensagem")
+    )
+      setComunicador(true);
+  }, [location.search, location.pathname]);
+  const [naoLidas, setNaoLidas] = useState(0);
+  const [comunicador, setComunicador] = useState(false);
   const [aberto, setAberto] = useState(false);
 
   useEffect(() => {
+    const anterior = localStorage.getItem("comunicador-usuario");
+    const preparar = async () => {
+      if (anterior && anterior !== String(loaderData.usuario.id))
+        await limparOffline();
+      localStorage.setItem(
+        "comunicador-usuario",
+        String(loaderData.usuario.id),
+      );
+      if ("serviceWorker" in navigator) {
+        await navigator.serviceWorker.register("/push-sw.js");
+        const reg = await navigator.serviceWorker.ready;
+        reg.active?.postMessage({
+          type: "cache-assets",
+          urls: performance.getEntriesByType("resource").map((r) => r.name),
+        });
+      }
+    };
+    void preparar().catch(() => {});
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
@@ -65,6 +106,13 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
           Corealux OS
         </Link>
         <nav>
+          <button
+            aria-label={textos(idioma)("Comunicador")}
+            onClick={() => setComunicador(!comunicador)}
+          >
+            {textos(idioma)("Comunicador")}
+            {naoLidas > 0 && <span aria-hidden="true"> · {naoLidas}</span>}
+          </button>
           <NavLink to="/" end>
             {t("Pipeline")}
           </NavLink>
@@ -100,13 +148,28 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
             <option value="ko">한국어</option>
           </select>
         </preferencia.Form>
-        <Form method="post" action="/sair">
+        <Form
+          method="post"
+          action="/sair"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const f = e.currentTarget;
+            void limparOffline().finally(() => f.submit());
+          }}
+        >
           <button>{t("Sair")}</button>
         </Form>
       </header>
+      <Instalacao visto={loaderData.preferencia.aviso_visto} />
       <main className="pagina">
         <Outlet />
       </main>
+      <Painel
+        aberta={comunicador}
+        aoNaoLidas={setNaoLidas}
+        usuarioId={loaderData.usuario.id}
+        fechar={() => setComunicador(false)}
+      />
       {aberto && <Busca onFechar={() => setAberto(false)} />}
     </>
   );

@@ -236,6 +236,9 @@ export default function Viagem({ loaderData }: Route.ComponentProps) {
     <>
       <div className="cabecalho">
         <h1>{v.codigo}</h1>
+        {loaderData.usuario.papel !== "guiamento" && (
+          <Link to={`?interna=${v.id}`}>{t("Conversa interna")}</Link>
+        )}
         <span className="etapa grande" data-testid="etapa">
           {t(rotuloEtapa[etapa])}
         </span>
@@ -337,6 +340,7 @@ export default function Viagem({ loaderData }: Route.ComponentProps) {
         opcoes={loaderData.opcoes}
       />
       <Viajantes
+        podeVerDocumentos={loaderData.usuario.papel !== "guiamento"}
         impactos={loaderData.impactosViajantes}
         lista={loaderData.viajantes}
         contatos={loaderData.contatosConhecidos}

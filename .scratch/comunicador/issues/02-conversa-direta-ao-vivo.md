@@ -14,14 +14,18 @@ The rest of the flow:
 
 **Blocked by:** 01 (Idioma da interface and the PT/KO catalogue).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] With two browser contexts, a Mensagem sent by one appears in the other without reload.
-- [ ] Starting a Conversa direta with someone who already has one with you opens the existing one.
-- [ ] The list of conversations is ordered by latest Mensagem.
-- [ ] A Mensagem the server refuses shows an error with a retry. The retry doesn't create a duplicate.
-- [ ] After the stream drops and reconnects, Mensagens sent meanwhile appear.
-- [ ] A Usuário who isn't a member can't read or post to the conversation through any request or the stream.
-- [ ] Portuguese and Korean text is stored and shown exactly as typed.
-- [ ] On a desktop, the panel opens beside the Pipeline and a Viagem.
-- [ ] Vertical tests in `comunicador-parte1-*.spec.ts`.
+- [x] With two browser contexts, a Mensagem sent by one appears in the other without reload.
+- [x] Starting a Conversa direta with someone who already has one with you opens the existing one.
+- [x] The list of conversations is ordered by latest Mensagem.
+- [x] A Mensagem the server refuses shows an error with a retry. The retry doesn't create a duplicate.
+- [x] After the stream drops and reconnects, Mensagens sent meanwhile appear.
+- [x] A Usuário who isn't a member can't read or post to the conversation through any request or the stream.
+- [x] Portuguese and Korean text is stored and shown exactly as typed.
+- [x] On a desktop, the panel opens beside the Pipeline and a Viagem.
+- [x] Vertical tests in `comunicador-parte1-*.spec.ts`.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-parte1-conversas.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

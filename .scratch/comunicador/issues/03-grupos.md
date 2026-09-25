@@ -4,12 +4,16 @@
 
 **Blocked by:** 02 (Tracer bullet: a live Conversa direta).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Create a public and a private Grupo. Another Usuário finds and joins the public one, but not the private one.
-- [ ] An invited Usuário reads and writes in the private Grupo. After leaving, they no longer receive it.
-- [ ] Only the creator and the Admin can rename, edit, change privacy, manage members and archive.
-- [ ] An archived Grupo leaves the default list and stays readable.
-- [ ] A Guiamento Usuário sees no Grupo list and no create button, and gets refused by the server too. Once invited, they read and write.
-- [ ] Mensagens in Grupos are live, like in ticket 02.
-- [ ] Strings in PT and KO.
+- [x] Create a public and a private Grupo. Another Usuário finds and joins the public one, but not the private one.
+- [x] An invited Usuário reads and writes in the private Grupo. After leaving, they no longer receive it.
+- [x] Only the creator and the Admin can rename, edit, change privacy, manage members and archive.
+- [x] An archived Grupo leaves the default list and stays readable.
+- [x] A Guiamento Usuário sees no Grupo list and no create button, and gets refused by the server too. Once invited, they read and write.
+- [x] Mensagens in Grupos are live, like in ticket 02.
+- [x] Strings in PT and KO.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-parte1-conversas.spec.ts e comunicador-parte1-permissoes.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

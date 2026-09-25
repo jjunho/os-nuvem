@@ -18,3 +18,7 @@ The steps:
 
 - [ ] One transversal e2e test runs the steps above against the production build and test database, and passes.
 - [ ] All vertical and speed tests of this spec, the Viagem part 1 tests and the login tests still pass.
+
+## Comments
+
+2026-09-25: permanece pendente. Operação 08/22 ainda não fornece o vínculo Usuário–Profissional nem os comandos de chegada/despedida necessários para Equipe, autorização do Responsável e arquivamento automático. Não foi criado um atalho de mudança manual de Etapa.

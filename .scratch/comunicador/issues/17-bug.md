@@ -4,9 +4,13 @@
 
 **Blocked by:** 08 (Leitura de mensagem and trigger keys).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] After visiting a Viagem, `/bug` in the Comunicador prefills that Viagem's address, the browser and the interface language.
-- [ ] The capture is attached as an image.
-- [ ] The posted Mensagem shows the K940 fields in order, in the conversation where `/bug` was typed.
-- [ ] Form strings in PT and KO.
+- [x] After visiting a Viagem, `/bug` in the Comunicador prefills that Viagem's address, the browser and the interface language.
+- [x] The capture is attached as an image.
+- [x] The posted Mensagem shows the K940 fields in order, in the conversation where `/bug` was typed.
+- [x] Form strings in PT and KO.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-parte7-bug.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

@@ -1,0 +1,2 @@
+ALTER TABLE "tarefas" ADD COLUMN "origem_mensagem_id" integer;--> statement-breakpoint
+ALTER TABLE "tarefas" ADD CONSTRAINT "tarefas_origem_mensagem_id_mensagens_id_fk" FOREIGN KEY ("origem_mensagem_id") REFERENCES "public"."mensagens"("id") ON DELETE no action ON UPDATE no action;

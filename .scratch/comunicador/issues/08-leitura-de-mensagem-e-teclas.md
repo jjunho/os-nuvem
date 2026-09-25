@@ -6,11 +6,15 @@ In the message box: an index below it lists the trigger keys (K830). `@` opens a
 
 **Blocked by:** 03 (Grupos).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Table-driven Vitest tests: mixed PT/KO text, codes at word edges, codes inside links, `@` inside e-mail addresses, commands only at the start.
-- [ ] The trigger-key index shows below the box, in the Usuário's language.
-- [ ] `@li` suggests Lia, and choosing her inserts the mention. The Mensagem shows it highlighted for everyone, and highlighted as "you" for Lia.
-- [ ] `#` suggests Grupos, and the link opens the Grupo. A Guiamento reader who isn't a member sees it without access.
-- [ ] Segments saved by the server match what the browser showed.
-- [ ] Vertical tests in `comunicador-parte3-*.spec.ts`.
+- [x] Table-driven Vitest tests: mixed PT/KO text, codes at word edges, codes inside links, `@` inside e-mail addresses, commands only at the start.
+- [x] The trigger-key index shows below the box, in the Usuário's language.
+- [x] `@li` suggests Lia, and choosing her inserts the mention. The Mensagem shows it highlighted for everyone, and highlighted as "you" for Lia.
+- [x] `#` suggests Grupos, and the link opens the Grupo. A Guiamento reader who isn't a member sees it without access.
+- [x] Segments saved by the server match what the browser showed.
+- [x] Vertical tests in `comunicador-parte3-*.spec.ts`.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: leitura.test.ts e comunicador-parte3-notificacoes.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

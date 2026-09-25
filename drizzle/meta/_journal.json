@@ -225,6 +225,34 @@
       "when": 1790264691382,
       "tag": "0031_formula_onibus_provisoria",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1790290146395,
+      "tag": "0032_milky_omega_sentinel",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1790290146396,
+      "tag": "0033_comunicador_busca",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1790297110738,
+      "tag": "0034_small_echo",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1790297253806,
+      "tag": "0035_warm_black_crow",
+      "breakpoints": true
     }
   ]
 }

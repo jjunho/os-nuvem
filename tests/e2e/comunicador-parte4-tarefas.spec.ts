@@ -61,11 +61,9 @@ test("filtros encontram tarefas por cópia, viagem e atraso e a próxima ação 
   await novaViagem(page, { contato: "Grupo com prazo" });
   const viagemId = page.url().split("/").pop()!;
   await page.goto("/tarefas");
-  const criar = page
-    .locator('form[method="post"]')
-    .filter({
-      has: page.getByRole("button", { name: "Criar tarefa", exact: true }),
-    });
+  const criar = page.locator('form[method="post"]').filter({
+    has: page.getByRole("button", { name: "Criar tarefa", exact: true }),
+  });
   await criar.getByLabel("Título", { exact: true }).fill("Confirmar horário");
   await criar
     .getByLabel("Responsável da tarefa", { exact: true })
@@ -127,4 +125,41 @@ test("Guiamento só acessa tarefas próprias ou em cópia, inclusive por URL", a
   await expect(
     page.getByRole("heading", { name: "Cópia para guiamento", exact: true }),
   ).toBeVisible();
+});
+
+// Assignment and overdue pushes use the public app boundary; no module mocks.
+test("avisa prazo vencido uma vez também para quem está em cópia", async ({
+  page,
+}) => {
+  await reiniciar(page);
+  await relogio(page, "2026-09-25T10:00:00+09:00");
+  await entrarComo(page, "carlos");
+  const d = await (await page.request.get("/comunicador/api")).json();
+  const lia = d.usuarios.find((u: { nome: string }) => u.nome === "Lia").id;
+  const { id } = await (
+    await page.request.post("/comunicador/api", {
+      data: { acao: "grupo", nome: "Prazos", privada: true },
+    })
+  ).json();
+  const r = await page.request.post("/comunicador/api", {
+    data: {
+      acao: "tarefa",
+      conversaId: id,
+      titulo: "Prazo teste",
+      responsavelId: d.usuario,
+      copias: [lia],
+      prazo: "2026-09-25T10:01:00+09:00",
+    },
+  });
+  expect(r.ok()).toBeTruthy();
+  const tarefa = await r.json();
+  await relogio(page, "2026-09-25T10:02:00+09:00");
+  await page.request.get("/comunicador/api");
+  await page.request.get("/comunicador/api");
+  const { pushes } = await (await page.request.get("/test/push")).json();
+  expect(
+    pushes.filter(
+      (p: { chave: string }) => p.chave === `tarefa:${tarefa.id}:vencida`,
+    ),
+  ).toHaveLength(2);
 });

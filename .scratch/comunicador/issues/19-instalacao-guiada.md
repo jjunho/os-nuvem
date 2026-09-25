@@ -4,11 +4,15 @@
 
 **Blocked by:** 05 (Admin supervision and first-sign-in notice), 09 (Web push basics).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The app has a web manifest and icons, and installs as a PWA.
-- [ ] A first sign-in on a phone viewport shows the guided screen. The iOS user agent gets the iOS steps. A desktop doesn't get it.
-- [ ] Granting permission registers a push subscription for that device.
-- [ ] The Admin notice is shown on the same screen and counts as seen.
-- [ ] The screen isn't shown again once done or skipped.
-- [ ] Strings in PT and KO.
+- [x] The app has a web manifest and icons, and installs as a PWA.
+- [x] A first sign-in on a phone viewport shows the guided screen. The iOS user agent gets the iOS steps. A desktop doesn't get it.
+- [x] Granting permission registers a push subscription for that device.
+- [x] The Admin notice is shown on the same screen and counts as seen.
+- [x] The screen isn't shown again once done or skipped.
+- [x] Strings in PT and KO.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-parte7-instalacao.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

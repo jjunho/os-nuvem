@@ -11,10 +11,14 @@ The rest:
 
 **Blocked by:** 08 (Leitura de mensagem and trigger keys).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `V26-…` in a Mensagem shows a Viagem card with its current Etapa. Changing the Etapa changes the card in old Mensagens.
-- [ ] A pasted Viagem URL becomes the same card. A pasted URL of another site stays a plain link.
-- [ ] `[[` finds a Viagem by the Cliente's name and inserts its reference.
-- [ ] The same Mensagem shows the card to the Admin and Conteúdo with the fields their Papéis allow, and "restricted" to Guiamento. The text is identical for all three.
-- [ ] Tapping the card opens the Viagem.
+- [x] `V26-…` in a Mensagem shows a Viagem card with its current Etapa. Changing the Etapa changes the card in old Mensagens.
+- [x] A pasted Viagem URL becomes the same card. A pasted URL of another site stays a plain link.
+- [x] `[[` finds a Viagem by the Cliente's name and inserts its reference.
+- [x] The same Mensagem shows the card to the Admin and Conteúdo with the fields their Papéis allow, and "restricted" to Guiamento. The text is identical for all three.
+- [x] Tapping the card opens the Viagem.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-parte5-interna.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

@@ -6,13 +6,17 @@ The Tarefas interface is built so the Quadros spec can place Tarefas on lists, a
 
 **Blocked by:** Login 01 (Sign in with e-mail and password, and Sair).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Create a Tarefa with copy and a Prazo, and get a unique TAR code.
-- [ ] Mark it concluída, reopen it, and cancel it with a reason. Each change records who.
-- [ ] The list defaults to Minhas Tarefas. The filters by Responsável, copy, Viagem and overdue work.
-- [ ] A new Viagem gets its automatic "responder" Tarefa. Follow-ups keep their existing rules.
-- [ ] A Viagem's Próxima ação is its earliest open Tarefa. The pipeline's overdue view still works.
-- [ ] Existing rows migrate. The Viagem spec's part 1 tests pass unchanged, apart from wording that now says Tarefa.
-- [ ] Guiamento sees only its own and copied Tarefas, and is refused others by URL.
-- [ ] Strings in PT and KO. Vertical tests in `comunicador-parte4-*.spec.ts`.
+- [x] Create a Tarefa with copy and a Prazo, and get a unique TAR code.
+- [x] Mark it concluída, reopen it, and cancel it with a reason. Each change records who.
+- [x] The list defaults to Minhas Tarefas. The filters by Responsável, copy, Viagem and overdue work.
+- [x] A new Viagem gets its automatic "responder" Tarefa. Follow-ups keep their existing rules.
+- [x] A Viagem's Próxima ação is its earliest open Tarefa. The pipeline's overdue view still works.
+- [x] Existing rows migrate. The Viagem spec's part 1 tests pass unchanged, apart from wording that now says Tarefa.
+- [x] Guiamento sees only its own and copied Tarefas, and is refused others by URL.
+- [x] Strings in PT and KO. Vertical tests in `comunicador-parte4-*.spec.ts`.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-parte4-tarefas.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

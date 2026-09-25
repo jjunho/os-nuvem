@@ -4,10 +4,14 @@
 
 **Blocked by:** 06 (Reading status and loading older Mensagens), 07 (Search).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A sent Mensagem is visible in its sender's window within 100 ms.
-- [ ] It is visible in another Usuário's window within 300 ms.
-- [ ] Opening a conversation takes under 300 ms.
-- [ ] The latest page of Mensagens and a search are each a server read within 100 ms.
-- [ ] Any index or query change needed to meet these lands with the test.
+- [x] A sent Mensagem is visible in its sender's window within 100 ms.
+- [x] It is visible in another Usuário's window within 300 ms.
+- [x] Opening a conversation takes under 300 ms.
+- [x] The latest page of Mensagens and a search are each a server read within 100 ms.
+- [x] Any index or query change needed to meet these lands with the test.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-velocidade.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

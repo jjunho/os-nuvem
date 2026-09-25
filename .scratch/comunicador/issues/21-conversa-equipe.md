@@ -13,3 +13,7 @@ This hooks into the Alocação command and the em viagem and concluída Etapas f
 - [ ] A Guiamento Usuário sees the Viagem card in its Equipe conversation, and "restricted" for other Viagens.
 - [ ] `/urgente` is refused to a non-Responsável and allowed to the Responsável of a Viagem em viagem. It gets through DND.
 - [ ] When the Viagem is concluída, the conversation is read-only, off the default list and still readable.
+
+## Comments
+
+2026-09-25: permanece pendente. Operação 08/22 ainda não fornece o vínculo Usuário–Profissional nem os comandos de chegada/despedida necessários para Equipe, autorização do Responsável e arquivamento automático. Não foi criado um atalho de mudança manual de Etapa.

@@ -4,12 +4,16 @@
 
 **Blocked by:** 02 (Tracer bullet: a live Conversa direta).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Reopening a conversation lands on the first unread Mensagem.
-- [ ] Unread counts per conversation and the total update live as Mensagens arrive and are read.
-- [ ] "Seen by" avatars update when another member reads.
-- [ ] Mark as unread brings the count back.
-- [ ] Reading in one context, signed in as the same Usuário, clears the count in the other.
-- [ ] Scrolling up loads older pages, keeping the scroll position.
-- [ ] Vertical tests in `comunicador-parte2-*.spec.ts`.
+- [x] Reopening a conversation lands on the first unread Mensagem.
+- [x] Unread counts per conversation and the total update live as Mensagens arrive and are read.
+- [x] "Seen by" avatars update when another member reads.
+- [x] Mark as unread brings the count back.
+- [x] Reading in one context, signed in as the same Usuário, clears the count in the other.
+- [x] Scrolling up loads older pages, keeping the scroll position.
+- [x] Vertical tests in `comunicador-parte2-*.spec.ts`.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-parte2-leitura.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

@@ -4,11 +4,15 @@
 
 **Blocked by:** 09 (Web push basics), 11 (Cartões and Viagem cards), 12 (Tarefas replace Próximas ações).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Tarefas implement Cartões. A TAR card follows the Tarefa's current state and the reader's rights.
-- [ ] Marking concluída from the card works, and every window's card updates.
-- [ ] `/tarefa` in a Viagem's conversation opens the form with that Viagem. Saving posts the Tarefa's card.
-- [ ] "Transformar em Tarefa" on a Mensagem creates a Tarefa that links back to the Mensagem.
-- [ ] Pushes are recorded on assignment, on copy, and when the test clock passes the Prazo of an open Tarefa, once.
-- [ ] `[[` also finds Tarefas by title.
+- [x] Tarefas implement Cartões. A TAR card follows the Tarefa's current state and the reader's rights.
+- [x] Marking concluída from the card works, and every window's card updates.
+- [x] `/tarefa` in a Viagem's conversation opens the form with that Viagem. Saving posts the Tarefa's card.
+- [x] "Transformar em Tarefa" on a Mensagem creates a Tarefa that links back to the Mensagem.
+- [x] Pushes are recorded on assignment, on copy, and when the test clock passes the Prazo of an open Tarefa, once.
+- [x] `[[` also finds Tarefas by title.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-parte4-tarefas.spec.ts e comunicador-parte5-interna.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

@@ -4,10 +4,14 @@
 
 **Blocked by:** 11 (Cartões and Viagem cards).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] "Conversa interna" on the Viagem screen opens it. It appears in the list only after the first Mensagem.
-- [ ] It is named "V26-… · Cliente".
-- [ ] Every staff Papel can open it. Guiamento never sees it in the list, search or by URL.
-- [ ] `/tarefa` in it prefills the Viagem.
-- [ ] Vertical tests in `comunicador-parte5-*.spec.ts`.
+- [x] "Conversa interna" on the Viagem screen opens it. It appears in the list only after the first Mensagem.
+- [x] It is named "V26-… · Cliente".
+- [x] Every staff Papel can open it. Guiamento never sees it in the list, search or by URL.
+- [x] `/tarefa` in it prefills the Viagem.
+- [x] Vertical tests in `comunicador-parte5-*.spec.ts`.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-parte5-interna.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

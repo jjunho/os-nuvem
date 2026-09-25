@@ -1,3 +1,4 @@
+import { DocumentosViajante } from "./DocumentosViajante";
 import { useState } from "react";
 import { Form } from "react-router";
 import { useIdioma } from "~/modules/idiomas/idioma";
@@ -7,7 +8,9 @@ export function Viajantes({
   lista,
   contatos,
   impactos,
+  podeVerDocumentos = false,
 }: {
+  podeVerDocumentos?: boolean;
   impactos: Record<number, string[]>;
   lista: Awaited<ReturnType<typeof listarViajantes>>;
   contatos: {
@@ -38,6 +41,7 @@ export function Viajantes({
                   `${t(v.faixa === "crianca" ? "Criança" : v.faixa === "bebe" ? "Bebê" : "Adulto")} ${i + 1}`}
               </td>
               <td>
+                {podeVerDocumentos && <DocumentosViajante id={v.id} />}
                 <span data-testid="bagagem-salva">
                   {v.malas} · {v.bagagemMao}
                 </span>

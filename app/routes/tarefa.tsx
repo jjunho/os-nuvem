@@ -41,6 +41,7 @@ export default function Tarefa({ loaderData: d }: Route.ComponentProps) {
       <p data-testid="codigo-tarefa">{d.tarefa.codigo}</p>
       <h1>{d.tarefa.titulo}</h1>
       <p>{d.tarefa.descricao}</p>
+      {d.tarefa.origemMensagemId && <Link to={`/?mensagem=${d.tarefa.origemMensagemId}`}>{t("Mensagem de origem")}</Link>}
       <p data-testid="estado-tarefa">{t(estados[d.tarefa.estado])}</p>
       <p>
         {d.responsavel} · {d.tarefa.prazo.toLocaleString()}

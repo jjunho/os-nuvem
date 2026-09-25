@@ -4,10 +4,14 @@
 
 **Blocked by:** 09 (Web push basics).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Decisão de notificação table tests gain: Grupo setting × DND across time zones and midnight × urgent.
-- [ ] Every / mentions only / muted each change the pushes recorded for a Grupo Mensagem.
-- [ ] With the test clock inside a Usuário's DND, no push is recorded. Unread counts still update.
-- [ ] An Admin `/urgente` Mensagem records a push through DND and shows as urgent.
-- [ ] A non-Admin `/urgente` is refused with the reason, in their language.
+- [x] Decisão de notificação table tests gain: Grupo setting × DND across time zones and midnight × urgent.
+- [x] Every / mentions only / muted each change the pushes recorded for a Grupo Mensagem.
+- [x] With the test clock inside a Usuário's DND, no push is recorded. Unread counts still update.
+- [x] An Admin `/urgente` Mensagem records a push through DND and shows as urgent.
+- [x] A non-Admin `/urgente` is refused with the reason, in their language.
+
+## Comments
+
+2026-09-25: implementado e revisado. Verificação: comunicador-parte3-notificacoes.spec.ts. Detalhes de operação e configuração em `docs/execucao-comunicador.md`.

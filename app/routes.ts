@@ -6,6 +6,11 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
+  route("comunicador/midia", "routes/comunicador-midia.ts"),
+  route("comunicador/midia/:id", "routes/comunicador-arquivo.ts"),
+  route("test/transcricao", "routes/test-transcricao.ts"),
+  route("comunicador/api", "routes/comunicador-api.ts"),
+  route("comunicador/eventos", "routes/comunicador-eventos.ts"),
   route("propostas/:id", "routes/proposta.tsx"),
   route("orcamentos/:id/excel", "routes/orcamento-excel.ts"),
   route("viagens/:id/anexos/:anexoId", "routes/anexo-planejamento.ts"),
@@ -18,6 +23,7 @@ export default [
   route("test/reset", "routes/test-reset.tsx"),
   layout("routes/app-layout.tsx", [
     index("routes/pipeline.tsx"),
+    route("comunicador", "routes/comunicador.tsx"),
     route("profissionais", "routes/profissionais.tsx"),
     route("notificacoes", "routes/notificacoes.tsx"),
     route("orcamentos/:id", "routes/orcamento.tsx"),
