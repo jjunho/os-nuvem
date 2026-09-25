@@ -425,3 +425,46 @@ Exemplos não normativos de como os conceitos deste protocolo se expressam em Re
 | Projeção otimista (Padrão 2)                   | `useOptimistic`, estado pendente de fetchers/mutações do roteador ou da camada de dados |
 | Cancelamento (Padrão 14)                       | `AbortController` / `AbortSignal` repassado ao `fetch`                                  |
 | Área de transferência (Padrão 12)              | `navigator.clipboard.writeText`, cuja promessa pode ser rejeitada                       |
+
+## Apêndice B: mapa de responsabilidades desta aplicação
+
+Este mapa registra a aplicação do protocolo neste repositório; não acrescenta regras comerciais.
+
+| Contexto | Decisão/estado local | Efeito e autoridade persistente | Apresentação |
+| --- | --- | --- | --- |
+| Orçamento | `orcamentos/editor.ts`, `em-voo.ts` e `editor-transicoes.ts` guardam revisão, slots por tentativa e transformações sem IO | `use-editor-orcamento.ts` coordena formulários/fetchers; `routes/orcamento.tsx` mantém loader/action; `orcamentos/*.server.ts` persistem | `EditorOrcamento.tsx` e folhas `*Editor.tsx` recebem ações e escritores do seu segmento |
+| Comunicador | `estado-painel.ts`, `conteudo.ts`, `estado-ui.ts` e `use-maquina.ts` decidem seleção, conteúdo e compositor | `use-painel.ts` compõe `consultas.client.ts`, `caixa.client.ts`, `api.client.ts`, `presenca.client.ts` e `eventos.client.ts`; `api.server.ts` despacha sobre serviços server | `Painel.tsx` compõe as folhas `Lista*`, `Compositor`, `Midia`, `GrupoForm`, `Preferencias` e `PainelTarefa` |
+| Regras operacionais | `quadros/decisoes.ts`, `tarefas/decisoes.ts`, `acesso/regras.ts`, `opcoes/normalizacao.ts`, `notificacoes/inscricao.ts` recebem dados e devolvem decisões | Os respectivos `*.server.ts` mantêm autenticação, locks, transações, SQL e publicação; consultas da rota foram movidas a `notificacoes/leituras.server.ts` e `documentos/proposta.server.ts` | Rotas adaptam HTTP e componentes exibem resultados; não executam SQL |
+| Planejamento e shell | `viagens/tentativa-planejamento.ts` identifica tentativa; `idiomas/idioma.ts` usa DTO de root | `tentativa-planejamento.client.ts` assina/persiste tentativa; `comunicador/shell.client.ts` e `notificacoes/push.client.ts` detêm APIs do navegador | Formulário e layout apresentam erro recuperável e preservam idioma/estado |
+| Ferramentas | `tests/e2e/ambiente.ts` define somente a URL do banco de teste | `scripts/db.sh` gerencia o cluster; configuração E2E inicia servidor de teste na porta 5179 | `.claude` aponta a `.agents`, sem elo circular de retorno |
+
+### Registro de fechamento da separação de responsabilidades
+
+Cada linha associa o achado ao seu dono e à verificação executada. A bateria completa E2E teve 167 aprovações e quatro falhas localizadas de sincronização/seletores nos testes; os quatro cenários corrigidos passaram em execução direcionada. `pnpm typecheck` passou, o caso unitário corrigido passou e `pnpm build` passou. A navegação real em 390 px confirmou `documentElement.scrollWidth === clientWidth === 390` após ajustar a quebra do cabeçalho.
+
+| ID | Arquivo/símbolo e cenário | Resultado observado |
+| --- | --- | --- |
+| E01 | `routes/orcamento.tsx` / `EditorOrcamento.tsx` / `use-editor-orcamento.ts`; edição, salvamento, prévia e importação | Orçamento criado e copiado no navegador; edição persistiu após recarga; prévia do pedido e exportação/revisão/aplicação de Excel exercitadas; regressões unitárias do editor e fluxos E2E passaram. |
+| E02 | `orcamentos/editor-transicoes.ts`; cópia de opção e identidade das linhas | Duas opções distintas e origem editada preservada após recarga; testes do editor passaram. |
+| E03 | `comunicador/consultas.client.ts`, `caixa.client.ts`, `api.client.ts`; resultado tardio, fila offline e confirmação perdida | Cenários E2E do comunicador e os cenários offline direcionados passaram; conversa direta abriu no navegador. |
+| E04 | `comunicador/tipos.ts`, `acesso.server.ts`, `preferencias.server.ts`, `presenca.server.ts`; acesso e presença | Imports migrados; `pnpm typecheck` e casos E2E de conversa passaram. |
+| E05 | `notificacoes/eventos.server.ts`; publicação sem reexport do servidor de conversa | Compilação e cenários E2E de notificações/conversa passaram. |
+| E06 | `idiomas/idioma.ts` / `routes/app-layout.tsx`; DTO e mudança de idioma | Orçamento renderizado em português e coreano no navegador; typecheck passou. |
+| E07 | `notificacoes/leituras.server.ts`, `documentos/proposta.server.ts`, `comunicador/api.server.ts`; leitura e despacho | Rotas compiladas e bateria E2E de integrações passou. |
+| E08 | `quadros/decisoes.ts` / `tarefas/decisoes.ts`; movimento e permissão | Casos de decisão e fluxos E2E de quadros/tarefas passaram. |
+| E09 | `viagens/tentativa-planejamento.ts` / `.client.ts`; assinatura, storage e JSON malformado | Casos unitários de tentativa e fluxos E2E de planejamento passaram. |
+| E10 | `.agents/.claude`; remoção do elo circular | Elo removido; link raiz `.claude -> .agents` preservado. |
+| E11 | `.gitignore`; preferências locais e arquivos Finder | `git check-ignore` confirmou `.agents/settings.local.json` e `.DS_Store`; `.scratch` continua disponível. |
+| E12 | `tests/e2e/ambiente.ts`; URL do teste | Configuração e sete consumidores usam `corealux_test`; E2E executou no banco isolado. |
+| P01 | `interface/use-maquina.ts` e `orcamentos/em-voo.ts`; dois submits síncronos | Regressão E2E direcionada passou, sem duas tarefas criadas. |
+| P02 | `orcamentos/*Editor.tsx` / `comunicador/ListaMensagens.tsx`; ações por segmento | Typecheck e fluxo real do orçamento renderizado passaram. |
+| P03 | `comunicador/consultas.client.ts`; cursor, geração e sincronização durante abertura | Casos E2E do comunicador passaram. |
+| P04 | `comunicador/api.client.ts`; status HTTP e perda de confirmação | Cenários E2E de fila/erro passaram. |
+| P05 | `interface/Busca.tsx`; tipo vindo de `viagens.server.ts`, não da rota | Navegação real com busca vazia e setas/Enter conservou o diálogo; teste direcionado passou. |
+| P06 | `quadros/decisoes.ts`; renomear e criar lista com autorização própria | Fluxos E2E de quadros passaram. |
+| P07 | `comunicador/use-painel.ts` / `endereco.ts`; URL como entrada, seleção local | Conversa direta aberta no navegador; cenários de seleção E2E passaram. |
+| P08 | `interface/Busca.tsx`; índice clampado na lista vazia | Setas/Enter não navegaram nem fecharam o diálogo; teste direcionado passou. |
+| P09 | `tsconfig.json`; configuração existente | Nenhuma mudança de compilação necessária; `pnpm typecheck` passou. |
+| P10 | Rotas adaptadoras e módulos de domínio citados acima; dependências orientadas | Checagens estruturais não acharam imports de rotas/root/+types em módulos nem SQL nas rotas extraídas. |
+| P11 | `comunicador/use-painel.ts`, `presenca.client.ts`, `caixa.client.ts`; grupo/DND/interna/reconexão | Casos E2E de comunicador e offline direcionado passaram. |
+| P12 | `opcoes/normalizacao.ts`, `tarefas/decisoes.ts`, `viagens/tentativa-planejamento.client.ts`; mesclagem/recusa/JSON | Testes de regras e fluxos E2E passaram. |
