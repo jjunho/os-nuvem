@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useReducer } from "react";
 import { useIdioma } from "~/modules/idiomas/idioma";
 import { Seletor } from "~/modules/opcoes/Seletor";
+import { iniciarPessoa, reduzirPessoa } from "./pessoa-draft";
 type Contato = {
   id: number;
   nome: string;
@@ -15,9 +16,9 @@ export function ContatoCampos({
   contatos: Contato[];
 }) {
   const { t } = useIdioma();
-  const [contato, setContato] = useState<Contato | null>(null);
-  const [email, setEmail] = useState("");
-  const [telefone, setTelefone] = useState("");
+  const [draft, dispatch] = useReducer(reduzirPessoa, undefined, () =>
+    iniciarPessoa({ email: "", telefone: "" }),
+  );
   return (
     <div className="linha">
       <Seletor
@@ -27,28 +28,36 @@ export function ContatoCampos({
           valor: `contato:${c.id}`,
           nome: `${c.nome}${c.email || c.telefone ? ` — ${c.email || c.telefone}` : ""}`,
         }))}
-        onEditar={() => setContato(null)}
+        onEditar={() => dispatch({ tipo: "editouNome" })}
         onChange={(valor) => {
           const c = contatos.find((c) => `contato:${c.id}` === valor) ?? null;
-          setContato(c);
-          if (c) {
-            setEmail(c.email ?? "");
-            setTelefone(c.telefone ?? "");
-          }
+          if (c)
+            dispatch({
+              tipo: "selecionou",
+              id: c.id,
+              campos: { email: c.email, telefone: c.telefone },
+            });
+          else dispatch({ tipo: "editouNome" });
         }}
       />
       <input
         type="hidden"
         name={`contatos.${i}.contatoId`}
-        value={contato?.id ?? ""}
+        value={draft.identidade.tipo === "conhecido" ? draft.identidade.id : ""}
       />
       <label>
         {t("Telefone")}
         <input
           name={`contatos.${i}.telefone`}
           inputMode="tel"
-          value={telefone}
-          onChange={(e) => setTelefone(e.target.value)}
+          value={draft.campos.telefone.valor}
+          onChange={(e) =>
+            dispatch({
+              tipo: "editouCampo",
+              campo: "telefone",
+              valor: e.target.value,
+            })
+          }
         />
       </label>
       <label>
@@ -56,8 +65,14 @@ export function ContatoCampos({
         <input
           name={`contatos.${i}.email`}
           type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={draft.campos.email.valor}
+          onChange={(e) =>
+            dispatch({
+              tipo: "editouCampo",
+              campo: "email",
+              valor: e.target.value,
+            })
+          }
         />
       </label>
       <label className="check">

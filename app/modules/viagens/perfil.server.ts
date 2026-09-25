@@ -1,3 +1,4 @@
+import { dataISOValida } from "~/modules/validacao/entrada";
 import { and, eq, inArray, ne, desc } from "drizzle-orm";
 import { db } from "~/db/client.server";
 import {
@@ -89,8 +90,7 @@ export async function salvarPerfil(
   const nascimento = String(form.get("nascimento") ?? "") || null;
   if (
     nascimento &&
-    (!/^\d{4}-\d{2}-\d{2}$/.test(nascimento) ||
-      !Number.isFinite(Date.parse(nascimento)) ||
+    (!dataISOValida(nascimento) ||
       new Date(`${nascimento}T00:00:00Z`).toISOString().slice(0, 10) !==
         nascimento)
   )
@@ -116,15 +116,13 @@ export async function salvarPerfil(
       .where(eq(contatos.id, contatoId));
     const texto = String(form.get("retornoRoteiro") ?? "").trim();
     if (texto)
-      await tx
-        .insert(notas)
-        .values({
-          viagemId,
-          contatoId,
-          tipo: "retorno_roteiro",
-          autorId,
-          texto,
-          criadaEm: agora,
-        });
+      await tx.insert(notas).values({
+        viagemId,
+        contatoId,
+        tipo: "retorno_roteiro",
+        autorId,
+        texto,
+        criadaEm: agora,
+      });
   });
 }

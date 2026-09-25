@@ -1,3 +1,4 @@
+import { inteiroEntrada } from "~/modules/validacao/entrada";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Route } from "./+types/proposta";
 import { exigirUsuario } from "~/session.server";
@@ -11,7 +12,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const [orcamento] = await db
     .select({ id: orcamentos.id, memoria: orcamentos.memoria })
     .from(orcamentos)
-    .where(eq(orcamentos.id, Number(params.id)));
+    .where(eq(orcamentos.id, inteiroEntrada(params.id)));
   const memoria = orcamento?.memoria;
   if (!memoria)
     throw new Response("Envie a versão antes de gerar a proposta", {

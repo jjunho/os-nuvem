@@ -1,25 +1,40 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { useIdioma } from "~/modules/idiomas/idioma";
 import { textos } from "./textos";
+import { reporte, type ReporteEstado } from "./estado-ui";
+
 export function Reporte({
   enviar,
   cancelar,
 }: {
-  enviar: (texto: string, arquivo: File) => Promise<void>;
+  enviar: (texto: string, arquivo: File, clientId: string) => Promise<void>;
   cancelar: () => void;
 }) {
   const { idioma } = useIdioma(),
     t = textos(idioma);
-  const [captura, setCaptura] = useState<Blob | null>(null),
-    [erro, setErro] = useState("");
+  const [estado, dispatch] = useReducer(reporte, { fase: "capturando" });
+  const atual = useRef<ReporteEstado>(estado);
+  atual.current = estado;
+  const ativo = useRef(true);
+  const capturaAtual = useRef<AbortController | null>(null);
   const [pagina] = useState(
     () => sessionStorage.getItem("comunicador-pagina") ?? location.href,
   );
+  function emitir(evento: Parameters<typeof reporte>[1]) {
+    atual.current = reporte(atual.current, evento);
+    dispatch(evento);
+  }
   async function capturar() {
+    if (!ativo.current) return;
+    capturaAtual.current?.abort();
+    const controle = new AbortController();
+    capturaAtual.current = controle;
+    const vigente = () => ativo.current && !controle.signal.aborted;
     let frame: HTMLIFrameElement | undefined;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
     try {
-      setErro("");
       const { toBlob } = await import("html-to-image");
+      if (!vigente()) return;
       let documento = document;
       const anterior = new URL(pagina, location.origin);
       if (
@@ -32,9 +47,18 @@ export function Reporte({
         frame.style.cssText =
           "position:fixed;left:-10000px;width:1200px;height:900px";
         const pronto = new Promise<void>((resolve, reject) => {
-          const timeout = setTimeout(
+          timeout = setTimeout(
             () => reject(Error("Captura indisponível")),
             10000,
+          );
+          controle.signal.addEventListener(
+            "abort",
+            () => {
+              clearTimeout(timeout);
+              frame?.remove();
+              reject(Error("Captura cancelada"));
+            },
+            { once: true },
           );
           frame!.onload = () => {
             clearTimeout(timeout);
@@ -44,78 +68,154 @@ export function Reporte({
         frame.src = anterior.href;
         document.body.appendChild(frame);
         await pronto;
+        if (!vigente()) return;
         if (frame.contentDocument) documento = frame.contentDocument;
       }
       const main = documento.querySelector<HTMLElement>("main.pagina");
-      if (!main) throw Error(t("Não foi possível capturar a página"));
+      if (!main) throw Error("Captura indisponível");
       const blob = await toBlob(main, {
         pixelRatio: 1,
         backgroundColor: "#ffffff",
         skipFonts: true,
       });
-      if (!blob) throw Error(t("Não foi possível capturar a página"));
-      setCaptura(blob);
+      if (!blob) throw Error("Captura indisponível");
+      if (vigente()) emitir({ tipo: "capturada", captura: blob });
     } catch {
-      setErro(t("Não foi possível capturar a página"));
+      if (vigente()) emitir({ tipo: "captura-falhou" });
     } finally {
+      clearTimeout(timeout);
       frame?.remove();
     }
   }
   useEffect(() => {
+    ativo.current = true;
     void capturar();
+    return () => {
+      ativo.current = false;
+      capturaAtual.current?.abort();
+    };
   }, []);
+  async function transmitir(
+    tentativa: Extract<
+      ReporteEstado,
+      { fase: "enviando" | "erro-envio" | "enviado" }
+    >,
+  ) {
+    try {
+      await enviar(
+        tentativa.texto,
+        new File([tentativa.captura], "captura.png", { type: "image/png" }),
+        tentativa.clientId,
+      );
+      if (ativo.current)
+        emitir({ tipo: "enviado", clientId: tentativa.clientId });
+    } catch {
+      if (ativo.current)
+        emitir({ tipo: "falhou", clientId: tentativa.clientId });
+    }
+  }
+  const bloqueado =
+    estado.fase === "enviando" ||
+    estado.fase === "erro-envio" ||
+    estado.fase === "enviado";
   return (
     <form
       aria-label={t("Reportar problema")}
-      onSubmit={async (e) => {
+      onSubmit={(e) => {
         e.preventDefault();
-        if (!captura) return;
+        // A guarda síncrona vale também para dois submits antes do próximo render.
+        if (atual.current.fase !== "pronta" || !ativo.current) return;
         const f = new FormData(e.currentTarget);
-        const linhas = [
+        const texto = [
           `Página: ${f.get("pagina")}`,
           `Ação: ${f.get("acao")}`,
           `Esperado: ${f.get("esperado")}`,
           `Observado: ${f.get("observado")}`,
           `Reprodução: ${f.get("reproducao")}`,
           `Aparelho/navegador/idioma: ${navigator.userAgent} · ${idioma}`,
-        ];
-        await enviar(
-          linhas.join("\n"),
-          new File([captura], "captura.png", { type: "image/png" }),
-        );
+        ].join("\n");
+        const tentativa = {
+          fase: "enviando" as const,
+          captura: atual.current.captura,
+          texto,
+          clientId: crypto.randomUUID(),
+        };
+        emitir({ tipo: "enviar", texto, clientId: tentativa.clientId });
+        void transmitir(tentativa);
       }}
     >
       <h3>{t("Reportar problema")}</h3>
-      <label>
-        {t("Página")}
-        <input name="pagina" defaultValue={pagina} required />
-      </label>
-      {(
-        [
-          ["acao", "Ação"],
-          ["esperado", "Esperado"],
-          ["observado", "Observado"],
-          ["reproducao", "Reprodução"],
-        ] as const
-      ).map(([name, label]) => (
-        <label key={name}>
-          {t(label)}
-          <textarea name={name} required />
+      <fieldset disabled={bloqueado}>
+        <label>
+          {t("Página")}
+          <input name="pagina" defaultValue={pagina} required />
         </label>
-      ))}
-      <p>
-        {navigator.userAgent} · {idioma}
+        {(
+          [
+            ["acao", "Ação"],
+            ["esperado", "Esperado"],
+            ["observado", "Observado"],
+            ["reproducao", "Reprodução"],
+          ] as const
+        ).map(([name, label]) => (
+          <label key={name}>
+            {t(label)}
+            <textarea name={name} required />
+          </label>
+        ))}
+        <p>
+          {navigator.userAgent} · {idioma}
+        </p>
+        <button disabled={estado.fase !== "pronta"}>
+          {t("Enviar reporte")}
+        </button>
+      </fieldset>
+      <p role={estado.fase.startsWith("erro") ? "alert" : "status"}>
+        {t(
+          estado.fase === "capturando"
+            ? "Capturando página"
+            : estado.fase === "erro-captura"
+              ? "Não foi possível capturar a página"
+              : estado.fase === "erro-envio"
+                ? "Não foi possível enviar o reporte"
+                : estado.fase === "enviando"
+                  ? "Enviando…"
+                  : "Captura pronta",
+        )}
       </p>
-      <p role="status">
-        {erro || t(captura ? "Captura pronta" : "Capturando página")}
-      </p>
-      {erro && (
-        <button type="button" onClick={capturar}>
+      {estado.fase === "erro-captura" && (
+        <button
+          type="button"
+          onClick={() => {
+            if (atual.current.fase !== "erro-captura") return;
+            emitir({ tipo: "capturar" });
+            void capturar();
+          }}
+        >
           {t("Tentar novamente")}
         </button>
       )}
-      <button disabled={!captura}>{t("Enviar reporte")}</button>
-      <button type="button" onClick={cancelar}>
+      {estado.fase === "erro-envio" && (
+        <button
+          type="button"
+          onClick={() => {
+            const tentativa = atual.current;
+            if (tentativa.fase !== "erro-envio" || !ativo.current) return;
+            emitir({ tipo: "retentar" });
+            void transmitir(tentativa);
+          }}
+        >
+          {t("Tentar novamente")}
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={() => {
+          ativo.current = false;
+          capturaAtual.current?.abort();
+          cancelar();
+        }}
+      >
         {t("Cancelar")}
       </button>
     </form>

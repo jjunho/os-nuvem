@@ -1,3 +1,4 @@
+import { inteiroEntrada, idOpcional } from "~/modules/validacao/entrada";
 import { acaoDaTarefaEtapa } from "~/modules/viagens/tarefas-etapa.server";
 import { redirect } from "react-router";
 import { projetarTarefa } from "~/modules/tarefas/cartao";
@@ -27,7 +28,7 @@ export type Lista = {
 const erro = (mensagem = "Acesso restrito", status = 403): never => {
   throw new Response(mensagem, { status });
 };
-const numero = (f: FormData, n: string) => Number(f.get(n));
+const numero = (f: FormData, n: string) => idOpcional(f.get(n)) ?? 0;
 const texto = (f: FormData, n: string) => String(f.get(n) ?? "").trim();
 export async function exigirQuadro(
   u: Leitor,
@@ -60,7 +61,10 @@ export async function lerQuadro(
   agora: Date,
 ) {
   const quadro = await exigirQuadro(u, id);
-  const pagina = Math.max(0, Math.floor(Number(f.get("pagina")) || 0));
+  const pagina = inteiroEntrada(f.get("pagina") ?? "0", {
+    min: 0,
+    mensagem: "Página inválida",
+  });
   const [listas, rows, etiquetas, membros, usuarios, quadros] =
     await Promise.all([
       pool.query<Lista>(
@@ -96,9 +100,9 @@ export async function lerQuadro(
           u.id,
           u.papel,
           f.get("q") ?? "",
-          Number(f.get("responsavel")) || 0,
-          Number(f.get("viagem")) || 0,
-          Number(f.get("etiqueta")) || 0,
+          idOpcional(f.get("responsavel")) ?? 0,
+          idOpcional(f.get("viagem")) ?? 0,
+          idOpcional(f.get("etiqueta")) ?? 0,
           f.has("ocultarConcluidas"),
           f.get("prazo") ?? "",
           agora,

@@ -1,3 +1,4 @@
+import { ConfirmacaoInvalida } from "./contratos";
 export async function comprimirFoto(arquivo: File): Promise<File> {
   if (!arquivo.type.startsWith("image/")) return arquivo;
   const imagem = await createImageBitmap(arquivo);
@@ -31,6 +32,13 @@ export async function enviarArquivo(
   f.set("arquivo", arquivo);
   f.set("texto", texto);
   const r = await fetch("/comunicador/midia", { method: "POST", body: f });
-  if (!r.ok) throw Error(await r.text());
-  return r.json();
+  if (!r.ok) {
+    const mensagem = await r.text();
+    if (r.status >= 500 || r.status === 408)
+      throw new ConfirmacaoInvalida(mensagem);
+    throw Error(mensagem);
+  }
+  return r.json().catch(() => {
+    throw new ConfirmacaoInvalida("Resposta inválida do comunicador");
+  });
 }

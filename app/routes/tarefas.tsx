@@ -1,3 +1,6 @@
+import { useFiltrosURL } from "~/modules/interface/filtros-url";
+import { useActionData, useNavigation } from "react-router";
+import { erroDeFormulario } from "~/modules/interface/erro-formulario.server";
 import { atualizarFollowups } from "~/modules/orcamentos/followups.server";
 import { Form, Link, redirect } from "react-router";
 import type { Route } from "./+types/tarefas";
@@ -17,25 +20,37 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { tarefas, usuarios, usuario, filtros: Object.fromEntries(filtros) };
 }
 export async function action({ request }: Route.ActionArgs) {
-  const usuario = await exigirUsuario(request);
-  const tarefa = await criarTarefa(
-    usuario,
-    await request.formData(),
-    now(request),
-  );
-  return redirect(`/tarefas/${tarefa.id}`);
+  try {
+    const usuario = await exigirUsuario(request);
+    const tarefa = await criarTarefa(
+      usuario,
+      await request.formData(),
+      now(request),
+    );
+    return redirect(`/tarefas/${tarefa.id}`);
+  } catch (erro) {
+    return erroDeFormulario(erro);
+  }
 }
 export default function Tarefas({ loaderData: d }: Route.ComponentProps) {
   const { t } = useIdioma();
+  const filtro = useFiltrosURL(d.filtros);
+  const resultado = useActionData<typeof action>();
+  const pendente = useNavigation().state !== "idle";
+  const { mensagem: mensagemErro } = useIdioma();
   return (
     <>
+      {resultado && "erro" in resultado && resultado.erro && (
+        <p role="alert">{mensagemErro(resultado.erro)}</p>
+      )}
       <h1>{t("Minhas Tarefas")}</h1>
       <Form method="get" className="linha">
         <label>
           {t("Responsável")}
           <select
             name="responsavel"
-            defaultValue={d.filtros.responsavel ?? d.usuario.id}
+            value={filtro.valores.responsavel ?? d.usuario.id}
+            onChange={(e) => filtro.alterar("responsavel", e.target.value)}
           >
             <option value="todos">{t("Todas")}</option>
             {d.usuarios.map((u) => (
@@ -47,7 +62,11 @@ export default function Tarefas({ loaderData: d }: Route.ComponentProps) {
         </label>
         <label>
           {t("Cópias")}
-          <select name="copia" defaultValue={d.filtros.copia ?? ""}>
+          <select
+            name="copia"
+            value={filtro.valores.copia ?? ""}
+            onChange={(e) => filtro.alterar("copia", e.target.value)}
+          >
             <option value="">{t("Todas")}</option>
             {d.usuarios.map((u) => (
               <option key={u.id} value={u.id}>
@@ -58,17 +77,25 @@ export default function Tarefas({ loaderData: d }: Route.ComponentProps) {
         </label>
         <label>
           {t("Viagem relacionada")}
-          <input name="viagem" type="number" defaultValue={d.filtros.viagem} />
+          <input
+            name="viagem"
+            type="number"
+            value={filtro.valores.viagem ?? ""}
+            onChange={(e) => filtro.alterar("viagem", e.target.value)}
+          />
         </label>
         <label>
           <input
             type="checkbox"
             name="atrasadas"
-            defaultChecked={"atrasadas" in d.filtros}
+            checked={filtro.valores.atrasadas !== undefined}
+            onChange={(e) =>
+              filtro.alterar("atrasadas", e.target.checked ? "on" : undefined)
+            }
           />
           {t("Atrasadas")}
         </label>
-        <button>{t("Filtrar")}</button>
+        <button disabled={pendente}>{t("Filtrar")}</button>
       </Form>
       <ul>
         {d.tarefas.map((tarefa) => (
@@ -130,7 +157,7 @@ export default function Tarefas({ loaderData: d }: Route.ComponentProps) {
           {t("Viagem relacionada")}
           <input type="number" name="viagemId" />
         </label>
-        <button>{t("Criar tarefa")}</button>
+        <button disabled={pendente}>{t("Criar tarefa")}</button>
       </Form>
     </>
   );

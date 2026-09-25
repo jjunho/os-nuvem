@@ -76,7 +76,7 @@ export async function registrarOpcao(
   contexto: Record<string, string> = {},
 ): Promise<string> {
   valor = valor.trim();
-  if (!valor) throw new Error("Informe uma opção");
+  if (!valor) throw new Response("Informe uma opção", { status: 400 });
   const conhecidas = await db
     .select()
     .from(opcoesConhecidas)

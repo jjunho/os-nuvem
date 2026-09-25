@@ -1,3 +1,4 @@
+import { inteiroEntrada, idOpcional } from "~/modules/validacao/entrada";
 import { ContatoCampos } from "~/modules/viagens/ContatoCampos";
 import { filtrarIntermediario } from "~/modules/opcoes/contexto";
 import { Seletor } from "~/modules/opcoes/Seletor";
@@ -8,6 +9,7 @@ import {
 } from "~/modules/opcoes/opcoes.server";
 import { useIdioma } from "~/modules/idiomas/idioma";
 import { useState } from "react";
+import { erroDeFormulario } from "~/modules/interface/erro-formulario.server";
 import { Form, redirect, useNavigation } from "react-router";
 import type { Route } from "./+types/viagem-nova";
 import { now } from "~/clock.server";
@@ -56,91 +58,89 @@ const lista = (v: FormDataEntryValue | null) =>
 
 export async function action({ request }: Route.ActionArgs) {
   const usuario = await exigirUsuario(request);
-  const f = await request.formData();
-
-  const contatos: ContatoInput[] = [];
-  for (let i = 0; f.has(`contatos.${i}.nome`); i++) {
-    const nome = String(f.get(`contatos.${i}.nome`) ?? "").trim();
-    if (!nome) continue;
-    const papeis: ContatoInput["papeis"] = [];
-    if (f.get(`contatos.${i}.solicitante`)) papeis.push("solicitante");
-    if (f.get(`contatos.${i}.viajante`)) papeis.push("viajante");
-    contatos.push({
-      contatoId: Number(f.get(`contatos.${i}.contatoId`)) || undefined,
-      nome,
-      telefone: String(f.get(`contatos.${i}.telefone`) ?? ""),
-      email: String(f.get(`contatos.${i}.email`) ?? ""),
-      papeis: papeis.length ? papeis : ["solicitante"],
-    });
-  }
-
-  const cadeia: NovaViagem["cadeia"] = [];
-  for (let i = 0; i < 3; i++) {
-    const valor = String(f.get(`cadeia.${i}.intermediarioId`) ?? "").trim();
-    const id = valor
-      ? await registrarIntermediario(valor, String(f.get("canalComercial")))
-      : null;
-    if (id)
-      cadeia.push({
-        intermediarioId: id,
-        especificou: String(f.get(`cadeia.${i}.especificou`) ?? ""),
-      });
-  }
-
-  const input: NovaViagem = {
-    responsavelId: Number(f.get("responsavelId")),
-    canalComercial: await registrarOpcao(
-      "canalComercial",
-      String(f.get("canalComercial") ?? ""),
-    ),
-    categoria: await registrarOpcao(
-      "categoria",
-      String(f.get("categoria") ?? ""),
-    ),
-    marca: await registrarOpcao("marca", String(f.get("marca") ?? "")),
-    origem: await registrarOpcao("origem", String(f.get("origem") ?? "")),
-    indicadoPor: String(f.get("indicadoPor") ?? ""),
-    idiomaCliente: await registrarOpcao(
-      "idiomaCliente",
-      String(f.get("idiomaCliente") ?? ""),
-    ),
-    idiomaGuiamento: await registrarOpcao(
-      "idiomaGuiamento",
-      String(f.get("idiomaGuiamento") ?? ""),
-    ),
-    meiosContato: await Promise.all(
-      f
-        .getAll("meiosContato")
-        .map(String)
-        .filter(Boolean)
-        .map((v) => registrarOpcao("meiosContato", v)),
-    ),
-    dataInicio: String(f.get("dataInicio") ?? ""),
-    dataFim: String(f.get("dataFim") ?? ""),
-    pagantes: numero(f.get("pagantes")),
-    gratuidades: numero(f.get("gratuidades")) ?? 0,
-    adultos: numero(f.get("adultos")),
-    idadesCriancas: lista(f.get("idadesCriancas"))
-      .map(Number)
-      .filter((n) => !Number.isNaN(n)),
-    bebes: numero(f.get("bebes")) ?? 0,
-    cidades: await Promise.all(
-      f
-        .getAll("cidades")
-        .flatMap((v) => lista(v))
-        .map((v) => registrarOpcao("cidades", v)),
-    ),
-    cadeia,
-    contatos,
-    nota: String(f.get("nota") ?? ""),
-  };
-
   try {
+    const f = await request.formData();
+
+    const contatos: ContatoInput[] = [];
+    for (let i = 0; f.has(`contatos.${i}.nome`); i++) {
+      const nome = String(f.get(`contatos.${i}.nome`) ?? "").trim();
+      if (!nome) continue;
+      const papeis: ContatoInput["papeis"] = [];
+      if (f.get(`contatos.${i}.solicitante`)) papeis.push("solicitante");
+      if (f.get(`contatos.${i}.viajante`)) papeis.push("viajante");
+      contatos.push({
+        contatoId: idOpcional(f.get(`contatos.${i}.contatoId`)),
+        nome,
+        telefone: String(f.get(`contatos.${i}.telefone`) ?? ""),
+        email: String(f.get(`contatos.${i}.email`) ?? ""),
+        papeis: papeis.length ? papeis : ["solicitante"],
+      });
+    }
+
+    const cadeia: NovaViagem["cadeia"] = [];
+    for (let i = 0; i < 3; i++) {
+      const valor = String(f.get(`cadeia.${i}.intermediarioId`) ?? "").trim();
+      const id = valor
+        ? await registrarIntermediario(valor, String(f.get("canalComercial")))
+        : null;
+      if (id)
+        cadeia.push({
+          intermediarioId: id,
+          especificou: String(f.get(`cadeia.${i}.especificou`) ?? ""),
+        });
+    }
+
+    const input: NovaViagem = {
+      responsavelId: inteiroEntrada(f.get("responsavelId")),
+      canalComercial: await registrarOpcao(
+        "canalComercial",
+        String(f.get("canalComercial") ?? ""),
+      ),
+      categoria: await registrarOpcao(
+        "categoria",
+        String(f.get("categoria") ?? ""),
+      ),
+      marca: await registrarOpcao("marca", String(f.get("marca") ?? "")),
+      origem: await registrarOpcao("origem", String(f.get("origem") ?? "")),
+      indicadoPor: String(f.get("indicadoPor") ?? ""),
+      idiomaCliente: await registrarOpcao(
+        "idiomaCliente",
+        String(f.get("idiomaCliente") ?? ""),
+      ),
+      idiomaGuiamento: await registrarOpcao(
+        "idiomaGuiamento",
+        String(f.get("idiomaGuiamento") ?? ""),
+      ),
+      meiosContato: await Promise.all(
+        f
+          .getAll("meiosContato")
+          .map(String)
+          .filter(Boolean)
+          .map((v) => registrarOpcao("meiosContato", v)),
+      ),
+      dataInicio: String(f.get("dataInicio") ?? ""),
+      dataFim: String(f.get("dataFim") ?? ""),
+      pagantes: numero(f.get("pagantes")),
+      gratuidades: numero(f.get("gratuidades")) ?? 0,
+      adultos: numero(f.get("adultos")),
+      idadesCriancas: lista(f.get("idadesCriancas")).map(Number),
+      bebes: numero(f.get("bebes")) ?? 0,
+      cidades: await Promise.all(
+        f
+          .getAll("cidades")
+          .flatMap((v) => lista(v))
+          .map((v) => registrarOpcao("cidades", v)),
+      ),
+      cadeia,
+      contatos,
+      nota: String(f.get("nota") ?? ""),
+    };
+
     const { id } = await criarViagem(input, usuario.id, now(request));
     return redirect(`/viagens/${id}`);
   } catch (e) {
     if (e instanceof RegraViolada) return { erro: e.message };
-    throw e;
+    return erroDeFormulario(e);
   }
 }
 
@@ -186,6 +186,10 @@ export default function ViagemNova({
               rotulo={t("Canal comercial")}
               opcoes={loaderData.opcoes.canalComercial}
               valorInicial="cliente_final"
+              onEditar={(texto) => {
+                setCanal(texto);
+                setMarca(marcaSugerida(texto));
+              }}
               onChange={(c) => {
                 setCanal(c);
                 setMarca(marcaSugerida(c));

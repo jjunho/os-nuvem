@@ -1,18 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useIdioma } from "~/modules/idiomas/idioma";
 import { textos } from "./textos";
 import { comando } from "./Painel";
 export function Instalacao({ visto }: { visto: boolean }) {
   const { idioma } = useIdioma(),
     t = textos(idioma);
-  const [fechado, setFechado] = useState(visto),
+  const [estado, setEstado] = useState<
+      "visivel" | "salvando" | "erro" | "fechado"
+    >("visivel"),
     [telefone, setTelefone] = useState(false),
     [ios, setIos] = useState(false);
+  const salvando = useRef(false);
+  const ativo = useRef(true);
   useEffect(() => {
-    setTelefone(matchMedia("(max-width: 760px)").matches);
+    ativo.current = true;
+    const media = matchMedia("(max-width: 760px)");
+    const atualizar = () => setTelefone(media.matches);
+    atualizar();
+    media.addEventListener("change", atualizar);
     setIos(/iPhone|iPad|iPod/.test(navigator.userAgent));
+    return () => {
+      ativo.current = false;
+      media.removeEventListener("change", atualizar);
+    };
   }, []);
-  if (fechado) return null;
+  if (visto || estado === "fechado") return null;
   return (
     <section className="aviso-comunicador" aria-label={t("Boas-vindas")}>
       <p>{t("O Admin pode ler todas as conversas, inclusive as diretas.")}</p>
@@ -29,10 +41,23 @@ export function Instalacao({ visto }: { visto: boolean }) {
           <a href="/notificacoes">{t("Ativar notificações")}</a>
         </>
       )}
+      {estado === "erro" && (
+        <p role="alert">{t("Não foi possível salvar. Tente novamente.")}</p>
+      )}
       <button
+        disabled={estado === "salvando"}
         onClick={async () => {
-          await comando({ acao: "aviso-visto" });
-          setFechado(true);
+          if (salvando.current) return;
+          salvando.current = true;
+          setEstado("salvando");
+          try {
+            await comando({ acao: "aviso-visto" });
+            if (ativo.current) setEstado("fechado");
+          } catch {
+            if (ativo.current) setEstado("erro");
+          } finally {
+            salvando.current = false;
+          }
         }}
       >
         {t("Entendi")}

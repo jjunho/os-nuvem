@@ -1,3 +1,4 @@
+import { validarRascunho } from "./validacao";
 import { condicoesDasReferencias } from "./versoes";
 import { listarOpcoes, registrarOpcao } from "~/modules/opcoes/opcoes.server";
 import { listarViajantes } from "~/modules/viagens/viajantes.server";
@@ -219,139 +220,15 @@ export async function lerOrcamento(id: number) {
     ),
   };
 }
-function validar(d: RascunhoOrcamento) {
-  if (
-    !d ||
-    ![0, 1].includes(d.diaInicial) ||
-    !Array.isArray(d.opcoes) ||
-    !d.opcoes.length ||
-    d.opcoes.length > 20
-  )
-    throw new Response("Orçamento inválido", { status: 400 });
-  if (
-    d.condicoes &&
-    ([
-      d.condicoes.sinal,
-      d.condicoes.saldoDias,
-      d.condicoes.validadeDias,
-      d.condicoes.iva,
-    ].some((v) => !Number.isFinite(v) || v < 0) ||
-      d.condicoes.sinal > 100 ||
-      d.condicoes.iva > 1 ||
-      d.condicoes.validadeDias > 365)
-  )
-    throw new Response("Condições inválidas", { status: 400 });
-  if (
-    d.taxaElaboracao &&
-    (!Number.isSafeInteger(d.taxaElaboracao.valor) ||
-      d.taxaElaboracao.valor < 0)
-  )
-    throw new Response("Taxa inválida", { status: 400 });
-  const ids = new Set<string>();
-  const id = (valor: string) => {
-    if (typeof valor !== "string" || !valor || ids.has(valor))
-      throw new Response("Identificador inválido", { status: 400 });
-    ids.add(valor);
-  };
-  for (const o of d.opcoes) {
-    if (!o || typeof o !== "object")
-      throw new Response("Opção inválida", { status: 400 });
-    id(o.id);
-    if (
-      typeof o.nome !== "string" ||
-      !o.nome ||
-      !Number.isInteger(o.pagantes) ||
-      o.pagantes < 0 ||
-      !Number.isInteger(o.gratuidades) ||
-      o.gratuidades < 0 ||
-      !Number.isFinite(o.margem) ||
-      o.margem < 0 ||
-      o.margem > 10 ||
-      !Array.isArray(o.dias) ||
-      o.dias.length > 730
-    )
-      throw new Response("Opção inválida", { status: 400 });
-    if (
-      o.precoEnviado !== undefined &&
-      (!Number.isSafeInteger(o.precoEnviado) || o.precoEnviado < 0)
-    )
-      throw new Response("Preço inválido", { status: 400 });
-    for (const dia of o.dias) {
-      if (!dia || typeof dia !== "object")
-        throw new Response("Dia inválido", { status: 400 });
-      id(dia.id);
-      if (
-        (dia.distanciaOnibus !== undefined &&
-          (!Number.isFinite(dia.distanciaOnibus) ||
-            dia.distanciaOnibus <= 0)) ||
-        (dia.duracaoOnibus !== undefined &&
-          (!Number.isInteger(dia.duracaoOnibus) ||
-            dia.duracaoOnibus < 1 ||
-            dia.duracaoOnibus > 4))
-      )
-        throw new Response("Distância ou duração inválida", { status: 400 });
-      if (
-        !/^\d{4}-\d{2}-\d{2}$/.test(dia.data) ||
-        !Number.isFinite(Date.parse(dia.data)) ||
-        typeof dia.periodo !== "string" ||
-        !dia.periodo.trim() ||
-        !Array.isArray(dia.linhas) ||
-        dia.linhas.length > 200
-      )
-        throw new Response("Dia inválido", { status: 400 });
-      for (const l of dia.linhas) {
-        if (!l || typeof l !== "object")
-          throw new Response("Linha inválida", { status: 400 });
-        id(l.id);
-        if (
-          l.hotel &&
-          (!l.hotel.nome ||
-            !Number.isInteger(l.hotel.quartos) ||
-            l.hotel.quartos < 1 ||
-            !Number.isInteger(l.hotel.noites) ||
-            l.hotel.noites < 1 ||
-            !Number.isFinite(l.hotel.taxas) ||
-            l.hotel.taxas < 0 ||
-            !Number.isSafeInteger(l.hotel.cafe) ||
-            l.hotel.cafe < 0)
-        )
-          throw new Response("Hotel inválido", { status: 400 });
-        if (
-          l.custoRealUSD !== undefined &&
-          (!Number.isSafeInteger(l.custoRealUSD) || l.custoRealUSD < 0)
-        )
-          throw new Response("Custo inválido", { status: 400 });
-        if (l.taxa !== undefined && (!Number.isFinite(l.taxa) || l.taxa <= 0))
-          throw new Response("Taxa inválida", { status: 400 });
-        if (l.regra && !["guia", "assistente", "carro"].includes(l.regra))
-          throw new Response("Regra inválida", { status: 400 });
-        if ((l.regra || l.item) && l.valor !== null && !l.motivoAjuste?.trim())
-          throw new Response("Informe o motivo do ajuste", { status: 400 });
-        if (
-          typeof l.nome !== "string" ||
-          !l.nome ||
-          !Number.isFinite(l.quantidade) ||
-          l.quantidade < 0 ||
-          l.quantidade > 10000 ||
-          typeof l.moeda !== "string" ||
-          !l.moeda.trim() ||
-          !["servicos", "hotel", "terceiros"].includes(l.grupo) ||
-          (l.valor !== null && (!Number.isSafeInteger(l.valor) || l.valor < 0))
-        )
-          throw new Response("Linha inválida", { status: 400 });
-      }
-    }
-  }
-}
 export async function salvarOrcamento(
   id: number,
   revisao: number,
-  dados: RascunhoOrcamento,
+  entrada: unknown,
   autorId: number,
   agora: Date,
   atualizarReferencias = false,
 ) {
-  validar(dados);
+  const dados = validarRascunho(entrada);
   dados.categoria = await registrarOpcao("categoria", dados.categoria);
   for (const o of dados.opcoes) {
     if (o.categoria)

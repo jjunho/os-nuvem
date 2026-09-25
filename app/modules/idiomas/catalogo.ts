@@ -1,6 +1,44 @@
 export type IdiomaInterface = "pt" | "ko";
 
 const coreano = {
+  "Tentativa inválida": "요청 식별자가 올바르지 않습니다",
+  "Tentativa já utilizada com outro conteúdo":
+    "같은 요청 식별자가 다른 내용에 이미 사용되었습니다",
+  "Autor obrigatório": "작성자가 필요합니다",
+  "Identificador ou revisão inválida": "식별자 또는 버전이 올바르지 않습니다",
+  "O orçamento mudou ou já foi enviado. Recarregue antes de editar.":
+    "견적이 변경되었거나 이미 전송되었습니다. 편집하기 전에 새로고침하세요.",
+  "Identificador inválido": "식별자가 올바르지 않습니다",
+  "Página inválida": "페이지가 올바르지 않습니다",
+  "O orçamento mudou. Revise a importação novamente.":
+    "견적이 변경되었습니다. 가져오기 내용을 다시 검토하세요.",
+  "Dados locais do comunicador inválidos":
+    "메신저의 로컬 데이터가 올바르지 않습니다",
+  "Resposta inválida do comunicador": "메신저 응답이 올바르지 않습니다",
+  "Quantidade inválida": "인원수가 올바르지 않습니다",
+  "Ativando notificações…": "알림 활성화 중…",
+  "Carregando…": "불러오는 중…",
+
+  "Não foi possível copiar. Tente novamente.":
+    "복사하지 못했습니다. 다시 시도하세요.",
+  "O orçamento mudou. Recarregue antes de confirmar.":
+    "견적이 변경되었습니다. 확인하기 전에 새로고침하세요.",
+  "Salve o orçamento antes de confirmar o pedido.":
+    "요청을 확인하기 전에 견적을 저장하세요.",
+  "Carregando documentos…": "문서를 불러오는 중…",
+  "Não foi possível carregar os documentos": "문서를 불러오지 못했습니다",
+  "Nenhum documento": "문서 없음",
+  "Tentar novamente": "다시 시도",
+  "Copiando…": "복사 중…",
+  "Não foi possível copiar o texto": "텍스트를 복사하지 못했습니다",
+  "Informe o motivo": "사유를 입력하세요",
+  "Ação inválida": "잘못된 작업",
+  "Listas pessoais são protegidas": "개인 목록은 보호됩니다",
+  "Data do aceite inválida": "수락 일자가 올바르지 않습니다",
+  "Datas inválidas": "날짜가 올바르지 않습니다",
+  "Arquivo maior que 10 MB": "파일이 10MB를 초과합니다",
+  "Os dados mudaram. Recarregue antes de escolher.":
+    "데이터가 변경되었습니다. 선택하기 전에 새로고침하세요.",
   "Etapa atualizada": "단계 업데이트",
   "Etapa passou para": "단계 변경:",
   "Modelos de etapa": "단계 템플릿",

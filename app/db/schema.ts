@@ -290,6 +290,28 @@ export const formulariosPlanejamento = pgTable("formularios_planejamento", {
   revogadoEm: timestamp("revogado_em", { withTimezone: true }),
 });
 
+export const recibosPlanejamento = pgTable(
+  "recibos_planejamento",
+  {
+    viagemId: integer("viagem_id")
+      .notNull()
+      .references(() => viagens.id, { onDelete: "cascade" }),
+    autorId: integer("autor_id")
+      .notNull()
+      .references(() => usuarios.id),
+    operacao: text("operacao").notNull(),
+    tentativaId: text("tentativa_id").notNull(),
+    payloadHash: text("payload_hash").notNull(),
+    resultado: jsonb("resultado")
+      .$type<{ tipo: "formulario"; link: string } | { tipo: "respostas" }>()
+      .notNull(),
+    criadoEm: timestamp("criado_em", { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.viagemId, t.autorId, t.operacao, t.tentativaId] }),
+  ],
+);
+
 export const respostasConflitantes = pgTable("respostas_conflitantes", {
   id: serial("id").primaryKey(),
   viagemId: integer("viagem_id")

@@ -94,7 +94,17 @@ export async function receberMidia(
     if (salvo.id !== id) await unlink(caminho);
     return { id: m.id, midiaId: salvo.id };
   } catch (e) {
-    await unlink(caminho).catch(() => {});
+    // A failed response/lookup after COMMIT is an unknown result. Only
+    // remove bytes once the database confirms they are not referenced.
+    try {
+      const salvo = await pool.query(
+        "select id from midias_comunicador where id=$1",
+        [id],
+      );
+      if (salvo.rowCount === 0) await unlink(caminho).catch(() => {});
+    } catch {
+      // Keep the file when the database cannot establish the commit outcome.
+    }
     throw e;
   }
 }

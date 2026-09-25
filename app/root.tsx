@@ -50,7 +50,9 @@ export default function App() {
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const msg = isRouteErrorResponse(error)
-    ? `${error.status} ${error.statusText}`
+    ? error.status < 500 && typeof error.data === "string" && error.data
+      ? error.data
+      : `${error.status} ${error.statusText}`
     : error instanceof Error
       ? error.message
       : "Erro";

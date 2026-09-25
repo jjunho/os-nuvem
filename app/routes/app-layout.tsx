@@ -163,11 +163,15 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
           <button>{t("Sair")}</button>
         </Form>
       </header>
-      <Instalacao visto={loaderData.preferencia.aviso_visto} />
+      <Instalacao
+        key={loaderData.usuario.id}
+        visto={loaderData.preferencia.aviso_visto}
+      />
       <main className="pagina">
         <Outlet />
       </main>
       <Painel
+        key={loaderData.usuario.id}
         aberta={comunicador}
         aoNaoLidas={setNaoLidas}
         usuarioId={loaderData.usuario.id}
@@ -184,7 +188,9 @@ function Busca({ onFechar }: { onFechar: () => void }) {
   const navigate = useNavigate();
   const input = useRef<HTMLInputElement>(null);
   const [sel, setSel] = useState(0);
-  const resultados = fetcher.data?.resultados ?? [];
+  const resultados =
+    fetcher.state === "idle" ? (fetcher.data?.resultados ?? []) : [];
+  const indice = Math.min(Math.max(0, sel), Math.max(0, resultados.length - 1));
 
   useEffect(() => input.current?.focus(), []);
 
@@ -210,16 +216,19 @@ function Busca({ onFechar }: { onFechar: () => void }) {
           }}
           onKeyDown={(e) => {
             if (e.key === "ArrowDown")
-              setSel((s) => Math.min(s + 1, resultados.length - 1));
+              setSel((s) =>
+                Math.max(0, Math.min(s + 1, resultados.length - 1)),
+              );
             if (e.key === "ArrowUp") setSel((s) => Math.max(s - 1, 0));
-            if (e.key === "Enter" && resultados[sel]) abrir(resultados[sel].id);
+            if (e.key === "Enter" && resultados[indice])
+              abrir(resultados[indice].id);
           }}
         />
         <ul>
           {resultados.map((r, i) => (
             <li
               key={`${r.id}-${r.contato}`}
-              className={i === sel ? "ativo" : ""}
+              className={i === indice ? "ativo" : ""}
               onMouseDown={() => abrir(r.id)}
             >
               <strong>{r.codigo}</strong> {r.contato}{" "}

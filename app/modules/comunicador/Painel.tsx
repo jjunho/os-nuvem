@@ -1,5 +1,11 @@
+import {
+  confirmarEnvio,
+  identificador,
+  ConfirmacaoInvalida,
+} from "./contratos";
 import { rotuloEtapa } from "~/modules/viagens/rotulos";
 import { Reporte } from "./Reporte";
+import { criarGravacao, type FaseGravacao } from "./gravacao";
 import {
   guardarSaida,
   listarSaidas,
@@ -9,20 +15,35 @@ import {
 } from "./offline.client";
 import { comprimirFoto, enviarArquivo } from "./midia.client";
 import type { Cartao } from "./cartao";
-import { segmentar } from "./leitura";
-import { useEffect, useRef, useState } from "react";
+import {
+  compositor,
+  novoCompositor,
+  mesmaSelecao,
+  type Selecao,
+} from "./estado-ui";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { useLocation } from "react-router";
 import { useIdioma } from "~/modules/idiomas/idioma";
 import { textos, erroTraduzido, atividadeTarefa } from "./textos";
 import type { Conversa, Mensagem, Pessoa } from "./comunicador.server";
+function descreverErro(e: unknown) {
+  return e instanceof Error ? e.message : String(e);
+}
 export async function comando(d: object) {
   const r = await fetch("/comunicador/api", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(d),
   });
-  if (!r.ok) throw new Error(await r.text());
-  return r.json();
+  if (!r.ok) {
+    const mensagem = await r.text();
+    if (r.status >= 500 || r.status === 408)
+      throw new ConfirmacaoInvalida(mensagem);
+    throw Error(mensagem);
+  }
+  return r.json().catch(() => {
+    throw new ConfirmacaoInvalida("Resposta inválida do comunicador");
+  });
 }
 export function Painel({
   fechar,
@@ -41,18 +62,47 @@ export function Painel({
   const [conversas, setConversas] = useState<Conversa[]>([]),
     [pessoas, setPessoas] = useState<Pessoa[]>([]);
   const [id, setId] = useState<number | null>(null),
-    [msgs, setMsgs] = useState<Mensagem[]>([]),
-    [texto, setTexto] = useState("");
-  const [bug, setBug] = useState(false);
+    [msgs, setMsgs] = useState<Mensagem[]>([]);
+  const [composicao, dispatch] = useReducer(compositor, null, novoCompositor);
+  const compositorAtual = useRef(composicao);
+  compositorAtual.current = composicao;
+  function emitir(evento: Parameters<typeof compositor>[1]) {
+    compositorAtual.current = compositor(compositorAtual.current, evento);
+    dispatch(evento);
+  }
+  const texto = composicao.rascunho.texto;
+  const citada =
+    composicao.rascunho.tipo === "citar"
+      ? composicao.rascunho.mensagemId
+      : null;
+  const edicao =
+    composicao.rascunho.tipo === "editar"
+      ? composicao.rascunho.mensagemId
+      : null;
+  const setTexto = (texto: string) => emitir({ tipo: "texto", texto });
+  const [carga, setCarga] = useState<
+    "vazia" | "carregando" | "pronta" | "falhou"
+  >("vazia");
+  const carregando = useRef(false);
+  const sincronizacaoPendente = useRef<Selecao | null>(null);
+  const selecao = useRef<Selecao>({ conversaId: null, geracao: 0 });
+  const montado = useRef(true);
+  const consultas = useRef<Record<string, number>>({});
+  const [referenciasTarefa, setReferenciasTarefa] = useState<
+    { referencia: string; titulo: string; viagemId?: number }[]
+  >([]);
+  const [bug, setBug] = useState<string | null>(null);
   const [foto, setFoto] = useState<string | null>(null),
     [zoom, setZoom] = useState(1),
-    [gravando, setGravando] = useState(false),
+    [gravacao, setGravacao] = useState<FaseGravacao>("ociosa"),
     [mover, setMover] = useState<string | null>(null),
     [viajantes, setViajantes] = useState<
       { id: number; nome: string; codigo: string }[]
     >([]);
-  const gravador = useRef<MediaRecorder | null>(null);
-  const pressionado = useRef(false);
+  const [gravador] = useState(() => criarGravacao());
+  function cancelarGravacao() {
+    gravador.cancelar();
+  }
   const [cartoes, setCartoes] = useState<Cartao[]>([]),
     [referencias, setReferencias] = useState<
       { referencia: string; titulo: string; viagemId?: number }[]
@@ -60,6 +110,10 @@ export function Painel({
   const [tarefa, setTarefa] = useState<{
     mensagemId?: number;
     titulo: string;
+    clientId: string;
+    conversaId: number;
+    fase: "editando" | "salvando";
+    erro?: string;
   } | null>(null);
   const [leitores, setLeitores] = useState<
     { nome: string; lida_ate: number }[]
@@ -69,9 +123,7 @@ export function Painel({
   >([]);
   const [perfil, setPerfil] = useState({ usuario: 0, papel: "" });
   const [grupos, setGrupos] = useState<Conversa[]>([]),
-    [arquivadas, setArquivadas] = useState(false),
-    [citada, setCitada] = useState<number | null>(null),
-    [edicao, setEdicao] = useState<number | null>(null);
+    [arquivadas, setArquivadas] = useState(false);
   const [outro, setOutro] = useState(""),
     [erro, setErro] = useState("");
   const [pendentes, setPendentes] = useState<Saida[]>([]);
@@ -89,8 +141,92 @@ export function Painel({
   const mensagensRef = useRef(msgs);
   mensagensRef.current = msgs;
   const listaRef = useRef<HTMLDivElement>(null);
-  const tarefaClientId = useRef(crypto.randomUUID());
+  const tarefaAtual = useRef<string | null>(null);
+  const tarefasEnviando = useRef(new Set<string>());
+  const acoesEnviando = useRef(new Set<string>());
+  function abrirTarefa(dados: { mensagemId?: number; titulo: string }) {
+    if (!id) return;
+    const clientId = crypto.randomUUID();
+    tarefaAtual.current = clientId;
+    setReferenciasTarefa([]);
+    leituras.current.get("viagensTarefa")?.controle.abort();
+    consultas.current.viagensTarefa =
+      (consultas.current.viagensTarefa ?? 0) + 1;
+    setTarefa({
+      ...dados,
+      conversaId: id,
+      clientId,
+      fase: "editando",
+    });
+  }
+  function vigente(escopo: Selecao) {
+    return montado.current && mesmaSelecao(selecao.current, escopo);
+  }
+  const leituras = useRef(
+    new Map<string, { controle: AbortController; local: boolean }>(),
+  );
+  function cancelarLeituras(somenteLocais = false) {
+    for (const [chave, leitura] of leituras.current) {
+      if (somenteLocais && !leitura.local) continue;
+      leitura.controle.abort();
+      leituras.current.delete(chave);
+    }
+  }
+  async function json(
+    url: string,
+    chave: string,
+    local = true,
+    offline = false,
+  ) {
+    leituras.current.get(chave)?.controle.abort();
+    const leitura = { controle: new AbortController(), local };
+    leituras.current.set(chave, leitura);
+    try {
+      if (offline)
+        return await leituraOffline(usuarioId, url, leitura.controle.signal);
+      const r = await fetch(url, { signal: leitura.controle.signal });
+      if (!r.ok) {
+        if (
+          r.status === 403 &&
+          chave === "sincronizar" &&
+          !leitura.controle.signal.aborted
+        ) {
+          setMsgs([]);
+          setCartoes([]);
+          setLeitores([]);
+          setCarga("falhou");
+        }
+        throw Error(await r.text());
+      }
+      return await r.json();
+    } finally {
+      if (leituras.current.get(chave) === leitura)
+        leituras.current.delete(chave);
+    }
+  }
+  async function consultar<T>(
+    chave: string,
+    url: string,
+    aplicar: (d: { resultados: T[] }) => void,
+    local = true,
+  ) {
+    const pedido = (consultas.current[chave] =
+      (consultas.current[chave] ?? 0) + 1);
+    const escopo = selecao.current;
+    const aceita = () =>
+      montado.current &&
+      consultas.current[chave] === pedido &&
+      (!local || vigente(escopo));
+    try {
+      const d = await json(url, chave, local);
+      if (aceita()) aplicar(d);
+    } catch (e) {
+      if (aceita() && !(e instanceof DOMException && e.name === "AbortError"))
+        setErro(descreverErro(e));
+    }
+  }
   function pagina(
+    escopo: Selecao,
     d: {
       mensagens: Mensagem[];
       cartoes?: Cartao[];
@@ -98,6 +234,7 @@ export function Painel({
     },
     substituir = false,
   ) {
+    if (!vigente(escopo)) return;
     setMsgs((p) =>
       [
         ...new Map(
@@ -115,46 +252,50 @@ export function Painel({
     ]);
     if (d.leitores) setLeitores(d.leitores);
   }
-  const sincronizando = useRef(false);
-  const sincronizarNovamente = useRef(false);
+  const sincronizando = useRef<{ escopo: Selecao; repetir: boolean } | null>(
+    null,
+  );
   async function sincronizar(n: number) {
-    if (sincronizando.current) {
-      sincronizarNovamente.current = true;
+    const escopo = selecao.current;
+    if (!vigente(escopo) || escopo.conversaId !== n || n < 0) return;
+    if (carregando.current) {
+      sincronizacaoPendente.current = escopo;
       return;
     }
-    sincronizando.current = true;
+    const anterior = sincronizando.current;
+    if (anterior && mesmaSelecao(anterior.escopo, escopo)) {
+      anterior.repetir = true;
+      return;
+    }
+    const operacao = { escopo, repetir: false };
+    sincronizando.current = operacao;
     try {
       do {
-        sincronizarNovamente.current = false;
-        let cursor = mensagensRef.current[0]?.id;
-        cursor = cursor ? cursor - 1 : 0;
-        while (atual.current === n) {
-          const r = await fetch(
+        operacao.repetir = false;
+        let cursor = Math.max(0, (mensagensRef.current[0]?.id ?? 1) - 1);
+        while (vigente(escopo)) {
+          const d = await json(
             `/comunicador/api?conversa=${n}&depois=${cursor}`,
+            "sincronizar",
           );
-          if (!r.ok) {
-            if (r.status === 403) {
-              setMsgs([]);
-              setCartoes([]);
-            }
-            break;
-          }
-          const d = await r.json();
-          if (atual.current !== n) break;
-          pagina(d);
+          if (!vigente(escopo)) return;
+          pagina(escopo, d);
           if (d.mensagens.length < 50) break;
           cursor = d.mensagens.at(-1).id;
         }
-      } while (sincronizarNovamente.current && atual.current === n);
-    } catch {
-      // A próxima reconexão retoma a partir das mensagens já carregadas.
+      } while (operacao.repetir && vigente(escopo));
+    } catch (e) {
+      if (vigente(escopo)) setErro(descreverErro(e));
     } finally {
-      sincronizando.current = false;
+      if (sincronizando.current === operacao) sincronizando.current = null;
     }
   }
   async function atualizar() {
+    const pedido = (consultas.current.lista =
+      (consultas.current.lista ?? 0) + 1);
     try {
-      const d = await leituraOffline(usuarioId, "/comunicador/api");
+      const d = await json("/comunicador/api", "lista", false, true);
+      if (!montado.current || consultas.current.lista !== pedido) return;
       setConversas(d.conversas);
       const total = d.conversas.reduce(
         (n: number, c: Conversa) => n + c.nao_lidas,
@@ -173,63 +314,161 @@ export function Painel({
       setPreferencia(d.preferencia);
     } catch {}
   }
-  async function abrir(n: number, inicial = false) {
-    setId(n);
+  function selecionar(n: number | null, preservar = false) {
+    cancelarLeituras(true);
+    const anterior = selecao.current.conversaId;
+    const escopo = { conversaId: n, geracao: selecao.current.geracao + 1 };
+    selecao.current = escopo;
+    sincronizacaoPendente.current = null;
     atual.current = n;
+    setId(n);
+    setMsgs([]);
+    mensagensRef.current = [];
+    setCartoes([]);
+    setLeitores([]);
+    setErro("");
+    if (anterior !== n) {
+      setReferencias([]);
+      setReferenciasTarefa([]);
+    }
+    if (!preservar && anterior !== n) {
+      setBug(null);
+      setTarefa(null);
+      tarefaAtual.current = null;
+      emitir({ tipo: "conversa", conversaId: n });
+    } else if (preservar && anterior !== null && n !== null) {
+      emitir({ tipo: "materializada", anterior, conversaId: n });
+      setTarefa((atual) => (atual ? { ...atual, conversaId: n } : null));
+    }
+    if (anterior !== n) {
+      setMover(null);
+      setViajantes([]);
+      cancelarGravacao();
+    }
+    carregando.current = n !== null && n > 0;
+    setCarga(n === null ? "vazia" : n < 0 ? "pronta" : "carregando");
+    return escopo;
+  }
+  async function abrir(
+    n: number,
+    inicial = false,
+    mensagemId?: number,
+    preservar = false,
+  ) {
+    const escopo = selecionar(n, preservar);
+    if (n < 0) return;
     localStorage.setItem(`comunicador-conversa:${usuarioId}`, String(n));
     try {
-      const d = await leituraOffline(
-        usuarioId,
-        `/comunicador/api?conversa=${n}${inicial ? "&inicial=1" : ""}`,
+      const d = await json(
+        `/comunicador/api?conversa=${n}${mensagemId ? `&antes=${mensagemId + 1}` : inicial ? "&inicial=1" : ""}`,
+        "abrir",
+        true,
+        true,
       );
-      if (atual.current === n) {
-        pagina(d, true);
+      if (!vigente(escopo)) return;
+      pagina(escopo, d, true);
+      carregando.current = false;
+      setCarga("pronta");
+      if (
+        sincronizacaoPendente.current &&
+        mesmaSelecao(sincronizacaoPendente.current, escopo)
+      ) {
+        sincronizacaoPendente.current = null;
+        mensagensRef.current = d.mensagens;
+        void sincronizar(n);
       }
+      if (mensagemId)
+        requestAnimationFrame(() => {
+          if (vigente(escopo))
+            document.getElementById(`mensagem-${mensagemId}`)?.scrollIntoView();
+        });
     } catch (e) {
-      setMsgs([]);
-      setErro(String(e));
+      if (!vigente(escopo)) return;
+      carregando.current = false;
+      setCarga("falhou");
+      setErro(descreverErro(e));
+    }
+  }
+  async function carregarPagina(
+    direcao: "antes" | "depois",
+    cursor: number,
+    mensagemId?: number,
+  ) {
+    const escopo = selecao.current;
+    if (!escopo.conversaId || escopo.conversaId < 0 || carregando.current)
+      return false;
+    const chave = `pagina:${direcao}:${cursor}`;
+    const pedido = (consultas.current[chave] =
+      (consultas.current[chave] ?? 0) + 1);
+    const aceita = () => vigente(escopo) && consultas.current[chave] === pedido;
+    try {
+      const d = await json(
+        `/comunicador/api?conversa=${escopo.conversaId}&${direcao}=${cursor}`,
+        chave,
+        true,
+        true,
+      );
+      if (!aceita()) return false;
+      pagina(escopo, d);
+      if (mensagemId)
+        requestAnimationFrame(() => {
+          if (vigente(escopo))
+            document.getElementById(`mensagem-${mensagemId}`)?.scrollIntoView();
+        });
+      return true;
+    } catch (e) {
+      if (aceita() && !(e instanceof DOMException && e.name === "AbortError"))
+        setErro(descreverErro(e));
+      return false;
     }
   }
   useEffect(() => {
-    const q = new URLSearchParams(rota.search);
-    const vi = Number(q.get("interna")),
-      c = Number(q.get("conversa")),
-      m = Number(q.get("mensagem"));
-    if (m)
-      void fetch(`/comunicador/api?mensagem=${m}`)
-        .then((r) => r.json())
-        .then(async (d) => {
-          await abrir(d.conversaId);
-          const r = await leituraOffline(
-            usuarioId,
-            `/comunicador/api?conversa=${d.conversaId}&antes=${m + 1}`,
-          );
-          pagina(r, true);
-          requestAnimationFrame(() =>
-            document.getElementById(`mensagem-${m}`)?.scrollIntoView(),
-          );
-        });
-    else if (c) void abrir(c, true);
-    else if (vi)
-      void fetch("/comunicador/api")
-        .then((r) => r.json())
-        .then((d) => {
-          const c = d.conversas.find(
-            (x: Conversa) => x.tipo === "interna" && x.viagem_id === vi,
-          );
-          if (c) void abrir(c.id);
-          else {
-            setId(-vi);
-            atual.current = -vi;
+    montado.current = true;
+    return () => {
+      montado.current = false;
+      cancelarLeituras();
+      selecao.current = {
+        ...selecao.current,
+        geracao: selecao.current.geracao + 1,
+      };
+      cancelarGravacao();
+    };
+  }, []);
+  const parametros = new URLSearchParams(rota.search);
+  const internaRota = parametros.get("interna"),
+    conversaRota = parametros.get("conversa"),
+    mensagemRota = parametros.get("mensagem");
+  useEffect(() => {
+    const vi = Number(internaRota),
+      c = Number(conversaRota),
+      m = Number(mensagemRota);
+    if (m || vi) {
+      const escopo = selecionar(null);
+      void (async () => {
+        try {
+          if (m) {
+            const d = await json(`/comunicador/api?mensagem=${m}`, "rota");
+            if (vigente(escopo)) await abrir(d.conversaId, false, m);
+          } else {
+            const d = await json("/comunicador/api", "rota");
+            if (!vigente(escopo)) return;
+            const encontrada = d.conversas.find(
+              (x: Conversa) => x.tipo === "interna" && x.viagem_id === vi,
+            );
+            await abrir(encontrada?.id ?? -vi);
           }
-        });
+        } catch (e) {
+          if (vigente(escopo)) setErro(descreverErro(e));
+        }
+      })();
+    } else if (c) void abrir(c, true);
     else {
       const salvo = Number(
         localStorage.getItem(`comunicador-conversa:${usuarioId}`),
       );
-      if (salvo > 0) void abrir(salvo, true);
+      if (identificador(salvo)) void abrir(salvo, true);
     }
-  }, [rota.search]);
+  }, [internaRota, conversaRota, mensagemRota]);
   useEffect(() => {
     aba.current = crypto.randomUUID();
     void atualizar();
@@ -239,14 +478,22 @@ export function Painel({
       if (atual.current && atual.current > 0 && visivel.current) {
         const evento = JSON.parse(e.data);
         if (evento.id && evento.id !== atual.current) return;
-        if (evento.tipo === "leitura")
-          void leituraOffline(
-            usuarioId,
+        if (evento.tipo === "leitura") {
+          const escopo = selecao.current;
+          const pedido = (consultas.current.leitores =
+            (consultas.current.leitores ?? 0) + 1);
+          void json(
             `/comunicador/api?conversa=${atual.current}`,
+            "leitores",
+            true,
+            true,
           )
-            .then((d) => setLeitores(d.leitores))
+            .then((d) => {
+              if (vigente(escopo) && consultas.current.leitores === pedido)
+                setLeitores(d.leitores);
+            })
             .catch(() => {});
-        else void sincronizar(atual.current);
+        } else void sincronizar(atual.current);
       }
     };
     return () => es.close();
@@ -275,7 +522,8 @@ export function Painel({
     };
   }, [id, aberta]);
   useEffect(() => {
-    if (!aberta || !id || id < 0 || !listaRef.current) return;
+    if (!aberta || !id || id < 0 || carga !== "pronta" || !listaRef.current)
+      return;
     let maior = 0;
     let timer: ReturnType<typeof setTimeout>;
     const vistos = new Set<number>();
@@ -312,7 +560,7 @@ export function Painel({
       clearTimeout(timer);
       document.removeEventListener("visibilitychange", confirmar);
     };
-  }, [aberta, id, msgs]);
+  }, [aberta, id, msgs, carga]);
   useEffect(() => {
     if (aberta && atual.current && atual.current > 0)
       void sincronizar(atual.current);
@@ -324,7 +572,8 @@ export function Painel({
     try {
       const fila = await listarSaidas(usuarioId);
       for (const item of fila) {
-        if (item.falhou) break;
+        if (item.falhou || !montado.current) break;
+        const escopo = selecao.current;
         try {
           const res = item.arquivo
             ? await enviarArquivo(
@@ -343,13 +592,23 @@ export function Painel({
                     }
                   : { acao: "enviar", ...item },
               );
+          const confirmado = confirmarEnvio(
+            res,
+            item.conversaId,
+            !!item.arquivo,
+          );
           await apagarSaida(item.ordem!);
           setPendentes((p) => p.filter((m) => m.clientId !== item.clientId));
-          if (atual.current === item.conversaId)
-            if (item.conversaId < 0) await abrir(res.conversaId);
+          if (vigente(escopo) && escopo.conversaId === item.conversaId)
+            if (item.conversaId < 0)
+              await abrir(confirmado.conversaId, false, undefined, true);
             else await sincronizar(item.conversaId);
         } catch (e) {
-          if (navigator.onLine && !(e instanceof TypeError)) {
+          if (
+            navigator.onLine &&
+            !(e instanceof TypeError) &&
+            !(e instanceof ConfirmacaoInvalida)
+          ) {
             item.falhou = true;
             await guardarSaida(item);
             setPendentes((p) =>
@@ -359,15 +618,22 @@ export function Painel({
           break;
         }
       }
+    } catch (e) {
+      if (montado.current) setErro(descreverErro(e));
     } finally {
       drenando.current = false;
     }
   }
   useEffect(() => {
-    void listarSaidas(usuarioId).then((s) => {
-      setPendentes(s);
-      void drenar();
-    });
+    void listarSaidas(usuarioId)
+      .then((s) => {
+        if (!montado.current) return;
+        setPendentes(s);
+        void drenar();
+      })
+      .catch((e) => {
+        if (montado.current) setErro(descreverErro(e));
+      });
     const online = () => {
       void drenar();
       if (visivel.current && atual.current && atual.current > 0)
@@ -381,104 +647,123 @@ export function Painel({
     };
   }, [usuarioId]);
   async function enfileirar(item: Saida) {
+    const salvo = await guardarSaida(item);
+    if (!montado.current) return;
+    setPendentes((p) => [
+      ...p.filter((m) => m.clientId !== salvo.clientId),
+      salvo,
+    ]);
+    void drenar();
+  }
+  async function reenviar(item: Saida) {
+    const escopo = selecao.current;
     try {
-      const salvo = await guardarSaida(item);
-      setPendentes((p) => [
-        ...p.filter((m) => m.clientId !== salvo.clientId),
-        salvo,
-      ]);
-      void drenar();
+      await enfileirar({ ...item, falhou: false });
     } catch (e) {
-      setPendentes((p) => [
-        ...p.filter((m) => m.clientId !== item.clientId),
-        { ...item, falhou: true },
-      ]);
-      setErro(String(e));
+      if (vigente(escopo)) setErro(descreverErro(e));
     }
   }
-  async function enviar(clientId: string = crypto.randomUUID(), valor = texto) {
-    if (!id || !valor.trim()) return;
-    if (valor.startsWith("/bug")) {
-      setBug(true);
+  async function enviar() {
+    const s = compositorAtual.current;
+    if (s.fase === "enviando" || !s.conversaId || !s.rascunho.texto.trim())
+      return;
+    const { rascunho, conversaId } = s;
+    if (rascunho.tipo !== "editar" && rascunho.texto.startsWith("/bug")) {
+      setBug(crypto.randomUUID());
+      emitir({ tipo: "cancelar" });
       return;
     }
-    if (valor.startsWith("/tarefa")) {
-      setTarefa({ titulo: valor.replace(/^\/tarefa\s*/, "") });
+    if (rascunho.tipo !== "editar" && rascunho.texto.startsWith("/tarefa")) {
+      abrirTarefa({ titulo: rascunho.texto.replace(/^\/tarefa\s*/, "") });
+      emitir({ tipo: "cancelar" });
       return;
     }
-    const anterior = pendentes.find((p) => p.clientId === clientId);
-    setTexto("");
-    setErro("");
-    await enfileirar({
-      ...anterior,
-      clientId,
-      conversaId: id,
-      usuarioId,
-      texto: valor,
-      citadaId: citada,
-      falhou: false,
-    });
-    setCitada(null);
+    const tentativa = crypto.randomUUID();
+    const escopo = selecao.current;
+    emitir({ tipo: "enviar", tentativa });
+    try {
+      if (rascunho.tipo === "editar") {
+        await comando({
+          acao: "editar",
+          mensagemId: rascunho.mensagemId,
+          texto: rascunho.texto,
+        });
+        if (vigente(escopo)) void sincronizar(conversaId);
+      } else
+        await enfileirar({
+          clientId: tentativa,
+          conversaId,
+          usuarioId,
+          texto: rascunho.texto,
+          citadaId: rascunho.tipo === "citar" ? rascunho.mensagemId : null,
+          falhou: false,
+        });
+      emitir({ tipo: "enviado", tentativa });
+    } catch (e) {
+      emitir({ tipo: "falhou", tentativa, erro: descreverErro(e) });
+    }
   }
-  async function arquivo(f: File) {
-    if (!id || id < 0) return;
+  async function arquivo(f: File, conversaId = id) {
+    if (!conversaId || conversaId < 0) return;
+    const escopo = selecao.current;
     try {
       const pronto = f.type.startsWith("image/") ? await comprimirFoto(f) : f;
       await enfileirar({
         clientId: crypto.randomUUID(),
         usuarioId,
-        conversaId: id,
+        conversaId,
         texto: f.type.startsWith("image/") ? "📷" : "🎙",
         arquivo: pronto,
         falhou: false,
       });
     } catch (e) {
-      setErro(String(e));
+      if (vigente(escopo)) setErro(descreverErro(e));
     }
   }
-  async function gravar() {
-    pressionado.current = true;
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (!pressionado.current) {
-        stream.getTracks().forEach((t) => t.stop());
-        return;
-      }
-      const tipo = ["audio/webm", "audio/mp4", "audio/ogg"].find((m) =>
-        MediaRecorder.isTypeSupported(m),
-      );
-      const r = new MediaRecorder(
-        stream,
-        tipo ? { mimeType: tipo } : undefined,
-      );
-      gravador.current = r;
-      const partes: Blob[] = [];
-      r.ondataavailable = (e) => {
-        if (e.data.size) partes.push(e.data);
-      };
-      r.onstop = () => {
-        stream.getTracks().forEach((t) => t.stop());
-        setGravando(false);
-        void arquivo(new File(partes, "voz", { type: r.mimeType }));
-      };
-      r.start();
-      setGravando(true);
-    } catch {
-      setErro(t("Microfone indisponível"));
-    }
+  function gravar() {
+    const escopo = selecao.current;
+    if (!escopo.conversaId || escopo.conversaId < 0 || carga !== "pronta")
+      return;
+    const sessaoVisivel = () =>
+      montado.current &&
+      visivel.current &&
+      selecao.current.conversaId === escopo.conversaId;
+    void gravador.iniciar(
+      escopo.conversaId,
+      (conversaId, f) => {
+        if (sessaoVisivel()) void arquivo(f, conversaId);
+      },
+      (fase) => {
+        if (montado.current) setGravacao(fase);
+      },
+      () => {
+        if (sessaoVisivel()) setErro("Microfone indisponível");
+      },
+    );
   }
   function parar() {
-    pressionado.current = false;
-    if (gravador.current?.state === "recording") gravador.current.stop();
+    gravador.parar();
   }
+  useEffect(() => {
+    if (!aberta) cancelarGravacao();
+  }, [aberta]);
   const conversa = conversas.find((c) => c.id === id);
   async function agir(d: object) {
+    const escopo = selecao.current;
+    const chave = JSON.stringify(d);
+    if (acoesEnviando.current.has(chave)) return false;
+    acoesEnviando.current.add(chave);
     try {
       await comando(d);
       await atualizar();
-      if (id) await abrir(id);
+      if (vigente(escopo) && escopo.conversaId && escopo.conversaId > 0)
+        await sincronizar(escopo.conversaId);
+      return true;
     } catch (e) {
-      setErro(String(e));
+      if (vigente(escopo)) setErro(descreverErro(e));
+      return false;
+    } finally {
+      acoesEnviando.current.delete(chave);
     }
   }
   if (!aberta) return null;
@@ -539,15 +824,20 @@ export function Painel({
       <button
         disabled={!outro}
         onClick={async () => {
+          if (acoesEnviando.current.has("direta")) return;
+          acoesEnviando.current.add("direta");
+          const escopo = selecao.current;
           try {
             const c = await comando({
               acao: "direta",
               usuarioId: Number(outro),
             });
             await atualizar();
-            await abrir(c.id);
+            if (vigente(escopo)) await abrir(c.id);
           } catch (e) {
-            setErro(String(e));
+            if (vigente(escopo)) setErro(descreverErro(e));
+          } finally {
+            acoesEnviando.current.delete("direta");
           }
         }}
       >
@@ -625,8 +915,13 @@ export function Painel({
             const f = new FormData(e.currentTarget),
               q = new URLSearchParams();
             for (const [k, v] of f) q.set(k, String(v));
-            const r = await fetch("/comunicador/api?" + q);
-            if (r.ok) setResultados((await r.json()).resultados);
+            setResultados([]);
+            await consultar<(typeof resultados)[number]>(
+              "busca",
+              "/comunicador/api?" + q,
+              (d) => setResultados(d.resultados),
+              false,
+            );
           }}
         >
           <input name="busca" aria-label={t("Buscar mensagens")} required />
@@ -656,14 +951,7 @@ export function Painel({
           <button
             key={r.id}
             onClick={async () => {
-              await abrir(r.conversa_id);
-              const x = await fetch(
-                `/comunicador/api?conversa=${r.conversa_id}&antes=${r.id + 1}`,
-              );
-              pagina(await x.json(), true);
-              requestAnimationFrame(() =>
-                document.getElementById(`mensagem-${r.id}`)?.scrollIntoView(),
-              );
+              await abrir(r.conversa_id, false, r.id);
             }}
           >
             {r.autor}: {r.texto}
@@ -673,32 +961,30 @@ export function Painel({
       <p role="alert">{erroTraduzido(idioma, erro)}</p>
       {bug && id && (
         <Reporte
-          cancelar={() => setBug(false)}
-          enviar={async (texto, arquivo) => {
-            try {
-              let conversaId = id;
-              if (id < 0)
-                conversaId = (
-                  await comando({
-                    acao: "interna",
-                    viagemId: -id,
-                    texto: "/bug",
-                    clientId: crypto.randomUUID(),
-                  })
-                ).conversaId;
-              await enfileirar({
-                clientId: crypto.randomUUID(),
-                usuarioId,
-                conversaId,
-                texto,
-                arquivo,
-                falhou: false,
-              });
-              setBug(false);
-              setTexto("");
-            } catch (e) {
-              setErro(String(e));
-            }
+          cancelar={() => setBug(null)}
+          key={bug}
+          enviar={async (texto, arquivo, clientId) => {
+            const escopo = selecao.current;
+            let conversaId = id;
+            if (id < 0)
+              conversaId = (
+                await comando({
+                  acao: "interna",
+                  viagemId: -id,
+                  texto: "/bug",
+                  clientId: `${clientId}-interna`,
+                })
+              ).conversaId;
+            await enfileirar({
+              clientId,
+              usuarioId,
+              conversaId,
+              texto,
+              arquivo,
+              falhou: false,
+            });
+            if (vigente(escopo))
+              setBug((atual) => (atual === bug ? null : atual));
           }}
         />
       )}
@@ -730,124 +1016,185 @@ export function Painel({
           <label>
             {t("Buscar Viajante")}
             <input
-              onChange={(e) =>
-                void fetch(
+              onChange={(e) => {
+                setViajantes([]);
+                void consultar<(typeof viajantes)[number]>(
+                  "viajantes",
                   `/comunicador/api?viajantes=${encodeURIComponent(e.target.value)}`,
-                )
-                  .then((r) => r.json())
-                  .then((d) => setViajantes(d.resultados))
-              }
+                  (d) => setViajantes(d.resultados),
+                );
+              }}
             />
           </label>
           {viajantes.map((v) => (
             <button
               key={v.id}
               onClick={async () => {
-                await agir({ acao: "mover", midiaId: mover, viajanteId: v.id });
-                setMover(null);
+                const escopo = selecao.current;
+                const operacao = mover;
+                if (
+                  await agir({
+                    acao: "mover",
+                    midiaId: mover,
+                    viajanteId: v.id,
+                  })
+                ) {
+                  if (vigente(escopo))
+                    setMover((atual) => (atual === operacao ? null : atual));
+                }
               }}
             >
               {v.nome} · {v.codigo}
             </button>
           ))}
-          <button onClick={() => setMover(null)}>{t("Cancelar")}</button>
+          <button
+            onClick={() => {
+              leituras.current.get("viajantes")?.controle.abort();
+              consultas.current.viajantes =
+                (consultas.current.viajantes ?? 0) + 1;
+              setMover(null);
+            }}
+          >
+            {t("Cancelar")}
+          </button>
         </div>
       )}
       {id !== null && id < 0 && <h3>{t("Conversa interna")}</h3>}
       {tarefa && (
         <form
+          key={tarefa.clientId}
           aria-label={t("Nova tarefa")}
           onSubmit={async (e) => {
             e.preventDefault();
+            if (
+              tarefa.fase === "salvando" ||
+              tarefasEnviando.current.has(tarefa.clientId)
+            )
+              return;
             const f = new FormData(e.currentTarget);
+            const tentativa = tarefa;
+            const escopo = selecao.current;
+            tarefasEnviando.current.add(tentativa.clientId);
+            setTarefa({ ...tentativa, fase: "salvando", erro: undefined });
             try {
-              let conversaId = id;
-              if (id && id < 0)
+              let conversaId = tentativa.conversaId;
+              if (conversaId < 0)
                 conversaId = (
                   await comando({
                     acao: "interna",
-                    viagemId: -id,
-                    texto: "/tarefa " + tarefa.titulo,
-                    clientId: crypto.randomUUID(),
+                    viagemId: -conversaId,
+                    texto: "/tarefa " + tentativa.titulo,
+                    clientId: `${tentativa.clientId}-interna`,
                   })
                 ).conversaId;
               await comando({
                 acao: "tarefa",
-                clientId: tarefaClientId.current,
+                clientId: tentativa.clientId,
                 viagemId: Number(f.get("viagemId")) || undefined,
                 conversaId,
-                mensagemId: tarefa.mensagemId,
+                mensagemId: tentativa.mensagemId,
                 titulo: f.get("titulo"),
                 responsavelId: Number(f.get("responsavel")),
                 prazo: f.get("prazo"),
                 copias: f.getAll("copias").map(Number),
               });
-              tarefaClientId.current = crypto.randomUUID();
-              setTarefa(null);
-              setTexto("");
-              if (conversaId) await abrir(conversaId);
+              if (
+                vigente(escopo) &&
+                tarefaAtual.current === tentativa.clientId
+              ) {
+                tarefaAtual.current = null;
+                setTarefa((atual) =>
+                  atual?.clientId === tentativa.clientId ? null : atual,
+                );
+                if (tentativa.conversaId < 0)
+                  await abrir(conversaId, false, undefined, true);
+                else await sincronizar(conversaId);
+              }
             } catch (e) {
-              setErro(String(e));
+              if (vigente(escopo))
+                setTarefa((atual) =>
+                  atual?.clientId === tentativa.clientId
+                    ? { ...atual, fase: "editando", erro: descreverErro(e) }
+                    : atual,
+                );
+            } finally {
+              tarefasEnviando.current.delete(tentativa.clientId);
             }
           }}
         >
-          <label>
-            {t("Título")}
-            <input name="titulo" defaultValue={tarefa.titulo} required />
-          </label>
-          <label>
-            {t("Responsável")}
-            <select name="responsavel" defaultValue={perfil.usuario}>
-              {pessoas.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nome}
-                </option>
-              ))}
-            </select>
-          </label>
-          {perfil.papel !== "guiamento" && !conversa?.viagem_id && (
+          <fieldset disabled={tarefa.fase === "salvando"}>
             <label>
-              {idioma === "ko" ? "여행 (선택 사항)" : "Viagem (opcional)"}
-              <input
-                aria-label={idioma === "ko" ? "여행 검색" : "Buscar viagem"}
-                onChange={async (e) => {
-                  const r = await fetch(
-                    `/comunicador/api?referencias=${encodeURIComponent(e.target.value)}`,
-                  );
-                  setReferencias((await r.json()).resultados);
-                }}
-              />
-              <select
-                name="viagemId"
-                aria-label={idioma === "ko" ? "여행" : "Viagem"}
-              >
-                <option value="">—</option>
-                {referencias
-                  .filter((r) => r.referencia.startsWith("V"))
-                  .map((r) => (
-                    <option key={r.referencia} value={r.viagemId}>
-                      {r.referencia} · {r.titulo}
-                    </option>
-                  ))}
+              {t("Título")}
+              <input name="titulo" defaultValue={tarefa.titulo} required />
+            </label>
+            <label>
+              {t("Responsável")}
+              <select name="responsavel" defaultValue={perfil.usuario}>
+                {pessoas.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nome}
+                  </option>
+                ))}
               </select>
             </label>
+            {perfil.papel !== "guiamento" && !conversa?.viagem_id && (
+              <label>
+                {idioma === "ko" ? "여행 (선택 사항)" : "Viagem (opcional)"}
+                <input
+                  aria-label={idioma === "ko" ? "여행 검색" : "Buscar viagem"}
+                  onChange={async (e) => {
+                    setReferenciasTarefa([]);
+                    await consultar<(typeof referenciasTarefa)[number]>(
+                      "viagensTarefa",
+                      `/comunicador/api?referencias=${encodeURIComponent(e.target.value)}`,
+                      (d) => setReferenciasTarefa(d.resultados),
+                    );
+                  }}
+                />
+                <select
+                  name="viagemId"
+                  aria-label={idioma === "ko" ? "여행" : "Viagem"}
+                >
+                  <option value="">—</option>
+                  {referenciasTarefa
+                    .filter((r) => r.referencia.startsWith("V"))
+                    .map((r) => (
+                      <option key={r.referencia} value={r.viagemId}>
+                        {r.referencia} · {r.titulo}
+                      </option>
+                    ))}
+                </select>
+              </label>
+            )}
+            <label>
+              {t("Prazo")}
+              <input type="datetime-local" name="prazo" required />
+            </label>
+            <label>
+              {t("Cópias")}
+              <select multiple name="copias">
+                {pessoas.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nome}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button>{t("Salvar")}</button>
+          </fieldset>
+          {tarefa.erro && (
+            <p role="alert">{erroTraduzido(idioma, tarefa.erro)}</p>
           )}
-          <label>
-            {t("Prazo")}
-            <input type="datetime-local" name="prazo" required />
-          </label>
-          <label>
-            {t("Cópias")}
-            <select multiple name="copias">
-              {pessoas.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nome}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button>{t("Salvar")}</button>
-          <button type="button" onClick={() => setTarefa(null)}>
+          <button
+            type="button"
+            onClick={() => {
+              tarefaAtual.current = null;
+              leituras.current.get("viagensTarefa")?.controle.abort();
+              consultas.current.viagensTarefa =
+                (consultas.current.viagensTarefa ?? 0) + 1;
+              setTarefa(null);
+            }}
+          >
             {t("Cancelar")}
           </button>
         </form>
@@ -955,16 +1302,16 @@ export function Painel({
           )}
         </details>
       )}
+      {carga === "carregando" && <p role="status">{t("Carregando…")}</p>}
+      {carga === "falhou" && id && (
+        <button onClick={() => abrir(id, true)}>{t("Tentar novamente")}</button>
+      )}
       {id && (
         <>
           <button
             onClick={async () => {
               if (!msgs[0]) return;
-              const r = await fetch(
-                `/comunicador/api?conversa=${id}&antes=${msgs[0].id}`,
-              );
-              const d = await r.json();
-              pagina(d);
+              await carregarPagina("antes", msgs[0].id);
             }}
           >
             {t("Mensagens anteriores")}
@@ -972,26 +1319,24 @@ export function Painel({
           <button
             onClick={async () => {
               if (!id || !msgs.length) return;
-              const r = await leituraOffline(
-                usuarioId,
-                `/comunicador/api?conversa=${id}&depois=${msgs.at(-1)!.id}`,
-              );
-              pagina(r);
+              await carregarPagina("depois", msgs.at(-1)!.id);
             }}
           >
             {t("Mensagens seguintes")}
           </button>
           <button
             onClick={async () => {
-              if (msgs.length)
-                await comando({
+              const escopo = selecao.current;
+              if (
+                msgs.length &&
+                (await agir({
                   acao: "nao-lida",
                   conversaId: id,
                   mensagemId: msgs.at(-1)!.id,
-                });
-              setId(null);
-              atual.current = null;
-              await atualizar();
+                }))
+              ) {
+                if (vigente(escopo)) selecionar(null);
+              }
             }}
           >
             {t("Marcar como não lida")}
@@ -1004,14 +1349,11 @@ export function Painel({
               if (e.currentTarget.scrollTop !== 0 || !id || !msgs[0]) return;
               const el = e.currentTarget,
                 altura = el.scrollHeight;
-              const r = await leituraOffline(
-                usuarioId,
-                `/comunicador/api?conversa=${id}&antes=${msgs[0].id}`,
-              );
-              pagina(r);
-              requestAnimationFrame(() => {
-                el.scrollTop += el.scrollHeight - altura;
-              });
+              const escopo = selecao.current;
+              if (await carregarPagina("antes", msgs[0].id))
+                requestAnimationFrame(() => {
+                  if (vigente(escopo)) el.scrollTop += el.scrollHeight - altura;
+                });
             }}
           >
             {msgs.map((m) => (
@@ -1029,15 +1371,10 @@ export function Painel({
                     href={`#mensagem-${m.citada_id}`}
                     onClick={async () => {
                       if (!msgs.some((x) => x.id === m.citada_id)) {
-                        const r = await fetch(
-                          `/comunicador/api?conversa=${id}&antes=${m.citada_id! + 1}`,
-                        );
-                        const d = await r.json();
-                        pagina(d);
-                        requestAnimationFrame(() =>
-                          document
-                            .getElementById(`mensagem-${m.citada_id}`)
-                            ?.scrollIntoView(),
+                        await carregarPagina(
+                          "antes",
+                          m.citada_id! + 1,
+                          m.citada_id!,
                         );
                       }
                     }}
@@ -1168,10 +1505,12 @@ export function Painel({
                           <button
                             onClick={async () => {
                               setMover(m.midia!.id);
-                              const r = await fetch(
+                              setViajantes([]);
+                              await consultar<(typeof viajantes)[number]>(
+                                "viajantes",
                                 `/comunicador/api?viajantes=&viagemId=${conversa?.viagem_id ?? ""}`,
+                                (d) => setViajantes(d.resultados),
                               );
-                              setViajantes((await r.json()).resultados);
                             }}
                           >
                             {t("Mover para o Viajante")}
@@ -1200,12 +1539,16 @@ export function Painel({
                   <div>
                     <button
                       onClick={() =>
-                        setTarefa({ mensagemId: m.id, titulo: m.texto })
+                        abrirTarefa({ mensagemId: m.id, titulo: m.texto })
                       }
                     >
                       {t("Transformar em Tarefa")}
                     </button>
-                    <button onClick={() => setCitada(m.id)}>
+                    <button
+                      onClick={() =>
+                        emitir({ tipo: "citar", mensagemId: m.id })
+                      }
+                    >
                       {t("Citar")}
                     </button>
                     <button
@@ -1219,8 +1562,11 @@ export function Painel({
                     {m.autor_id === perfil.usuario && (
                       <button
                         onClick={() => {
-                          setEdicao(m.id);
-                          setTexto(m.texto);
+                          emitir({
+                            tipo: "editar",
+                            mensagemId: m.id,
+                            texto: m.texto,
+                          });
                         }}
                       >
                         {t("Editar")}
@@ -1250,7 +1596,7 @@ export function Painel({
                 <article key={p.clientId}>
                   <p>{p.texto}</p>
                   {p.falhou ? (
-                    <button onClick={() => enviar(p.clientId, p.texto)}>
+                    <button onClick={() => reenviar(p)}>
                       {t("Falhou. Tentar novamente")}
                     </button>
                   ) : (
@@ -1298,7 +1644,7 @@ export function Painel({
                   if (e.key === " ") parar();
                 }}
               >
-                {t(gravando ? "Gravando" : "Segure para gravar")}
+                {t(gravacao === "gravando" ? "Gravando" : "Segure para gravar")}
               </button>
             </div>
           )}
@@ -1312,20 +1658,14 @@ export function Painel({
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (edicao) {
-                void agir({ acao: "editar", mensagemId: edicao, texto });
-                setEdicao(null);
-                setTexto("");
-              } else void enviar();
+              void enviar();
             }}
           >
             {(citada || edicao) && (
               <button
                 type="button"
                 onClick={() => {
-                  setCitada(null);
-                  setEdicao(null);
-                  setTexto("");
+                  emitir({ tipo: "cancelar" });
                 }}
               >
                 {t("Cancelar")} #{citada || edicao}
@@ -1334,17 +1674,23 @@ export function Painel({
             <label>
               {t("Mensagem")}
               <textarea
+                aria-label={t("Mensagem")}
+                disabled={composicao.fase === "enviando"}
                 value={texto}
                 onChange={(e) => {
                   const v = e.target.value;
                   setTexto(v);
+                  setReferencias([]);
                   if (v.includes("[["))
-                    void fetch(
+                    void consultar<(typeof referencias)[number]>(
+                      "referencias",
                       "/comunicador/api?referencias=" +
                         encodeURIComponent(v.split("[[").at(-1)!),
-                    )
-                      .then((r) => r.json())
-                      .then((d) => setReferencias(d.resultados));
+                      (d) => setReferencias(d.resultados),
+                    );
+                  else leituras.current.get("referencias")?.controle.abort();
+                  consultas.current.referencias =
+                    (consultas.current.referencias ?? 0) + 1;
                 }}
               />
             </label>
@@ -1356,12 +1702,20 @@ export function Painel({
                   onClick={() => {
                     setTexto(texto.replace(/\[\[.*$/, r.referencia + " "));
                     setReferencias([]);
+                    leituras.current.get("referencias")?.controle.abort();
+                    consultas.current.referencias =
+                      (consultas.current.referencias ?? 0) + 1;
                   }}
                 >
                   {r.titulo}
                 </button>
               ))}
-            <button>{t("Enviar")}</button>
+            {composicao.fase === "falhou" && (
+              <p role="alert">{erroTraduzido(idioma, composicao.erro)}</p>
+            )}
+            <button disabled={composicao.fase === "enviando"}>
+              {t("Enviar")}
+            </button>
             <small>
               {t(
                 "Atalhos: @ pessoa · @todos · @aqui · # grupo · [[ referência · /tarefa · /urgente · /bug",

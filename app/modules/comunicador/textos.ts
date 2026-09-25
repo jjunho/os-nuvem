@@ -1,4 +1,13 @@
 const ko = {
+  "Dados locais do comunicador inválidos":
+    "메신저의 로컬 데이터가 올바르지 않습니다",
+  "Resposta inválida do comunicador": "메신저 응답이 올바르지 않습니다",
+  "Enviando…": "전송 중…",
+  "Não foi possível enviar o reporte": "문제 보고를 전송하지 못했습니다",
+  "Não foi possível salvar. Tente novamente.":
+    "저장하지 못했습니다. 다시 시도하세요.",
+  "Carregando…": "불러오는 중…",
+
   "Atividade da tarefa": "업무 활동",
   "Mensagens seguintes": "다음 메시지",
   "Reportar problema": "문제 신고",

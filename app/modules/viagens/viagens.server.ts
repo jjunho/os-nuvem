@@ -1,3 +1,4 @@
+import { inteiroEntrada, dataISOValida } from "~/modules/validacao/entrada";
 import { reconciliarTarefasEtapa } from "./tarefas-etapa.server";
 import { registrarFato } from "./etapas.server";
 import {
@@ -87,10 +88,24 @@ export async function criarViagem(
 ) {
   if (!input.responsavelId)
     throw new RegraViolada("Toda Viagem nasce com um Responsável.");
+  inteiroEntrada(input.responsavelId);
+  if (
+    (input.dataInicio && !dataISOValida(input.dataInicio)) ||
+    (input.dataFim && !dataISOValida(input.dataFim)) ||
+    (input.dataInicio && input.dataFim && input.dataInicio > input.dataFim)
+  )
+    throw new RegraViolada("Datas inválidas");
   if (input.contatos.length === 0)
     throw new RegraViolada("Informe ao menos um Contato.");
 
   return db.transaction(async (tx) => {
+    const [responsavel] = await tx
+      .select({ id: usuarios.id })
+      .from(usuarios)
+      .where(
+        and(eq(usuarios.id, input.responsavelId), eq(usuarios.ativo, true)),
+      );
+    if (!responsavel) throw new RegraViolada("Usuário inválido");
     const ano = agora.getFullYear();
     const sequencia = await tx.execute(
       sql`select proximo_identificador(${`viagem:${ano}`}) as numero`,

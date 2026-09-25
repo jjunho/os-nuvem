@@ -1,17 +1,21 @@
-import { useEffect, useState } from "react";
+import { useFiltrosURL } from "~/modules/interface/filtros-url";
+import { inteiroEntrada } from "~/modules/validacao/entrada";
+import { useEffect, useRef, useState } from "react";
 import { Form, Link, useFetcher, useRevalidator } from "react-router";
 import type { Route } from "./+types/quadro";
 import { exigirUsuario } from "~/session.server";
 import { now } from "~/clock.server";
 import { lerQuadro, acaoQuadro } from "~/modules/quadros/quadros.server";
+import { useIdioma } from "~/modules/idiomas/idioma";
 import { useQuadrosTexto } from "~/modules/quadros/textos";
+import { erroDeFormulario } from "~/modules/interface/erro-formulario.server";
 import "~/modules/quadros/quadros.css";
 export async function loader({ request, params }: Route.LoaderArgs) {
   const u = await exigirUsuario(request);
   return {
     ...(await lerQuadro(
       u,
-      Number(params.id),
+      inteiroEntrada(params.id),
       new URL(request.url).searchParams,
       now(request),
     )),
@@ -22,30 +26,38 @@ export async function action({ request, params }: Route.ActionArgs) {
   try {
     await acaoQuadro(
       await exigirUsuario(request),
-      Number(params.id),
+      inteiroEntrada(params.id),
       await request.formData(),
       now(request),
     );
-    return { ok: true, error: "" };
+    return { ok: true };
   } catch (e) {
-    if (e instanceof Response && e.status >= 400 && e.status < 500)
-      return Response.json(
-        { ok: false, error: await e.text() },
-        { status: e.status },
-      );
-    throw e;
+    return erroDeFormulario(e);
   }
 }
-export default function Quadro({ loaderData: d }: Route.ComponentProps) {
+export default function Quadro(props: Route.ComponentProps) {
+  return <PaginaQuadro key={props.loaderData.quadro.id} {...props} />;
+}
+
+function PaginaQuadro({ loaderData: d, actionData }: Route.ComponentProps) {
+  const filtro = useFiltrosURL(d.filtros);
+  const { mensagem } = useIdioma();
   const t = useQuadrosTexto(),
     fetcher = useFetcher<typeof action>(),
     { revalidate } = useRevalidator();
   const [movendo, setMovendo] = useState<number | null>(null);
-  const [otimista, setOtimista] = useState<{
-    id: number;
-    lista: number;
-    antes?: number;
-  } | null>(null);
+  const movimentoEmCurso = useRef(false);
+  const tentativa =
+    fetcher.state !== "idle" && fetcher.formData?.get("intent") === "mover"
+      ? fetcher.formData
+      : null;
+  const otimista = tentativa
+    ? {
+        id: Number(tentativa.get("tarefaId")),
+        lista: Number(tentativa.get("listaId")),
+        antes: Number(tentativa.get("antesId")) || undefined,
+      }
+    : null;
   useEffect(() => {
     const s = new EventSource("/comunicador/eventos");
     s.onmessage = () => {
@@ -53,9 +65,6 @@ export default function Quadro({ loaderData: d }: Route.ComponentProps) {
     };
     return () => s.close();
   }, [revalidate]);
-  useEffect(() => {
-    if (fetcher.state === "idle") setOtimista(null);
-  }, [fetcher.state, d]);
   const listas = d.listas.filter(
     (l) => !l.arquivada || d.filtros.arquivadas === "on",
   );
@@ -73,19 +82,24 @@ export default function Quadro({ loaderData: d }: Route.ComponentProps) {
       else tarefas.push(movida);
     }
   }
-  function mover(id: number, lista: number, antes?: number) {
+  async function mover(id: number, lista: number, antes?: number) {
+    if (movimentoEmCurso.current) return;
     const destino = d.destinos.find((l) => l.id === lista);
     if (!destino) return;
-    setOtimista({ id, lista, antes });
-    void fetcher.submit(
-      {
-        intent: "mover",
-        tarefaId: id,
-        listaId: lista,
-        ...(antes ? { antesId: antes } : {}),
-      },
-      { method: "post", action: `/quadros/${destino.quadro_id}` },
-    );
+    movimentoEmCurso.current = true;
+    try {
+      await fetcher.submit(
+        {
+          intent: "mover",
+          tarefaId: id,
+          listaId: lista,
+          ...(antes ? { antesId: antes } : {}),
+        },
+        { method: "post", action: `/quadros/${destino.quadro_id}` },
+      );
+    } finally {
+      movimentoEmCurso.current = false;
+    }
   }
   const cartao = (a: (typeof tarefas)[number]) => (
     <article
@@ -192,8 +206,11 @@ export default function Quadro({ loaderData: d }: Route.ComponentProps) {
       <Link to="/quadros">{t("Quadros")}</Link>
       <h1>{t(d.quadro.nome)}</h1>
       {d.quadro.arquivado && <p>{t("Arquivado")}</p>}
-      {fetcher.data && !fetcher.data.ok && (
-        <p role="alert">{t("Falha ao salvar")}</p>
+      {actionData && "erro" in actionData && actionData.erro && (
+        <p role="alert">{mensagem(actionData.erro)}</p>
+      )}
+      {fetcher.data && "erro" in fetcher.data && fetcher.data.erro && (
+        <p role="alert">{mensagem(fetcher.data.erro)}</p>
       )}
       <nav className="linha">
         {d.quadros
@@ -217,14 +234,19 @@ export default function Quadro({ loaderData: d }: Route.ComponentProps) {
       <Form method="get" className="linha">
         <label>
           {t("Pesquisar")}
-          <input name="q" defaultValue={d.filtros.q} />
+          <input
+            name="q"
+            value={filtro.valores.q ?? ""}
+            onChange={(e) => filtro.alterar("q", e.target.value)}
+          />
         </label>
         <label>
           {t("Responsável")}
           <select
             aria-label={t("Responsável")}
             name="responsavel"
-            defaultValue={d.filtros.responsavel}
+            value={filtro.valores.responsavel ?? ""}
+            onChange={(e) => filtro.alterar("responsavel", e.target.value)}
           >
             <option value="">{t("Todas")}</option>
             {d.usuarios.map((u) => (
@@ -239,7 +261,8 @@ export default function Quadro({ loaderData: d }: Route.ComponentProps) {
           <select
             aria-label={t("Etiquetas")}
             name="etiqueta"
-            defaultValue={d.filtros.etiqueta}
+            value={filtro.valores.etiqueta ?? ""}
+            onChange={(e) => filtro.alterar("etiqueta", e.target.value)}
           >
             <option value="">{t("Todas")}</option>
             {d.etiquetas.map((e) => (
@@ -254,11 +277,17 @@ export default function Quadro({ loaderData: d }: Route.ComponentProps) {
           <select
             aria-label={t("Viagem")}
             name="viagem"
-            defaultValue={d.filtros.viagem}
+            value={filtro.valores.viagem ?? ""}
+            onChange={(e) => filtro.alterar("viagem", e.target.value)}
           >
             <option value="">{t("Todas")}</option>
             {[
-              ...new Set(d.tarefas.map((a) => a.viagem_id).filter(Boolean)),
+              ...new Set(
+                [
+                  Number(d.filtros.viagem),
+                  ...d.tarefas.map((a) => a.viagem_id),
+                ].filter(Boolean),
+              ),
             ].map((id) => (
               <option key={id} value={id!}>
                 {id}
@@ -271,7 +300,8 @@ export default function Quadro({ loaderData: d }: Route.ComponentProps) {
           <select
             aria-label={t("Prazo")}
             name="prazo"
-            defaultValue={d.filtros.prazo}
+            value={filtro.valores.prazo ?? ""}
+            onChange={(e) => filtro.alterar("prazo", e.target.value)}
           >
             <option value="">{t("Todas")}</option>
             <option value="atrasadas">{t("Atrasadas")}</option>
@@ -283,7 +313,13 @@ export default function Quadro({ loaderData: d }: Route.ComponentProps) {
           <input
             type="checkbox"
             name="ocultarConcluidas"
-            defaultChecked={"ocultarConcluidas" in d.filtros}
+            checked={filtro.valores.ocultarConcluidas !== undefined}
+            onChange={(e) =>
+              filtro.alterar(
+                "ocultarConcluidas",
+                e.target.checked ? "on" : undefined,
+              )
+            }
           />
           {t("Ocultar concluídas")}
         </label>
@@ -291,14 +327,18 @@ export default function Quadro({ loaderData: d }: Route.ComponentProps) {
           <input
             type="checkbox"
             name="arquivadas"
-            defaultChecked={"arquivadas" in d.filtros}
+            checked={filtro.valores.arquivadas !== undefined}
+            onChange={(e) =>
+              filtro.alterar("arquivadas", e.target.checked ? "on" : undefined)
+            }
           />
           {t("Mostrar arquivadas")}
         </label>
         <select
           name="vista"
           aria-label={t("Calendário")}
-          defaultValue={d.filtros.vista ?? "listas"}
+          value={filtro.valores.vista ?? "listas"}
+          onChange={(e) => filtro.alterar("vista", e.target.value)}
         >
           <option value="listas">{t("Listas")}</option>
           <option value="calendario">{t("Calendário")}</option>

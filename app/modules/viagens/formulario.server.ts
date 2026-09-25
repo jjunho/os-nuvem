@@ -1,8 +1,15 @@
+import {
+  assinaturaRespostas,
+  conferirRecibo,
+  validarTentativa,
+} from "./recibo-planejamento";
+import { dataISOValida } from "~/modules/validacao/entrada";
 import { createHash, randomBytes } from "node:crypto";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "~/db/client.server";
 import {
   anexosPlanejamento,
+  recibosPlanejamento,
   contatos,
   respostasConflitantes,
   formulariosPlanejamento,
@@ -14,12 +21,89 @@ import { criarViajantes, listarViajantes } from "./viajantes.server";
 import { listarOpcoes, registrarOpcao } from "~/modules/opcoes/opcoes.server";
 const hash = (token: string) =>
   createHash("sha256").update(token).digest("hex");
-export async function gerarFormulario(viagemId: number, agora: Date) {
-  const token = randomBytes(32).toString("hex");
-  await db
-    .insert(formulariosPlanejamento)
-    .values({ viagemId, tokenHash: hash(token), criadoEm: agora });
-  return `/planejamento/${token}`;
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+async function lerRecibo(
+  tx: Tx,
+  viagemId: number,
+  autorId: number,
+  operacao: string,
+  tentativaId: string,
+  payloadHash: string,
+) {
+  // Serialize retries before reading the receipt; the receipt and effect commit together.
+  await tx
+    .select({ id: viagens.id })
+    .from(viagens)
+    .where(eq(viagens.id, viagemId))
+    .for("update");
+  const [recibo] = await tx
+    .select()
+    .from(recibosPlanejamento)
+    .where(
+      and(
+        eq(recibosPlanejamento.viagemId, viagemId),
+        eq(recibosPlanejamento.autorId, autorId),
+        eq(recibosPlanejamento.operacao, operacao),
+        eq(recibosPlanejamento.tentativaId, tentativaId),
+      ),
+    );
+  if (recibo && !conferirRecibo(recibo.payloadHash, payloadHash))
+    throw new Response("Tentativa já utilizada com outro conteúdo", {
+      status: 409,
+    });
+  return recibo;
+}
+export async function gerarFormulario(
+  viagemId: number,
+  agora: Date,
+  autorId?: number,
+  tentativa?: FormDataEntryValue | null,
+) {
+  const tentativaId = validarTentativa(tentativa);
+  if (tentativaId && !autorId)
+    throw new Response("Autor obrigatório", { status: 400 });
+  return db.transaction(async (tx) => {
+    if (tentativaId && autorId) {
+      const recibo = await lerRecibo(
+        tx,
+        viagemId,
+        autorId,
+        "formulario",
+        tentativaId,
+        "formulario",
+      );
+      if (recibo?.resultado.tipo === "formulario") {
+        const token = recibo.resultado.link.slice("/planejamento/".length);
+        const [ativo] = await tx
+          .select({ id: formulariosPlanejamento.id })
+          .from(formulariosPlanejamento)
+          .where(
+            and(
+              eq(formulariosPlanejamento.tokenHash, hash(token)),
+              isNull(formulariosPlanejamento.revogadoEm),
+            ),
+          );
+        if (!ativo) throw new Response("Formulário revogado", { status: 409 });
+        return recibo.resultado.link;
+      }
+    }
+    const token = randomBytes(32).toString("hex");
+    const link = `/planejamento/${token}`;
+    await tx
+      .insert(formulariosPlanejamento)
+      .values({ viagemId, tokenHash: hash(token), criadoEm: agora });
+    if (tentativaId && autorId)
+      await tx.insert(recibosPlanejamento).values({
+        viagemId,
+        autorId,
+        operacao: "formulario",
+        tentativaId,
+        payloadHash: "formulario",
+        resultado: { tipo: "formulario", link },
+        criadoEm: agora,
+      });
+    return link;
+  });
 }
 export async function revogarFormularios(viagemId: number, agora: Date) {
   await db
@@ -268,7 +352,7 @@ async function aplicarRespostas(
     novos[campo] = valor;
   }
   for (const campo of ["dataInicio", "dataFim"] as const)
-    if (novos[campo] && !/^\d{4}-\d{2}-\d{2}$/.test(novos[campo]!))
+    if (novos[campo] && !dataISOValida(novos[campo]!))
       throw new Response("Data inválida", { status: 400 });
   const inicio = novos.dataInicio ?? v.dataInicio,
     fim = novos.dataFim ?? v.dataFim;
@@ -366,6 +450,7 @@ export async function guardarRespostasRecebidas(
   form: FormData,
   agora: Date,
 ) {
+  const tentativaId = validarTentativa(form.get("tentativaId"));
   const texto = String(form.get("textoRecebido") ?? "").trim();
   const arquivo = form.get("arquivo");
   const arquivos: { nome: string; tipo: string; conteudo: Buffer }[] = [];
@@ -408,7 +493,20 @@ export async function guardarRespostasRecebidas(
       ];
     if (campo) respostas.set(campo, partes[2].trim());
   }
+  const payloadHash = assinaturaRespostas(texto, arquivos);
   await db.transaction(async (tx) => {
+    if (
+      tentativaId &&
+      (await lerRecibo(
+        tx,
+        viagemId,
+        autorId,
+        "respostas",
+        tentativaId,
+        payloadHash,
+      ))
+    )
+      return;
     await aplicarRespostas(tx, viagemId, respostas);
     if (arquivos.length)
       await tx
@@ -416,6 +514,16 @@ export async function guardarRespostasRecebidas(
         .values(
           arquivos.map((a) => ({ ...a, viagemId, autorId, criadoEm: agora })),
         );
+    if (tentativaId)
+      await tx.insert(recibosPlanejamento).values({
+        viagemId,
+        autorId,
+        operacao: "respostas",
+        tentativaId,
+        payloadHash,
+        resultado: { tipo: "respostas" },
+        criadoEm: agora,
+      });
   });
 }
 export async function listarAnexosPlanejamento(viagemId: number) {

@@ -52,6 +52,7 @@ export async function enviarOrcamento(
   destinatario: string,
   canal: string,
   agora: Date,
+  revisao: number,
 ) {
   if (!destinatario.trim() || !canal.trim())
     throw new Response("Informe destinatário e canal", { status: 400 });
@@ -62,6 +63,11 @@ export async function enviarOrcamento(
       .where(eq(orcamentos.id, id))
       .for("update");
     if (!atual) throw new Response("Orçamento não encontrado", { status: 404 });
+    if (atual.revisao !== revisao)
+      throw new Response(
+        "O orçamento mudou ou já foi enviado. Recarregue antes de editar.",
+        { status: 409 },
+      );
     const d = await lerOrcamento(id);
     if (atual.estado === "aceito")
       throw new Response("Proposta já aceita", { status: 400 });
@@ -132,11 +138,13 @@ export async function enviarOrcamento(
         calculos,
         condicoes,
       };
-      await tx
-        .update(orcamentos)
-        .set({ memoria, estado: "enviado" })
-        .where(eq(orcamentos.id, id));
     }
+    // Each recorded delivery consumes the expected revision, including resends.
+    // A retry after a lost acknowledgement cannot record the same delivery twice.
+    await tx
+      .update(orcamentos)
+      .set({ memoria, estado: "enviado", revisao: atual.revisao + 1 })
+      .where(eq(orcamentos.id, id));
     await tx
       .update(viagens)
       .set({ semRespostaDesde: null })

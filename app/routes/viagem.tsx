@@ -1,9 +1,12 @@
+import { inteiroEntrada } from "~/modules/validacao/entrada";
 import { origensTarefasViagem } from "~/modules/viagens/tarefas-etapa.server";
 import { aceiteDaViagem } from "~/modules/orcamentos/aceite.server";
 import { atualizarFollowups } from "~/modules/orcamentos/followups.server";
 import { listarEnvios } from "~/modules/orcamentos/envios.server";
 import { impactosRemocao } from "~/modules/orcamentos/impactos.server";
-import { Link, redirect } from "react-router";
+import { Link, redirect, data } from "react-router";
+import { useEffect, useRef } from "react";
+import { erroDeFormulario } from "~/modules/interface/erro-formulario.server";
 import {
   criarOrcamento,
   listarOrcamentos,
@@ -63,9 +66,9 @@ import {
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const usuario = await exigirUsuario(request);
-  await atualizarFollowups(now(request), Number(params.id));
+  await atualizarFollowups(now(request), inteiroEntrada(params.id));
   const [d, usuarios] = await Promise.all([
-    detalhe(Number(params.id), usuario),
+    detalhe(inteiroEntrada(params.id), usuario),
     listarUsuarios(),
   ]);
   if (!d) throw new Response("Viagem não encontrada", { status: 404 });
@@ -114,7 +117,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 export async function action({ request, params }: Route.ActionArgs) {
   const usuario = await exigirUsuario(request);
-  const id = Number(params.id);
+  const id = inteiroEntrada(params.id);
   const agora = now(request);
   const f = await request.formData();
   try {
@@ -144,19 +147,31 @@ export async function action({ request, params }: Route.ActionArgs) {
         await salvarPerfil(id, usuario.id, f, agora);
         break;
       case "anexar-respostas":
+        if (!f.get("tentativaId"))
+          throw new Response("Tentativa inválida", { status: 400 });
         await guardarRespostasRecebidas(id, usuario.id, f, agora);
         break;
       case "resolver-resposta":
         await resolverResposta(
           id,
-          Number(f.get("respostaId")),
+          inteiroEntrada(f.get("respostaId")),
           f.get("escolha") === "usar",
           String(f.get("atual") ?? ""),
           agora,
         );
         break;
       case "gerar-formulario":
-        return { ok: true as const, link: await gerarFormulario(id, agora) };
+        if (!f.get("tentativaId"))
+          throw new Response("Tentativa inválida", { status: 400 });
+        return {
+          ok: true as const,
+          link: await gerarFormulario(
+            id,
+            agora,
+            usuario.id,
+            f.get("tentativaId"),
+          ),
+        };
       case "revogar-formulario":
         await revogarFormularios(id, agora);
         return { ok: true as const, revogado: true };
@@ -178,7 +193,7 @@ export async function action({ request, params }: Route.ActionArgs) {
       case "trocar-responsavel":
         await trocarResponsavel(
           id,
-          Number(f.get("usuarioId")),
+          inteiroEntrada(f.get("usuarioId")),
           agora,
           usuario.id,
         );
@@ -194,15 +209,22 @@ export async function action({ request, params }: Route.ActionArgs) {
           agora,
         );
         break;
+      default:
+        throw new Response("Ação inválida", { status: 400 });
     }
     return { ok: true as const };
   } catch (e) {
-    if (e instanceof RegraViolada) return { erro: e.message };
-    throw e;
+    if (e instanceof RegraViolada)
+      return data({ erro: e.message }, { status: 400 });
+    return erroDeFormulario(e);
   }
 }
 
-export default function Viagem({ loaderData }: Route.ComponentProps) {
+export default function Viagem(props: Route.ComponentProps) {
+  return <PaginaViagem key={props.loaderData.viagem.id} {...props} />;
+}
+
+function PaginaViagem({ loaderData, actionData }: Route.ComponentProps) {
   const { idioma, t, mensagem } = useIdioma();
   const quando = (d: Date | string | null) =>
     d
@@ -227,19 +249,38 @@ export default function Viagem({ loaderData }: Route.ComponentProps) {
   const troca = useFetcher<typeof action>();
   const descarte = useFetcher<typeof action>();
   const nota = useFetcher<typeof action>();
+  const formularioNota = useRef<HTMLFormElement>(null);
+  const notaEnviada = useRef<string | null>(null);
+  useEffect(() => {
+    if (nota.state !== "idle" || !nota.data || notaEnviada.current === null)
+      return;
+    if ("ok" in nota.data && nota.data.ok && formularioNota.current) {
+      const atual = new FormData(formularioNota.current).get("texto");
+      if (atual === notaEnviada.current) formularioNota.current.reset();
+    }
+    notaEnviada.current = null;
+  }, [nota.state, nota.data]);
 
   // Optimistic state: reflect the change before the server answers.
-  const respondida = !!v.primeiraRespostaEm || resposta.state !== "idle";
+  const respondida =
+    !!v.primeiraRespostaEm ||
+    (resposta.state !== "idle" &&
+      resposta.formData?.get("intent") === "responder");
   const responsavelAtual = historico.find((h) => !h.ate);
-  const responsavelId = troca.formData
-    ? Number(troca.formData.get("usuarioId"))
-    : responsavelAtual?.usuarioId;
+  const responsavelId =
+    troca.state !== "idle" && troca.formData
+      ? Number(troca.formData.get("usuarioId"))
+      : responsavelAtual?.usuarioId;
   const etapa =
-    descarte.formData && !descarte.data?.erro ? "descartada" : v.etapa;
-  const notaPendente = nota.formData?.get("texto");
+    descarte.state !== "idle" && descarte.formData ? "descartada" : v.etapa;
+  const notaPendente =
+    nota.state !== "idle" ? nota.formData?.get("texto") : null;
 
   return (
     <>
+      {actionData && "erro" in actionData && actionData.erro && (
+        <p role="alert">{mensagem(actionData.erro)}</p>
+      )}
       <div className="cabecalho">
         <h1>{v.codigo}</h1>
         {loaderData.usuario.papel !== "guiamento" && (
@@ -416,7 +457,7 @@ export default function Viagem({ loaderData }: Route.ComponentProps) {
           </div>
         ))}
         {!["descartada", "perdida", "cancelada", "concluida"].includes(
-          etapa,
+          v.etapa,
         ) && (
           <resposta.Form method="post" id="registrar-contato">
             <label>
@@ -443,12 +484,19 @@ export default function Viagem({ loaderData }: Route.ComponentProps) {
               {t("Por quê")}
               <input name="motivoContato" required />
             </label>
-            <button name="intent" value="responder">
+            <button
+              disabled={resposta.state !== "idle"}
+              name="intent"
+              value="responder"
+            >
               {!respondida && etapa === "lead"
                 ? t("Respondi o contato")
                 : t("Registrar contato")}
             </button>
           </resposta.Form>
+        )}
+        {resposta.data && "erro" in resposta.data && resposta.data.erro && (
+          <p role="alert">{mensagem(resposta.data.erro)}</p>
         )}
         {loaderData.usuario.papel === "admin" && (
           <Link to="/modelos-etapa">{t("Modelos de etapa")}</Link>
@@ -473,6 +521,9 @@ export default function Viagem({ loaderData }: Route.ComponentProps) {
               ))}
             </select>
           </troca.Form>
+          {troca.data && "erro" in troca.data && troca.data.erro && (
+            <p role="alert">{mensagem(troca.data.erro)}</p>
+          )}
           <ul className="historico">
             {historico.map((h, i) => (
               <li key={i}>
@@ -489,7 +540,7 @@ export default function Viagem({ loaderData }: Route.ComponentProps) {
           "em_negociacao",
           "confirmada",
           "em_viagem",
-        ].includes(etapa) && (
+        ].includes(v.etapa) && (
           <div>
             <h2>{t("Descartar")}</h2>
             <descarte.Form method="post" className="linha">
@@ -500,10 +551,17 @@ export default function Viagem({ loaderData }: Route.ComponentProps) {
                 aria-label={t("Motivo do descarte")}
                 required
               />
-              <button className="secundario">{t("Descartar")}</button>
+              <button
+                disabled={descarte.state !== "idle"}
+                className="secundario"
+              >
+                {t("Descartar")}
+              </button>
             </descarte.Form>
-            {descarte.data?.erro && (
-              <p className="alerta">{mensagem(descarte.data.erro)}</p>
+            {descarte.data && "erro" in descarte.data && descarte.data.erro && (
+              <p role="alert" className="alerta">
+                {mensagem(descarte.data.erro)}
+              </p>
             )}
           </div>
         )}
@@ -521,7 +579,11 @@ export default function Viagem({ loaderData }: Route.ComponentProps) {
         ))}
         {!loaderData.orcamentos.length && (
           <resposta.Form method="post">
-            <button name="intent" value="criar-orcamento">
+            <button
+              disabled={resposta.state !== "idle"}
+              name="intent"
+              value="criar-orcamento"
+            >
               {t("Criar orçamento")}
             </button>
           </resposta.Form>
@@ -569,11 +631,17 @@ export default function Viagem({ loaderData }: Route.ComponentProps) {
       <section>
         <h2>{t("Notas")}</h2>
         <nota.Form
+          ref={formularioNota}
           method="post"
           className="linha"
           onSubmit={(e) => {
-            const form = e.currentTarget;
-            requestAnimationFrame(() => form.reset());
+            if (notaEnviada.current !== null || nota.state !== "idle") {
+              e.preventDefault();
+              return;
+            }
+            notaEnviada.current = String(
+              new FormData(e.currentTarget).get("texto") ?? "",
+            );
           }}
         >
           <input type="hidden" name="intent" value="nota" />
@@ -583,8 +651,11 @@ export default function Viagem({ loaderData }: Route.ComponentProps) {
             aria-label={t("Nova nota")}
             placeholder={t("Negociação, pedidos, valores falados…")}
           />
-          <button>{t("Adicionar")}</button>
+          <button disabled={nota.state !== "idle"}>{t("Adicionar")}</button>
         </nota.Form>
+        {nota.data && "erro" in nota.data && nota.data.erro && (
+          <p role="alert">{mensagem(nota.data.erro)}</p>
+        )}
         <ul className="notas">
           {notaPendente && <li className="pendente">{String(notaPendente)}</li>}
           {notas.map((n, i) => (

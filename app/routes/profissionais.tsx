@@ -1,4 +1,5 @@
-import { Form, data } from "react-router";
+import { useEffect, useRef } from "react";
+import { Form, data, useNavigation } from "react-router";
 import type { Route } from "./+types/profissionais";
 import { exigirUsuario } from "~/session.server";
 import {
@@ -18,7 +19,8 @@ export async function action({ request }: Route.ActionArgs) {
   const f = await request.formData();
   try {
     if (f.get("intent") === "alocar") await alocarProfissional(f, u.id);
-    else await salvarProfissional(f);
+    else if (f.get("intent") === null) await salvarProfissional(f);
+    else throw new Response("Ação inválida", { status: 400 });
     return { erro: null };
   } catch (e) {
     if (e instanceof Response && e.status === 400)
@@ -30,11 +32,23 @@ export default function Profissionais({
   loaderData: d,
   actionData,
 }: Route.ComponentProps) {
-  const { t } = useIdioma();
+  const { t, mensagem } = useIdioma();
+  const navigation = useNavigation();
+  const emVoo = useRef(false);
+  useEffect(() => {
+    if (navigation.state === "idle") emVoo.current = false;
+  }, [navigation.state]);
+  function submeter(evento: React.FormEvent<HTMLFormElement>) {
+    if (emVoo.current || navigation.state !== "idle") {
+      evento.preventDefault();
+      return;
+    }
+    emVoo.current = true;
+  }
   return (
     <>
       <h1>{t("Profissionais e disponibilidade")}</h1>
-      {actionData?.erro && <p role="alert">{actionData.erro}</p>}
+      {actionData?.erro && <p role="alert">{mensagem(actionData.erro)}</p>}
       <table>
         <tbody>
           {d.profissionais.map((p) => (
@@ -49,7 +63,7 @@ export default function Profissionais({
       </table>
       {d.admin && (
         <>
-          <Form method="post">
+          <Form method="post" onSubmit={submeter}>
             <label>
               {t("Nome")}
               <input name="nome" required />
@@ -69,9 +83,11 @@ export default function Profissionais({
               {t("Especialidades")}
               <input name="especialidades" />
             </label>
-            <button>{t("Salvar profissional")}</button>
+            <button disabled={navigation.state !== "idle"}>
+              {t("Salvar profissional")}
+            </button>
           </Form>
-          <Form method="post">
+          <Form method="post" onSubmit={submeter}>
             <input type="hidden" name="intent" value="alocar" />
             <label>
               {t("Profissional")}
@@ -103,7 +119,9 @@ export default function Profissionais({
                 <option value="tarde">{t("Tarde")}</option>
               </select>
             </label>
-            <button>{t("Confirmar alocação")}</button>
+            <button disabled={navigation.state !== "idle"}>
+              {t("Confirmar alocação")}
+            </button>
           </Form>
         </>
       )}

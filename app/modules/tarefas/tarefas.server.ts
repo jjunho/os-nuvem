@@ -1,3 +1,4 @@
+import { inteiroEntrada, idOpcional } from "~/modules/validacao/entrada";
 import { publicar } from "~/modules/notificacoes/eventos.server";
 import { avisarTarefa as avisar } from "./notificacoes.server";
 import { and, asc, eq, exists, inArray, lt, ne, or, sql } from "drizzle-orm";
@@ -157,10 +158,10 @@ export async function criarTarefa(
       status: 400,
     });
   const prazo = form.get("prazo") ? new Date(String(form.get("prazo"))) : null;
-  const responsavelId = Number(form.get("responsavelId"));
+  const responsavelId = inteiroEntrada(form.get("responsavelId"));
   const copias = [
     ...new Set([
-      ...form.getAll("copias").map(Number),
+      ...form.getAll("copias").map((id) => inteiroEntrada(id)),
       ...(responsavelId !== usuario.id ? [usuario.id] : []),
     ]),
   ];
@@ -195,7 +196,7 @@ export async function criarTarefa(
         descricao: String(form.get("descricao") ?? ""),
         responsavelId,
         prazo,
-        viagemId: Number(form.get("viagemId")) || null,
+        viagemId: idOpcional(form.get("viagemId")) ?? null,
         criadaPor: usuario.id,
         criadaEm: agora,
         tipo: "manual",
@@ -247,7 +248,7 @@ export async function listarTarefas(
       and(
         visibilidade(usuario),
         responsavel !== "todos"
-          ? eq(tarefas.responsavelId, Number(responsavel))
+          ? eq(tarefas.responsavelId, inteiroEntrada(responsavel))
           : undefined,
         copia
           ? exists(
@@ -257,13 +258,13 @@ export async function listarTarefas(
                 .where(
                   and(
                     eq(tarefasCopias.tarefaId, tarefas.id),
-                    eq(tarefasCopias.usuarioId, Number(copia)),
+                    eq(tarefasCopias.usuarioId, inteiroEntrada(copia)),
                   ),
                 ),
             )
           : undefined,
         filtros.get("viagem")
-          ? eq(tarefas.viagemId, Number(filtros.get("viagem")))
+          ? eq(tarefas.viagemId, inteiroEntrada(filtros.get("viagem")))
           : undefined,
         filtros.has("atrasadas")
           ? and(eq(tarefas.estado, "aberta"), lt(tarefas.prazo, agora))

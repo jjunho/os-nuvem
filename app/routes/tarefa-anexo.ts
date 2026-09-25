@@ -1,3 +1,4 @@
+import { inteiroEntrada } from "~/modules/validacao/entrada";
 import { exigirUsuario } from "~/session.server";
 import { baixar } from "~/modules/quadros/arquivos.server";
 export async function loader({
@@ -9,7 +10,7 @@ export async function loader({
 }) {
   return baixar(
     await exigirUsuario(request),
-    Number(params.id),
+    inteiroEntrada(params.id),
     params.anexoId ?? "",
   );
 }

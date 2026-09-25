@@ -260,6 +260,13 @@
       "when": 1790300000000,
       "tag": "0036_quadros",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1790400000000,
+      "tag": "0037_recibos_planejamento",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,13 @@
 # AGENTS.md
 
+## Execução proporcional e critério de parada
+
+- Entrega pedida pronta + verificação proporcional aprovada = encerrar e informar o resultado.
+- Execute o escopo aprovado com o mínimo de etapas necessário. Evite expandir tarefas simples em planos, relatórios, checklists ou delegações não necessários à entrega.
+- Reutilize contexto e verificações válidos. Repita ou amplie a análise somente diante de alteração relevante, falha concreta ou mudança de escopo; verificações obrigatórias continuam sendo cumpridas.
+- Para mudanças documentais, confira os trechos alterados e suas referências diretas. Uma auditoria global exige motivo concreto ou pedido explícito.
+- Se houver impedimento real, informe o que falta e seu impacto. Não substitua a conclusão por formalidade ou trabalho adicional sem relação com o pedido.
+
 ## Agent skills
 
 ### Issue tracker

@@ -1,3 +1,4 @@
+import { registro, identificador } from "~/modules/comunicador/contratos";
 import { avisarPrazos } from "~/modules/tarefas/tarefas.server";
 import {
   gerirMidia,
@@ -82,7 +83,20 @@ export async function loader({ request }: { request: Request }) {
 }
 export async function action({ request }: { request: Request }) {
   const u = await exigirUsuario(request),
-    d = await request.json();
+    d: unknown = await request.json().catch(() => invalido());
+  if (!registro(d) || typeof d.acao !== "string") invalido();
+  if (d.acao === "enviar" || d.acao === "interna") {
+    if (
+      !identificador(d.acao === "enviar" ? d.conversaId : d.viagemId) ||
+      typeof d.texto !== "string" ||
+      !d.texto.trim() ||
+      d.texto.length > 20000 ||
+      typeof d.clientId !== "string" ||
+      !/^[a-zA-Z0-9-]{16,80}$/.test(d.clientId) ||
+      (d.citadaId != null && !identificador(d.citadaId))
+    )
+      invalido();
+  }
   if (["purgar", "mover"].includes(d.acao))
     return Response.json(await gerirMidia(u, d));
   if (d.acao === "interna")
@@ -90,8 +104,8 @@ export async function action({ request }: { request: Request }) {
       await interna(
         u,
         Number(d.viagemId),
-        d.texto,
-        d.clientId,
+        String(d.texto),
+        String(d.clientId),
         now(request),
         new URL(request.url).origin,
       ),
@@ -134,7 +148,17 @@ export async function action({ request }: { request: Request }) {
     return Response.json(await direta(u, Number(d.usuarioId)));
   if (d.acao === "enviar")
     return Response.json(
-      await enviar(u, d, now(request), new URL(request.url).origin),
+      await enviar(
+        u,
+        {
+          conversaId: Number(d.conversaId),
+          clientId: String(d.clientId),
+          texto: String(d.texto),
+          citadaId: d.citadaId == null ? undefined : Number(d.citadaId),
+        },
+        now(request),
+        new URL(request.url).origin,
+      ),
     );
   invalido();
 }

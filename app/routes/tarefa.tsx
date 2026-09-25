@@ -1,3 +1,6 @@
+import { inteiroEntrada } from "~/modules/validacao/entrada";
+import { useActionData, useNavigation } from "react-router";
+import { erroDeFormulario } from "~/modules/interface/erro-formulario.server";
 import { useQuadrosTexto } from "~/modules/quadros/textos";
 import { acaoDaTarefaEtapa } from "~/modules/viagens/tarefas-etapa.server";
 import { extrasTarefa, acaoTarefa } from "~/modules/quadros/quadros.server";
@@ -14,7 +17,7 @@ import {
 import { useIdioma } from "~/modules/idiomas/idioma";
 export async function loader({ request, params }: Route.LoaderArgs) {
   const u = await exigirUsuario(request),
-    id = Number(params.id);
+    id = inteiroEntrada(params.id);
   const d = await detalheTarefa(u, id);
   return {
     ...d,
@@ -26,26 +29,32 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   };
 }
 export async function action({ request, params }: Route.ActionArgs) {
-  const usuario = await exigirUsuario(request);
-  if (Number(request.headers.get("content-length")) > 13 * 1024 * 1024)
-    throw new Response("Arquivo muito grande", { status: 413 });
-  const f = await request.formData();
-  if (f.get("intent") === "anexar") {
-    await anexar(usuario, Number(params.id), f);
+  try {
+    const usuario = await exigirUsuario(request);
+    if (Number(request.headers.get("content-length")) > 13 * 1024 * 1024)
+      throw new Response("Arquivo muito grande", { status: 413 });
+    const f = await request.formData();
+    if (f.get("intent") === "anexar") {
+      await anexar(usuario, inteiroEntrada(params.id), f);
+      return { ok: true };
+    }
+    if (
+      !["concluir", "reabrir", "cancelar"].includes(String(f.get("intent")))
+    ) {
+      await acaoTarefa(usuario, inteiroEntrada(params.id), f, now(request));
+      return { ok: true };
+    }
+    await mudarEstadoTarefa(
+      usuario,
+      inteiroEntrada(params.id),
+      String(f.get("intent")),
+      String(f.get("motivo") ?? ""),
+      now(request),
+    );
     return { ok: true };
+  } catch (erro) {
+    return erroDeFormulario(erro);
   }
-  if (!["concluir", "reabrir", "cancelar"].includes(String(f.get("intent")))) {
-    await acaoTarefa(usuario, Number(params.id), f, now(request));
-    return { ok: true };
-  }
-  await mudarEstadoTarefa(
-    usuario,
-    Number(params.id),
-    String(f.get("intent")),
-    String(f.get("motivo") ?? ""),
-    now(request),
-  );
-  return { ok: true };
 }
 export default function Tarefa({ loaderData: d }: Route.ComponentProps) {
   const { t } = useIdioma();
@@ -62,8 +71,14 @@ export default function Tarefa({ loaderData: d }: Route.ComponentProps) {
     concluida: "Concluída",
     cancelada: "Cancelada",
   } as const;
+  const resultado = useActionData<typeof action>();
+  const pendente = useNavigation().state !== "idle";
+  const { mensagem: mensagemErro } = useIdioma();
   return (
     <>
+      {resultado && "erro" in resultado && resultado.erro && (
+        <p role="alert">{mensagemErro(resultado.erro)}</p>
+      )}
       <p data-testid="codigo-tarefa">{d.tarefa.codigo}</p>
       <h1>{d.tarefa.titulo}</h1>
       <p>
@@ -95,11 +110,11 @@ export default function Tarefa({ loaderData: d }: Route.ComponentProps) {
       {d.tarefa.tipo === "manual" && (
         <Form method="post" className="lista-botoes">
           {d.tarefa.estado === "aberta" ? (
-            <button name="intent" value="concluir">
+            <button disabled={pendente} name="intent" value="concluir">
               {t("Concluir tarefa")}
             </button>
           ) : (
-            <button name="intent" value="reabrir">
+            <button disabled={pendente} name="intent" value="reabrir">
               {t("Reabrir")}
             </button>
           )}
@@ -109,7 +124,7 @@ export default function Tarefa({ loaderData: d }: Route.ComponentProps) {
                 {t("Motivo do cancelamento")}
                 <input name="motivo" />
               </label>
-              <button name="intent" value="cancelar">
+              <button disabled={pendente} name="intent" value="cancelar">
                 {t("Cancelar tarefa")}
               </button>
             </>

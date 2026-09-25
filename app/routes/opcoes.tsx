@@ -1,3 +1,5 @@
+import { useActionData, useNavigation } from "react-router";
+import { erroDeFormulario } from "~/modules/interface/erro-formulario.server";
 import { Form } from "react-router";
 import type { Route } from "./+types/opcoes";
 import { exigirUsuario } from "~/session.server";
@@ -11,16 +13,20 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { opcoes: await opcoesParaAdministrar(await exigirUsuario(request)) };
 }
 export async function action({ request }: Route.ActionArgs) {
-  const usuario = await exigirUsuario(request);
-  const f = await request.formData();
-  await administrarOpcoes(
-    usuario,
-    String(f.get("intent")),
-    Number(f.get("id")),
-    String(f.get("nome") ?? ""),
-    Number(f.get("destino")),
-  );
-  return { ok: true };
+  try {
+    const usuario = await exigirUsuario(request);
+    const f = await request.formData();
+    await administrarOpcoes(
+      usuario,
+      String(f.get("intent")),
+      Number(f.get("id")),
+      String(f.get("nome") ?? ""),
+      Number(f.get("destino")),
+    );
+    return { ok: true };
+  } catch (erro) {
+    return erroDeFormulario(erro);
+  }
 }
 export default function Opcoes({
   loaderData: { opcoes },
@@ -39,8 +45,14 @@ export default function Opcoes({
     cidades: "Cidades",
     meiosContato: "Meios de contato",
   };
+  const resultado = useActionData<typeof action>();
+  const pendente = useNavigation().state !== "idle";
+  const { mensagem: mensagemErro } = useIdioma();
   return (
     <>
+      {resultado && "erro" in resultado && resultado.erro && (
+        <p role="alert">{mensagemErro(resultado.erro)}</p>
+      )}
       <h1>{t("Opções conhecidas")}</h1>
       <table className="tabela">
         <thead>
@@ -65,11 +77,15 @@ export default function Opcoes({
                     aria-label={t("Nome")}
                     defaultValue={idioma === "ko" ? o.nomeKo : o.nomePt}
                   />
-                  <button name="intent" value="renomear">
+                  <button disabled={pendente} name="intent" value="renomear">
                     {t("Renomear")}
                   </button>
                   {!o.regular && (
-                    <button name="intent" value="regularizar">
+                    <button
+                      disabled={pendente}
+                      name="intent"
+                      value="regularizar"
+                    >
                       {t("Tornar regular")}
                     </button>
                   )}
@@ -87,7 +103,7 @@ export default function Opcoes({
                         </option>
                       ))}
                   </select>
-                  <button name="intent" value="mesclar">
+                  <button disabled={pendente} name="intent" value="mesclar">
                     {t("Mesclar")}
                   </button>
                 </Form>

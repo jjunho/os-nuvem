@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useReducer, useRef } from "react";
+import { reduzirOperacao } from "./operacao-remota";
 import { Form } from "react-router";
 import { useIdioma } from "~/modules/idiomas/idioma";
 import { Seletor } from "~/modules/opcoes/Seletor";
@@ -21,7 +22,6 @@ export function Briefing({
   opcoes: Record<string, { valor: string; nome: string }[]>;
 }) {
   const { t } = useIdioma();
-  const [copiado, setCopiado] = useState(false);
   const faltas = dadosFaltantes(viagem, pessoas);
   const mensagem = mensagemDeBriefing(viagem.idiomaCliente, faltas);
   const primeiraResposta =
@@ -37,12 +37,7 @@ export function Briefing({
           value={primeiraResposta}
         />
       </label>
-      <button
-        type="button"
-        onClick={() => navigator.clipboard.writeText(primeiraResposta)}
-      >
-        {t("Copiar primeira resposta")}
-      </button>
+      <CopiarTexto texto={primeiraResposta} rotulo="Copiar primeira resposta" />
       <section aria-label={t("Dados faltantes")}>
         <h2>{t("Dados faltantes")}</h2>
         <ul>
@@ -59,15 +54,7 @@ export function Briefing({
             rows={5}
           />
         </label>
-        <button
-          type="button"
-          onClick={async () => {
-            await navigator.clipboard.writeText(mensagem);
-            setCopiado(true);
-          }}
-        >
-          {t(copiado ? "Copiado" : "Copiar mensagem")}
-        </button>
+        <CopiarTexto texto={mensagem} rotulo="Copiar mensagem" />
       </section>
       <Form method="post">
         <input type="hidden" name="intent" value="planejamento" />
@@ -129,5 +116,68 @@ export function Briefing({
         <button>{t("Salvar planejamento")}</button>
       </Form>
     </section>
+  );
+}
+
+function CopiarTexto({
+  texto,
+  rotulo,
+}: {
+  texto: string;
+  rotulo: "Copiar primeira resposta" | "Copiar mensagem";
+}) {
+  const { t } = useIdioma();
+  const [estado, dispatch] = useReducer(reduzirOperacao<null>, {
+    fase: "inicial",
+  });
+  const tentativa = useRef(0);
+  const ocupada = useRef(false);
+  const montado = useRef(true);
+  useEffect(() => {
+    montado.current = true;
+    return () => {
+      montado.current = false;
+    };
+  }, []);
+  const atual = estado.fase !== "inicial" && estado.chave === texto;
+  async function copiar() {
+    if (!montado.current || ocupada.current) return;
+    ocupada.current = true;
+    const id = ++tentativa.current;
+    dispatch({ tipo: "iniciou", tentativa: id, chave: texto });
+    try {
+      await navigator.clipboard.writeText(texto);
+      if (montado.current)
+        dispatch({ tipo: "concluiu", tentativa: id, dados: null });
+    } catch (erro) {
+      if (montado.current)
+        dispatch({
+          tipo: "falhou",
+          tentativa: id,
+          erro: erro instanceof Error ? erro.message : String(erro),
+        });
+    } finally {
+      ocupada.current = false;
+    }
+  }
+  return (
+    <>
+      <button
+        type="button"
+        disabled={estado.fase === "carregando"}
+        onClick={() => void copiar()}
+      >
+        {t(
+          estado.fase === "carregando"
+            ? "Copiando…"
+            : atual && estado.fase === "pronto"
+              ? "Copiado"
+              : rotulo,
+        )}
+      </button>
+      {atual && estado.fase === "erro" && (
+        <p role="alert">{t("Não foi possível copiar o texto")}</p>
+      )}
+    </>
   );
 }

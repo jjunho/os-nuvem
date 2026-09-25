@@ -1,3 +1,5 @@
+import { useActionData, useNavigation } from "react-router";
+import { erroDeFormulario } from "~/modules/interface/erro-formulario.server";
 import { FATOS_MODELO } from "~/modules/viagens/tarefas-etapa";
 import { Form } from "react-router";
 import type { Route } from "./+types/modelos-etapa";
@@ -31,14 +33,24 @@ export async function loader({ request }: Route.LoaderArgs) {
   };
 }
 export async function action({ request }: Route.ActionArgs) {
-  const usuario = await exigirUsuario(request);
-  await salvarModeloEtapa(usuario, await request.formData(), now(request));
-  return { ok: true };
+  try {
+    const usuario = await exigirUsuario(request);
+    await salvarModeloEtapa(usuario, await request.formData(), now(request));
+    return { ok: true };
+  } catch (erro) {
+    return erroDeFormulario(erro);
+  }
 }
 export default function ModelosEtapa({ loaderData }: Route.ComponentProps) {
   const { t, mensagem } = useIdioma();
+  const resultado = useActionData<typeof action>();
+  const pendente = useNavigation().state !== "idle";
+  const { mensagem: mensagemErro } = useIdioma();
   return (
     <>
+      {resultado && "erro" in resultado && resultado.erro && (
+        <p role="alert">{mensagemErro(resultado.erro)}</p>
+      )}
       <h1>{t("Modelos de etapa")}</h1>
       <p>{t("Alterações valem para as próximas entradas na Etapa.")}</p>
       {loaderData.modelos.map((m) => (
@@ -105,7 +117,7 @@ export default function ModelosEtapa({ loaderData }: Route.ComponentProps) {
               ))}
             </select>
           </label>
-          <button>{t("Salvar")}</button>
+          <button disabled={pendente}>{t("Salvar")}</button>
         </Form>
       ))}
     </>

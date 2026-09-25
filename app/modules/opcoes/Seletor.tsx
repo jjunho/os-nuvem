@@ -1,6 +1,12 @@
-import { useId, useState, useEffect } from "react";
+import { useId, useReducer } from "react";
 import { useIdioma } from "~/modules/idiomas/idioma";
 import type { Opcao, ContextoOpcoes } from "./contexto";
+import {
+  iniciarSeletor,
+  reduzirSeletor,
+  escolhaAoConfirmar,
+  valorSeletor,
+} from "./seletor-modelo";
 export function Seletor({
   nome,
   rotulo,
@@ -14,7 +20,7 @@ export function Seletor({
   outroLabel,
 }: {
   outroLabel?: string;
-  onEditar?: () => void;
+  onEditar?: (texto: string) => void;
   multiplo?: boolean;
   nome: string;
   rotulo: string;
@@ -26,19 +32,18 @@ export function Seletor({
 }) {
   const { t } = useIdioma();
   const id = useId();
-  const [texto, setTexto] = useState(
-    opcoes.find((o) => o.valor === valorInicial)?.nome ?? valorInicial,
-  );
-  const [selecionadas, setSelecionadas] = useState<string[]>([]);
-  const [valor, setValor] = useState(valorInicial);
   const nomeInicial =
     opcoes.find((o) => o.valor === valorInicial)?.nome ?? valorInicial;
-  useEffect(() => {
-    setTexto(nomeInicial);
-    setValor(valorInicial);
-  }, [valorInicial, nomeInicial]);
-  const [aberto, setAberto] = useState(false);
-  const [indice, setIndice] = useState(-1);
+  const [estado, dispatch] = useReducer(reduzirSeletor, undefined, () =>
+    iniciarSeletor(valorInicial, nomeInicial, multiplo),
+  );
+  if (estado.base.valor !== valorInicial || estado.base.nome !== nomeInicial)
+    dispatch({ tipo: "sincronizou", valor: valorInicial, nome: nomeInicial });
+  const texto = estado.escolha.texto;
+  const valor = valorSeletor(estado);
+  const selecionadas = estado.selecionadas;
+  const aberto = estado.menu.fase === "aberto";
+  const indice = estado.menu.fase === "aberto" ? estado.menu.indice : -1;
   const filtradas = opcoes
     .filter((o) => !filtro || filtro(o, contexto))
     .filter((o) =>
@@ -46,13 +51,7 @@ export function Seletor({
     );
   const escolher = (opcao?: Opcao) => {
     const escolhido = opcao ?? { nome: texto.trim(), valor: texto.trim() };
-    if (multiplo)
-      setSelecionadas((atuais) =>
-        [...new Set([...atuais, escolhido.valor])].filter(Boolean),
-      );
-    setTexto(multiplo ? "" : escolhido.nome);
-    setValor(multiplo ? "" : escolhido.valor);
-    setAberto(false);
+    dispatch({ tipo: "escolheu", opcao: escolhido });
     onChange?.(escolhido.valor);
   };
   return (
@@ -65,33 +64,31 @@ export function Seletor({
         aria-expanded={aberto}
         aria-controls={`${id}-lista`}
         aria-activedescendant={
-          aberto && indice >= 0 ? `${id}-${indice}` : undefined
+          aberto && indice >= 0 && indice <= filtradas.length
+            ? `${id}-${indice}`
+            : undefined
         }
         value={texto}
         autoComplete="off"
-        onFocus={() => setAberto(true)}
-        onBlur={() => setAberto(false)}
+        onFocus={() => dispatch({ tipo: "abriu" })}
+        onBlur={() => dispatch({ tipo: "fechou" })}
         onChange={(e) => {
-          onEditar?.();
-          setTexto(e.target.value);
-          setValor(e.target.value.trim());
-          setIndice(-1);
-          setAberto(true);
+          onEditar?.(e.target.value);
+          dispatch({ tipo: "editou", texto: e.target.value });
         }}
         onKeyDown={(e) => {
-          if (e.key === "Escape") setAberto(false);
+          if (e.key === "Escape") dispatch({ tipo: "fechou" });
           if (e.key === "ArrowDown") {
             e.preventDefault();
-            setAberto(true);
-            setIndice(Math.min(indice + 1, filtradas.length));
+            dispatch({ tipo: "moveu", direcao: 1, total: filtradas.length });
           }
           if (e.key === "ArrowUp") {
             e.preventDefault();
-            setIndice(Math.max(indice - 1, 0));
+            dispatch({ tipo: "moveu", direcao: -1, total: filtradas.length });
           }
           if (e.key === "Enter" && aberto) {
             e.preventDefault();
-            escolher(filtradas[indice]);
+            escolher(escolhaAoConfirmar(estado, filtradas));
           }
         }}
       />
@@ -103,9 +100,7 @@ export function Seletor({
           <button
             type="button"
             aria-label={`${t("Remover")} ${v}`}
-            onClick={() =>
-              setSelecionadas((atuais) => atuais.filter((x) => x !== v))
-            }
+            onClick={() => dispatch({ tipo: "removeu", valor: v })}
           >
             ×
           </button>

@@ -109,6 +109,7 @@ test("Guiamento só acessa tarefas próprias ou em cópia, inclusive por URL", a
   await expect(page.getByTestId("codigo-tarefa")).toBeVisible();
   const copiada = page.url();
   await page.getByRole("button", { name: "Sair", exact: true }).click();
+  await expect(page).toHaveURL(/\/entrar$/);
   await entrarComo(page, "Jessica");
   await page.goto("/tarefas?responsavel=todos");
   await expect(

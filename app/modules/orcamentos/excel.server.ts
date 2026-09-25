@@ -1,3 +1,4 @@
+import { validarRascunho } from "./validacao";
 import ExcelJS from "exceljs";
 import {
   calcularOpcao,
@@ -139,10 +140,22 @@ export async function importarExcel(conteudo: ArrayBuffer, pessoas: Pessoa[]) {
     });
   }
   if (
-    !Array.isArray(original.dados?.opcoes) ||
-    !Array.isArray(original.pessoas)
+    !original ||
+    typeof original !== "object" ||
+    !Array.isArray(original.pessoas) ||
+    original.pessoas.some(
+      (p) =>
+        !p ||
+        typeof p !== "object" ||
+        !Number.isSafeInteger(p.id) ||
+        p.id < 1 ||
+        (p.nome !== null && typeof p.nome !== "string") ||
+        (p.idade !== null && !Number.isFinite(p.idade)) ||
+        typeof p.pagante !== "boolean",
+    )
   )
     throw new Response("Modelo CoreaLux incompleto", { status: 400 });
+  original.dados = validarRascunho(original.dados);
   const folhas = arquivo.worksheets.filter((f) => f.name !== "_CoreaLux");
   if (folhas.length !== original.dados.opcoes.length)
     throw new Response("Quantidade de opções difere do modelo CoreaLux", {
@@ -229,5 +242,5 @@ export async function importarExcel(conteudo: ArrayBuffer, pessoas: Pessoa[]) {
     });
     opcao.dias = dias;
   }
-  return { dados: original.dados, pendencias };
+  return { dados: validarRascunho(original.dados), pendencias };
 }

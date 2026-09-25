@@ -1,3 +1,5 @@
+import { useFiltrosURL } from "~/modules/interface/filtros-url";
+import { inteiroEntrada, idOpcional } from "~/modules/validacao/entrada";
 import { atualizarFollowups } from "~/modules/orcamentos/followups.server";
 import { Form, Link, useRevalidator, useSearchParams } from "react-router";
 import { useEffect } from "react";
@@ -17,11 +19,12 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw new Response("Acesso restrito", { status: 403 });
   await atualizarFollowups(now(request));
   const params = new URL(request.url).searchParams;
-  const pedida = Number(params.get("pagina") ?? 1);
-  const pagina = Number.isSafeInteger(pedida) && pedida > 0 ? pedida : 1;
+  const pagina = inteiroEntrada(params.get("pagina") ?? "1", {
+    mensagem: "Página inválida",
+  });
   const [resultado, usuarios, canais] = await Promise.all([
     pipeline(now(request), pagina, usuario, {
-      responsavelId: Number(params.get("responsavel")) || undefined,
+      responsavelId: idOpcional(params.get("responsavel")),
       canalComercial: params.get("canal") || undefined,
       atrasada: params.get("atrasada") === "1",
     }),
@@ -47,14 +50,27 @@ export default function Pipeline({ loaderData }: Route.ComponentProps) {
   const { idioma, t, mensagem } = useIdioma();
   const { viagens } = loaderData;
   const [params] = useSearchParams();
+  const filtro = useFiltrosURL(Object.fromEntries(params));
   const { revalidate } = useRevalidator();
   useEffect(() => {
     const eventos = new EventSource("/comunicador/eventos");
     eventos.onmessage = (e) => {
-      const evento = JSON.parse(e.data);
+      let evento: unknown;
+      try {
+        evento = JSON.parse(e.data);
+      } catch {
+        return;
+      }
+      if (
+        !evento ||
+        typeof evento !== "object" ||
+        !("id" in evento) ||
+        !("tipo" in evento)
+      )
+        return;
       if (
         evento.id === 0 ||
-        ["pipeline", "viagem", "reconectar"].includes(evento.tipo)
+        ["pipeline", "viagem", "reconectar"].includes(String(evento.tipo))
       )
         void revalidate();
     };
@@ -110,11 +126,7 @@ export default function Pipeline({ loaderData }: Route.ComponentProps) {
           {texto("Kanban", "칸반")}
         </Link>
       </nav>
-      <Form
-        method="get"
-        className="linha pipeline-filtros"
-        key={params.toString()}
-      >
+      <Form method="get" className="linha pipeline-filtros">
         <input
           type="hidden"
           name="visualizacao"
@@ -125,7 +137,8 @@ export default function Pipeline({ loaderData }: Route.ComponentProps) {
           <select
             name="responsavel"
             aria-label={t("Responsável")}
-            defaultValue={params.get("responsavel") ?? ""}
+            value={filtro.valores.responsavel ?? ""}
+            onChange={(e) => filtro.alterar("responsavel", e.target.value)}
           >
             <option value="">{texto("Todos", "전체")}</option>
             {loaderData.usuarios.map((u) => (
@@ -140,7 +153,8 @@ export default function Pipeline({ loaderData }: Route.ComponentProps) {
           <select
             aria-label={texto("Canal comercial", "판매 채널")}
             name="canal"
-            defaultValue={params.get("canal") ?? ""}
+            value={filtro.valores.canal ?? ""}
+            onChange={(e) => filtro.alterar("canal", e.target.value)}
           >
             <option value="">{texto("Todos", "전체")}</option>
             {loaderData.canais.map(({ valor, nome }) => (
@@ -155,7 +169,10 @@ export default function Pipeline({ loaderData }: Route.ComponentProps) {
             type="checkbox"
             name="atrasada"
             value="1"
-            defaultChecked={params.get("atrasada") === "1"}
+            checked={filtro.valores.atrasada === "1"}
+            onChange={(e) =>
+              filtro.alterar("atrasada", e.target.checked ? "1" : undefined)
+            }
           />
           {texto("Próxima ação atrasada", "다음 작업 기한 초과")}
         </label>

@@ -1,3 +1,6 @@
+import { idOpcional } from "~/modules/validacao/entrada";
+import { useActionData, useNavigation } from "react-router";
+import { erroDeFormulario } from "~/modules/interface/erro-formulario.server";
 import { Form, Link, redirect } from "react-router";
 import type { Route } from "./+types/tabela";
 import { exigirUsuario } from "~/session.server";
@@ -12,25 +15,35 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const usuario = await exigirUsuario(request);
   const n = new URL(request.url).searchParams.get("versao");
   const [tabela, historico] = await Promise.all([
-    lerTabela(params.codigo, n ? Number(n) : undefined),
+    lerTabela(params.codigo, idOpcional(n)),
     historicoTabela(params.codigo),
   ]);
   return { tabela, historico, editavel: usuario.papel === "admin" && !n };
 }
 export async function action({ request, params }: Route.ActionArgs) {
-  const usuario = await exigirUsuario(request);
-  await salvarTabela(
-    params.codigo,
-    usuario,
-    await request.formData(),
-    now(request),
-  );
-  return redirect(`/tabelas/${params.codigo}`);
+  try {
+    const usuario = await exigirUsuario(request);
+    await salvarTabela(
+      params.codigo,
+      usuario,
+      await request.formData(),
+      now(request),
+    );
+    return redirect(`/tabelas/${params.codigo}`);
+  } catch (erro) {
+    return erroDeFormulario(erro);
+  }
 }
 export default function Tabela({ loaderData: d }: Route.ComponentProps) {
   const { t, mensagem, idioma } = useIdioma();
+  const resultado = useActionData<typeof action>();
+  const pendente = useNavigation().state !== "idle";
+  const { mensagem: mensagemErro } = useIdioma();
   return (
     <>
+      {resultado && "erro" in resultado && resultado.erro && (
+        <p role="alert">{mensagemErro(resultado.erro)}</p>
+      )}
       <Link to="/tabelas">{t("Tabelas de referência")}</Link>
       <h1>{mensagem(d.tabela.titulo)}</h1>
       <p data-testid="versao-tabela">
@@ -112,7 +125,7 @@ export default function Tabela({ loaderData: d }: Route.ComponentProps) {
                 </label>
               ))}
             </fieldset>
-            <button>{t("Salvar nova versão")}</button>
+            <button disabled={pendente}>{t("Salvar nova versão")}</button>
           </>
         )}
       </Form>

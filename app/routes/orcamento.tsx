@@ -21,7 +21,8 @@ import {
   sugerirVeiculo,
   avaliarVeiculo,
 } from "~/modules/orcamentos/transportes";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useReducer, useRef, type FormEvent } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { Link, useFetcher, data, redirect } from "react-router";
 import type { Route } from "./+types/orcamento";
 import { now } from "~/clock.server";
@@ -37,19 +38,31 @@ import {
   type RascunhoOrcamento,
   type DiaOrcamento,
 } from "~/modules/orcamentos/calculo";
+import { lerIntent, lerInteiroPositivo } from "~/modules/orcamentos/validacao";
+import { copiarResumo } from "~/modules/orcamentos/copiar-resumo";
 import { useIdioma } from "~/modules/idiomas/idioma";
-type ResultadoAction = {
-  erro?: string;
-  revisao?: number;
-  importacao?: Awaited<ReturnType<typeof importarExcel>>;
-  pedido?: PedidoExtraido;
-  confirmado?: boolean;
-  dados?: RascunhoOrcamento;
-};
-const resultado = (r: ResultadoAction) => r;
+import {
+  editor,
+  iniciarEditor,
+  reconciliar,
+  revisar,
+  iniciarRevisao,
+} from "~/modules/orcamentos/editor";
+type Importacao = Awaited<ReturnType<typeof importarExcel>>;
+type Resposta =
+  | { tipo: "erro"; erro: string }
+  | { tipo: "pagar-taxa" | "enviar" }
+  | { tipo: "preparar-pedido"; pedido: PedidoExtraido; texto: string }
+  | { tipo: "importar-excel"; importacao: Importacao; revisao: number }
+  | {
+      tipo: "salvar" | "confirmar-pedido";
+      revisao: number;
+      dados: RascunhoOrcamento;
+    };
+type ResultadoAction = Resposta & { requestId: string; orcamentoId: number };
 export async function loader({ request, params }: Route.LoaderArgs) {
   await exigirUsuario(request);
-  const d = await lerOrcamento(Number(params.id));
+  const d = await lerOrcamento(lerInteiroPositivo(params.id));
   return {
     ...d,
     ...(await listarDisponibilidade()),
@@ -59,102 +72,301 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 export async function action({ request, params }: Route.ActionArgs) {
   const usuario = await exigirUsuario(request);
   const f = await request.formData();
+  const resultado = (r: Resposta): ResultadoAction => ({
+    ...r,
+    requestId: String(f.get("requestId") ?? ""),
+    orcamentoId: Number(params.id),
+  });
   try {
-    if (f.get("intent") === "pagar-taxa") {
-      await registrarPagamentoTaxa(Number(params.id), usuario.id, now(request));
-      return resultado({});
+    const intent = lerIntent(f.get("intent"));
+    const orcamentoId = lerInteiroPositivo(params.id);
+    if (intent === "pagar-taxa") {
+      await registrarPagamentoTaxa(orcamentoId, usuario.id, now(request));
+      return resultado({ tipo: "pagar-taxa" });
     }
-    if (f.get("intent") === "enviar") {
+    if (intent === "enviar") {
       await enviarOrcamento(
-        Number(params.id),
+        orcamentoId,
         usuario.id,
         String(f.get("destinatario") ?? ""),
         String(f.get("canal") ?? ""),
         now(request),
+        lerInteiroPositivo(f.get("revisao")),
       );
-      return resultado({});
+      return resultado({ tipo: "enviar" });
     }
-    if (f.get("intent") === "nova-versao") {
+    if (intent === "nova-versao") {
       const nova = await iniciarNovaVersao(
-        Number(params.id),
+        orcamentoId,
         usuario.id,
         now(request),
       );
       return redirect(`/orcamentos/${nova.id}`);
     }
-    if (f.get("intent") === "preparar-pedido")
+    if (intent === "preparar-pedido")
       return resultado({
+        tipo: "preparar-pedido",
+        texto: String(f.get("pedidoTexto") ?? ""),
         pedido: extrairPedido(String(f.get("pedidoTexto") ?? "")),
       });
-    if (f.get("intent") === "confirmar-pedido") {
+    if (intent === "confirmar-pedido") {
       const salvo = await confirmarPedido(
-        Number(params.id),
-        Number(f.get("revisao")),
+        orcamentoId,
+        lerInteiroPositivo(f.get("revisao")),
         String(f.get("pedidoTexto") ?? ""),
       );
       return resultado({
-        confirmado: true,
+        tipo: "confirmar-pedido",
         revisao: salvo.revisao,
         dados: salvo.dados,
       });
     }
-    if (f.get("intent") === "importar-excel") {
+    if (intent === "importar-excel") {
       const arquivo = f.get("arquivo");
       if (!(arquivo instanceof File) || arquivo.size > 5 * 1024 * 1024)
         throw new Response("Use um arquivo do modelo CoreaLux com até 5 MB", {
           status: 400,
         });
-      const d = await lerOrcamento(Number(params.id));
+      const d = await lerOrcamento(lerInteiroPositivo(params.id));
       const importacao = await importarExcel(
         await arquivo.arrayBuffer(),
         d.pessoas,
       );
-      return resultado({ importacao });
+      return resultado({
+        tipo: "importar-excel",
+        importacao,
+        revisao: d.orcamento.revisao,
+      });
     }
-    let dados: RascunhoOrcamento;
+    let dados: unknown;
     try {
       dados = JSON.parse(String(f.get("dados")));
     } catch {
       throw new Response("Orçamento inválido", { status: 400 });
     }
     const salvo = await salvarOrcamento(
-      Number(params.id),
-      Number(f.get("revisao")),
+      orcamentoId,
+      lerInteiroPositivo(f.get("revisao")),
       dados,
       usuario.id,
       now(request),
-      f.get("intent") === "atualizar-referencias",
+      intent === "atualizar-referencias",
     );
-    return resultado({ revisao: salvo.revisao });
+    return resultado({
+      tipo: "salvar",
+      revisao: salvo.revisao,
+      dados: salvo.dados,
+    });
   } catch (e) {
     if (e instanceof Response && [400, 409].includes(e.status))
       return data<ResultadoAction>(
-        { erro: await e.text() },
+        resultado({ tipo: "erro", erro: await e.text() }),
         { status: e.status },
       );
     throw e;
   }
 }
 
-export default function Orcamento({ loaderData: d }: Route.ComponentProps) {
+export default function Orcamento(props: Route.ComponentProps) {
+  return <EditorOrcamento key={props.loaderData.orcamento.id} {...props} />;
+}
+function EditorOrcamento({ loaderData: d }: Route.ComponentProps) {
   const { t, mensagem, idioma } = useIdioma();
   const salvar = useFetcher<typeof action>();
   const importar = useFetcher<typeof action>();
   const pedido = useFetcher<typeof action>();
   const [pedidoTexto, setPedidoTexto] = useState("");
-  const [copiado, setCopiado] = useState(false);
-  const [dados, setDados] = useState(d.orcamento.dados);
+  const [copia, setCopia] = useState<"idle" | "copiando" | "copiado" | "erro">(
+    "idle",
+  );
+  const copiaAtual = useRef(0);
+  const copiando = useRef(false);
+  useEffect(
+    () => () => {
+      copiaAtual.current++;
+    },
+    [],
+  );
+  const [estado, dispatch] = useReducer(
+    editor<RascunhoOrcamento>,
+    iniciarEditor(d.orcamento.id, d.orcamento.revisao, d.orcamento.dados),
+  );
+  const [previaPedido, revisarPedido] = useReducer(
+    revisar<{ texto: string; pedido: PedidoExtraido }>,
+    iniciarRevisao<{ texto: string; pedido: PedidoExtraido }>(),
+  );
+  const [previaExcel, revisarExcel] = useReducer(
+    revisar<Importacao & { revisao: number }>,
+    iniciarRevisao<Importacao & { revisao: number }>(),
+  );
+  const {
+    control,
+    getValues,
+    setValue,
+    reset,
+    formState: { isDirty: alterado },
+  } = useForm<{ dados: RascunhoOrcamento }>({
+    defaultValues: { dados: d.orcamento.dados },
+  });
+  const dados = useWatch({ control, name: "dados" });
+  const temEdicoes = () =>
+    JSON.stringify(getValues("dados")) !== JSON.stringify(estado.base);
+  const emVoo = useRef<{ id: string; intent: string } | null>(null);
+  const previasEmVoo = useRef<Record<string, string>>({});
+  const adquirir = (id: string, intent: string) => {
+    if (intent === "preparar-pedido" || intent === "importar-excel") {
+      if (
+        previasEmVoo.current[intent] ||
+        (intent === "preparar-pedido" && pedido.state !== "idle") ||
+        (intent === "importar-excel" && importar.state !== "idle")
+      )
+        return false;
+      previasEmVoo.current[intent] = id;
+      return true;
+    }
+    if (
+      emVoo.current ||
+      ocupado ||
+      (intent === "confirmar-pedido" && pedido.state !== "idle")
+    )
+      return false;
+    emVoo.current = { id, intent };
+    return true;
+  };
+  const conflito =
+    (estado.revisao !== d.orcamento.revisao ||
+      estado.revisao !== estado.remota) &&
+    estado.operacao.fase === "idle";
+  const ocupado = salvar.state !== "idle" || estado.operacao.fase !== "idle";
+  const confirmando = estado.operacao.fase === "confirmando";
   const malasPorPessoa = d.pessoas.length
     ? d.pessoas.reduce((s, p) => s + p.malas, 0) / d.pessoas.length
     : 2;
-  const [alterado, setAlterado] = useState(false);
   const [itens, setItens] = useState<Record<string, string>>({});
   useEffect(() => {
-    if (pedido.data?.confirmado && pedido.data.dados) {
-      setDados(pedido.data.dados);
-      setAlterado(false);
+    dispatch({ tipo: "externo", revisao: d.orcamento.revisao });
+  }, [d.orcamento.revisao]);
+  useEffect(() => {
+    for (const r of [salvar.data, pedido.data]) {
+      if (
+        !r ||
+        r.orcamentoId !== d.orcamento.id ||
+        estado.operacao.fase === "idle" ||
+        r.requestId !== estado.operacao.id
+      )
+        continue;
+      if (r.tipo === "salvar" || r.tipo === "confirmar-pedido") {
+        const atual = getValues("dados");
+        const proximo =
+          r.tipo === "confirmar-pedido"
+            ? r.dados
+            : reconciliar(estado.operacao.snapshot, atual, r.dados);
+        reset({ dados: r.dados });
+        if (proximo !== r.dados)
+          setValue("dados", proximo, { shouldDirty: true });
+        dispatch({
+          tipo: "salvo",
+          id: r.requestId,
+          revisao: r.revisao,
+          dados: r.dados,
+        });
+        if (r.tipo === "confirmar-pedido") revisarPedido({ tipo: "invalidar" });
+      }
+      if (r.tipo === "erro")
+        dispatch({ tipo: "falha", id: r.requestId, erro: r.erro });
     }
-  }, [pedido.data]);
+  }, [
+    salvar.data,
+    pedido.data,
+    d.orcamento.id,
+    estado.operacao,
+    getValues,
+    reset,
+    setValue,
+  ]);
+  useEffect(() => {
+    const r = pedido.data;
+    if (!r || r.orcamentoId !== d.orcamento.id) return;
+    if (r.tipo === "preparar-pedido")
+      revisarPedido({
+        tipo: "receber",
+        id: r.requestId,
+        valor: { texto: r.texto, pedido: r.pedido },
+      });
+    if (r.tipo === "erro")
+      revisarPedido({ tipo: "falha", id: r.requestId, erro: r.erro });
+  }, [pedido.data, d.orcamento.id]);
+  useEffect(() => {
+    const r = importar.data;
+    if (!r || r.orcamentoId !== d.orcamento.id) return;
+    if (r.tipo === "importar-excel")
+      revisarExcel({
+        tipo: "receber",
+        id: r.requestId,
+        valor: { ...r.importacao, revisao: r.revisao },
+      });
+    if (r.tipo === "erro")
+      revisarExcel({ tipo: "falha", id: r.requestId, erro: r.erro });
+  }, [importar.data, d.orcamento.id]);
+  useEffect(() => {
+    if (
+      pedido.state === "idle" &&
+      pedido.data?.requestId === previasEmVoo.current["preparar-pedido"]
+    )
+      delete previasEmVoo.current["preparar-pedido"];
+    if (
+      importar.state === "idle" &&
+      importar.data?.requestId === previasEmVoo.current["importar-excel"]
+    )
+      delete previasEmVoo.current["importar-excel"];
+    const voo = emVoo.current;
+    if (!voo) return;
+    const f = voo.intent === "confirmar-pedido" ? pedido : salvar;
+    if (
+      f.state === "idle" &&
+      f.data?.orcamentoId === d.orcamento.id &&
+      f.data.requestId === voo.id
+    )
+      emVoo.current = null;
+  }, [
+    salvar.state,
+    pedido.state,
+    importar.state,
+    salvar.data,
+    pedido.data,
+    importar.data,
+    d.orcamento.id,
+  ]);
+  const comandar = (
+    e: FormEvent<HTMLFormElement>,
+    intent: "enviar" | "pagar-taxa" | "nova-versao",
+  ) => {
+    e.preventDefault();
+    if (!d.orcamento.memoria && (temEdicoes() || conflito)) return;
+    const requestId = crypto.randomUUID();
+    if (!adquirir(requestId, intent)) return;
+    const form = new FormData(e.currentTarget);
+    form.set("intent", intent);
+    form.set("requestId", requestId);
+    form.set("revisao", String(estado.revisao));
+    salvar.submit(form, { method: "post" });
+  };
+  const gravar = (intent: "salvar" | "atualizar-referencias") => {
+    if (ocupado || conflito) return;
+    const requestId = crypto.randomUUID();
+    if (!adquirir(requestId, intent)) return;
+    const snapshot = structuredClone(getValues("dados"));
+    dispatch({ tipo: "salvar", id: requestId, snapshot, alterado });
+    salvar.submit(
+      {
+        intent,
+        requestId,
+        dados: JSON.stringify(snapshot),
+        revisao: String(estado.revisao),
+      },
+      { method: "post" },
+    );
+  };
   const conhecidas = (campo: string, base: { valor: string; nome: string }[]) =>
     [
       ...base,
@@ -170,12 +382,18 @@ export default function Orcamento({ loaderData: d }: Route.ComponentProps) {
           currency: "USD",
         }).format(n / 100);
   const alterar = (fn: (rascunho: RascunhoOrcamento) => void) => {
-    setDados((anterior) => {
-      const novo = structuredClone(anterior);
-      fn(novo);
-      return novo;
-    });
-    setAlterado(true);
+    if (
+      confirmando ||
+      (emVoo.current &&
+        ["confirmar-pedido", "enviar", "pagar-taxa", "nova-versao"].includes(
+          emVoo.current.intent,
+        ))
+    )
+      return;
+    const novo = structuredClone(getValues("dados"));
+    fn(novo);
+    setValue("dados", novo, { shouldDirty: true });
+    dispatch({ tipo: "editado" });
   };
   const alterarDia = (
     opcao: number,
@@ -196,8 +414,11 @@ export default function Orcamento({ loaderData: d }: Route.ComponentProps) {
           (d.taxaPaga ? (
             <p>{t("Taxa paga")}</p>
           ) : (
-            <salvar.Form method="post">
-              <button name="intent" value="pagar-taxa">
+            <salvar.Form
+              method="post"
+              onSubmit={(e) => comandar(e, "pagar-taxa")}
+            >
+              <button disabled={ocupado} name="intent" value="pagar-taxa">
                 {t("Registrar pagamento da taxa")}
               </button>
             </salvar.Form>
@@ -211,15 +432,35 @@ export default function Orcamento({ loaderData: d }: Route.ComponentProps) {
           <a href={`/propostas/${d.orcamento.id}`}>{t("Abrir proposta")}</a>
         </p>
         <button
+          disabled={copia === "copiando"}
           onClick={async () => {
-            const r = await fetch(`/propostas/${d.orcamento.id}?formato=texto`);
-            await navigator.clipboard.writeText(await r.text());
-            setCopiado(true);
+            if (copiando.current) return;
+            copiando.current = true;
+            const id = ++copiaAtual.current;
+            setCopia("copiando");
+            try {
+              const copiou = await copiarResumo(
+                `/propostas/${d.orcamento.id}?formato=texto`,
+                {
+                  buscar: fetch,
+                  escrever: (texto) => navigator.clipboard.writeText(texto),
+                  atual: () => id === copiaAtual.current,
+                },
+              );
+              if (copiou) setCopia("copiado");
+            } catch {
+              if (id === copiaAtual.current) setCopia("erro");
+            } finally {
+              if (id === copiaAtual.current) copiando.current = false;
+            }
           }}
         >
           {t("Copiar resumo B2B")}
         </button>
-        {copiado && <p role="status">{t("Texto copiado")}</p>}
+        {copia === "copiado" && <p role="status">{t("Texto copiado")}</p>}
+        {copia === "erro" && (
+          <p role="alert">{t("Não foi possível copiar. Tente novamente.")}</p>
+        )}
         {m.calculos.map((c, i) => (
           <section key={i}>
             <h2>{m.dados.opcoes[i].nome}</h2>
@@ -229,88 +470,189 @@ export default function Orcamento({ loaderData: d }: Route.ComponentProps) {
             </p>
           </section>
         ))}
-        <salvar.Form method="post">
-          <button name="intent" value="nova-versao">
+        <salvar.Form method="post" onSubmit={(e) => comandar(e, "nova-versao")}>
+          <button disabled={ocupado} name="intent" value="nova-versao">
             {t("Iniciar nova versão")}
           </button>
         </salvar.Form>
-        {salvar.data?.erro && <p role="alert">{mensagem(salvar.data.erro)}</p>}
+        {salvar.data?.tipo === "erro" && (
+          <p role="alert">{mensagem(salvar.data.erro)}</p>
+        )}
       </>
     );
   }
   return (
-    <>
+    <fieldset
+      disabled={
+        confirmando ||
+        (salvar.state !== "idle" && estado.operacao.fase !== "salvando")
+      }
+      className="editor-orcamento"
+      style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}
+    >
       <Link to={`/viagens/${d.viagem.id}`}>{t("Voltar à viagem")}</Link>
       <h1>
         {t("Orçamento")} {d.viagem.codigo} · {t("Versão")} {d.orcamento.versao}
       </h1>
-      <pedido.Form method="post">
-        <input type="hidden" name="intent" value="preparar-pedido" />
+      {conflito && (
+        <p role="alert">
+          {t("O orçamento mudou. Recarregue antes de confirmar.")}
+        </p>
+      )}
+      <pedido.Form
+        method="post"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (pedido.state !== "idle") return;
+          const requestId = crypto.randomUUID();
+          if (!adquirir(requestId, "preparar-pedido")) return;
+          revisarPedido({ tipo: "solicitar", id: requestId });
+          pedido.submit(
+            { intent: "preparar-pedido", pedidoTexto, requestId },
+            { method: "post" },
+          );
+        }}
+      >
         <label>
           {t("Pedido do cliente")}
           <textarea
             name="pedidoTexto"
+            aria-label={t("Pedido do cliente")}
             value={pedidoTexto}
-            onChange={(e) => setPedidoTexto(e.target.value)}
+            onChange={(e) => {
+              setPedidoTexto(e.target.value);
+              revisarPedido({ tipo: "invalidar" });
+            }}
             required
           />
         </label>
-        <button>{t("Preparar rascunho")}</button>
+        <button disabled={pedido.state !== "idle"}>
+          {t("Preparar rascunho")}
+        </button>
       </pedido.Form>
-      {pedido.data?.erro && <p role="alert">{mensagem(pedido.data.erro)}</p>}
-      {pedido.data?.pedido && (
+      {previaPedido.fase === "erro" && (
+        <p role="alert">{mensagem(previaPedido.erro)}</p>
+      )}
+      {previaPedido.fase === "pronta" && (
         <section aria-label={t("Revisão do pedido")}>
           <p>
-            {pedido.data.pedido.dias} {t("dias")} ·{" "}
-            {pedido.data.pedido.cidades.join(" / ")} ·{" "}
-            {pedido.data.pedido.pagantes} + {pedido.data.pedido.gratuidades}
+            {previaPedido.valor.pedido.dias} {t("dias")} ·{" "}
+            {previaPedido.valor.pedido.cidades.join(" / ")} ·{" "}
+            {previaPedido.valor.pedido.pagantes} +{" "}
+            {previaPedido.valor.pedido.gratuidades}
           </p>
           <p>
             {t(
               "Confirmar substitui os dias da primeira opção e atualiza datas e viajantes na Viagem.",
             )}
           </p>
+          {alterado && (
+            <p>{t("Salve o orçamento antes de confirmar o pedido.")}</p>
+          )}
           <button
-            onClick={() =>
+            disabled={ocupado || alterado || conflito}
+            onClick={() => {
+              if (ocupado || temEdicoes() || conflito) return;
+              const requestId = crypto.randomUUID();
+              if (!adquirir(requestId, "confirmar-pedido")) return;
+              dispatch({
+                tipo: "confirmar",
+                id: requestId,
+                snapshot: structuredClone(getValues("dados")),
+                alterado,
+              });
               pedido.submit(
                 {
                   intent: "confirmar-pedido",
-                  pedidoTexto,
-                  revisao: String(d.orcamento.revisao),
+                  pedidoTexto: previaPedido.valor.texto,
+                  revisao: String(estado.revisao),
+                  requestId,
                 },
                 { method: "post" },
-              )
-            }
+              );
+            }}
           >
             {t("Confirmar pedido")}
           </button>
         </section>
       )}
-      {pedido.data?.confirmado && <p role="status">{t("Pedido confirmado")}</p>}
+      {estado.resultado === "confirmado" && (
+        <p role="status">{t("Pedido confirmado")}</p>
+      )}
+      {typeof estado.resultado === "object" && (
+        <p role="alert">{mensagem(estado.resultado.erro)}</p>
+      )}
       <a href={`/orcamentos/${d.orcamento.id}/excel`}>{t("Exportar Excel")}</a>
-      <importar.Form method="post" encType="multipart/form-data">
+      <importar.Form
+        method="post"
+        encType="multipart/form-data"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (importar.state !== "idle") return;
+          const form = new FormData(e.currentTarget);
+          const requestId = crypto.randomUUID();
+          if (!adquirir(requestId, "importar-excel")) return;
+          form.set("requestId", requestId);
+          revisarExcel({ tipo: "solicitar", id: requestId });
+          importar.submit(form, {
+            method: "post",
+            encType: "multipart/form-data",
+          });
+        }}
+      >
         <input type="hidden" name="intent" value="importar-excel" />
         <label>
           {t("Arquivo Excel")}
-          <input type="file" name="arquivo" accept=".xlsx" required />
+          <input
+            type="file"
+            name="arquivo"
+            accept=".xlsx"
+            required
+            onChange={() => revisarExcel({ tipo: "invalidar" })}
+          />
         </label>
-        <button>{t("Revisar importação")}</button>
+        <button disabled={importar.state !== "idle"}>
+          {t("Revisar importação")}
+        </button>
       </importar.Form>
-      {importar.data?.erro && (
-        <p role="alert">{mensagem(importar.data.erro)}</p>
+      {previaExcel.fase === "erro" && (
+        <p role="alert">{mensagem(previaExcel.erro)}</p>
       )}
-      {importar.data?.importacao && (
+      {previaExcel.fase === "pronta" && (
         <section>
+          {previaExcel.valor.revisao !== estado.revisao && (
+            <p role="alert">
+              {t("O orçamento mudou. Revise a importação novamente.")}
+            </p>
+          )}
           <ul>
-            {importar.data.importacao.pendencias.map((p) => (
+            {previaExcel.valor.pendencias.map((p) => (
               <li key={p}>{p}</li>
             ))}
           </ul>
           <button
-            disabled={importar.data.importacao.pendencias.length > 0}
+            disabled={
+              ocupado ||
+              importar.state !== "idle" ||
+              conflito ||
+              previaExcel.valor.revisao !== estado.revisao ||
+              previaExcel.valor.pendencias.length > 0
+            }
             onClick={() => {
-              setDados(importar.data!.importacao!.dados);
-              setAlterado(true);
+              if (
+                ocupado ||
+                importar.state !== "idle" ||
+                conflito ||
+                previaExcel.valor.revisao !== estado.revisao ||
+                emVoo.current ||
+                previaExcel.valor.pendencias.length > 0
+              )
+                return;
+              setValue("dados", previaExcel.valor.dados, {
+                shouldDirty: true,
+              });
+              dispatch({ tipo: "editado" });
+              revisarExcel({ tipo: "invalidar" });
             }}
           >
             {t("Aplicar importação")}
@@ -1763,38 +2105,12 @@ export default function Orcamento({ loaderData: d }: Route.ComponentProps) {
           );
         })}
       </div>
-      <button
-        disabled={salvar.state !== "idle"}
-        onClick={() => {
-          salvar.submit(
-            {
-              dados: JSON.stringify(dados),
-              revisao: String(
-                Math.max(salvar.data?.revisao ?? 0, d.orcamento.revisao),
-              ),
-            },
-            { method: "post" },
-          );
-          setAlterado(false);
-        }}
-      >
+      <button disabled={ocupado || conflito} onClick={() => gravar("salvar")}>
         {t("Salvar orçamento")}
       </button>
       <button
-        onClick={() => {
-          salvar.submit(
-            {
-              intent: "atualizar-referencias",
-              dados: JSON.stringify(dados),
-              revisao: String(
-                Math.max(salvar.data?.revisao ?? 0, d.orcamento.revisao),
-              ),
-            },
-            { method: "post" },
-          );
-          setAlterado(false);
-        }}
-        disabled={salvar.state !== "idle"}
+        disabled={ocupado || conflito}
+        onClick={() => gravar("atualizar-referencias")}
       >
         {t("Atualizar referências")}
       </button>
@@ -1837,8 +2153,15 @@ export default function Orcamento({ loaderData: d }: Route.ComponentProps) {
               {d.taxaPaga ? (
                 <p>{t("Taxa paga")}</p>
               ) : (
-                <salvar.Form method="post">
-                  <button disabled={alterado} name="intent" value="pagar-taxa">
+                <salvar.Form
+                  method="post"
+                  onSubmit={(e) => comandar(e, "pagar-taxa")}
+                >
+                  <button
+                    disabled={alterado || ocupado || conflito}
+                    name="intent"
+                    value="pagar-taxa"
+                  >
                     {t("Registrar pagamento da taxa")}
                   </button>
                 </salvar.Form>
@@ -1942,8 +2265,9 @@ export default function Orcamento({ loaderData: d }: Route.ComponentProps) {
           </select>
         </label>
       </fieldset>
-      <salvar.Form method="post">
+      <salvar.Form method="post" onSubmit={(e) => comandar(e, "enviar")}>
         <input type="hidden" name="intent" value="enviar" />
+        <input type="hidden" name="revisao" value={estado.revisao} />
         <label>
           {t("Destinatário do envio")}
           <input name="destinatario" defaultValue={d.destinatario} required />
@@ -1956,15 +2280,16 @@ export default function Orcamento({ loaderData: d }: Route.ComponentProps) {
             required
           />
         </label>
-        <button disabled={alterado || salvar.state !== "idle"}>
+        <button disabled={alterado || ocupado || conflito}>
           {t("Registrar envio")}
         </button>
       </salvar.Form>
-      {salvar.data?.erro && <p role="alert">{mensagem(salvar.data.erro)}</p>}
-      {salvar.data?.revisao &&
-        !pedido.data?.confirmado &&
-        !alterado &&
-        salvar.state === "idle" && <p role="status">{t("Orçamento salvo")}</p>}
-    </>
+      {salvar.data?.tipo === "erro" && typeof estado.resultado !== "object" && (
+        <p role="alert">{mensagem(salvar.data.erro)}</p>
+      )}
+      {estado.resultado === "salvo" && !alterado && !ocupado && (
+        <p role="status">{t("Orçamento salvo")}</p>
+      )}
+    </fieldset>
   );
 }

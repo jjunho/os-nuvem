@@ -1,4 +1,5 @@
-import { Form, redirect } from "react-router";
+import { erroDeFormulario } from "~/modules/interface/erro-formulario.server";
+import { Form, redirect, useNavigation } from "react-router";
 import type { Route } from "./+types/formulario";
 import {
   lerFormulario,
@@ -26,6 +27,10 @@ const textos = {
     enviar: "Enviar respostas",
     recebido: "Respostas recebidas",
     outro: "Outro…",
+    enviando: "Enviando…",
+    erro: "Confira os dados e tente novamente.",
+    datasInvalidas: "Datas inválidas",
+    idadeInvalida: "Idade inválida",
   },
   es: {
     titulo: "Formulario de planificación",
@@ -47,6 +52,10 @@ const textos = {
     enviar: "Enviar respuestas",
     recebido: "Respuestas recibidas",
     outro: "Otro…",
+    enviando: "Enviando…",
+    erro: "Revise los datos e inténtelo de nuevo.",
+    datasInvalidas: "Fechas no válidas",
+    idadeInvalida: "Edad no válida",
   },
   en: {
     titulo: "Travel planning form",
@@ -68,6 +77,10 @@ const textos = {
     enviar: "Send answers",
     recebido: "Answers received",
     outro: "Other…",
+    enviando: "Sending…",
+    erro: "Check the details and try again.",
+    datasInvalidas: "Invalid dates",
+    idadeInvalida: "Invalid age",
   },
   fr: {
     titulo: "Formulaire de préparation du voyage",
@@ -89,6 +102,10 @@ const textos = {
     enviar: "Envoyer les réponses",
     recebido: "Réponses reçues",
     outro: "Autre…",
+    enviando: "Envoi en cours…",
+    erro: "Vérifiez les informations et réessayez.",
+    datasInvalidas: "Dates non valides",
+    idadeInvalida: "Âge non valide",
   },
 };
 export async function loader({ params, request }: Route.LoaderArgs) {
@@ -98,8 +115,12 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   };
 }
 export async function action({ params, request }: Route.ActionArgs) {
-  await receberFormulario(params.token, await request.formData());
-  return redirect(`/planejamento/${params.token}?recebido=1`);
+  try {
+    await receberFormulario(params.token, await request.formData());
+    return redirect(`/planejamento/${params.token}?recebido=1`);
+  } catch (erro) {
+    return erroDeFormulario(erro);
+  }
 }
 export const meta: Route.MetaFunction = ({ loaderData }) => [
   {
@@ -109,12 +130,24 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
 ];
 export default function Formulario({
   loaderData: { viagem: v, pessoas, idioma, hoteis, recebido },
+  actionData,
 }: Route.ComponentProps) {
   const t = textos[idioma as keyof typeof textos] ?? textos.pt;
+  const pendente = useNavigation().state !== "idle";
+  const erro = actionData?.erro;
+  const mensagemErro =
+    erro === "Datas inválidas" || erro === "Data inválida"
+      ? t.datasInvalidas
+      : erro === "Idade inválida"
+        ? t.idadeInvalida
+        : idioma === "pt"
+          ? erro
+          : t.erro;
   return (
     <main className="pagina">
       <h1>{t.titulo}</h1>
       {recebido && <p role="status">{t.recebido}</p>}
+      {erro && <p role="alert">{mensagemErro}</p>}
       <Form method="post" className="lista-botoes">
         {!v.dataInicio && (
           <label>
@@ -189,7 +222,7 @@ export default function Formulario({
             )}
           </fieldset>
         ))}
-        <button>{t.enviar}</button>
+        <button disabled={pendente}>{pendente ? t.enviando : t.enviar}</button>
       </Form>
     </main>
   );
