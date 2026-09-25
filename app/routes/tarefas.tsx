@@ -76,7 +76,7 @@ export default function Tarefas({ loaderData: d }: Route.ComponentProps) {
             <Link to={`/tarefas/${tarefa.id}`}>
               {tarefa.codigo} — {tarefa.titulo}
             </Link>{" "}
-            · {tarefa.responsavel} · {tarefa.prazo.toLocaleString()} ·{" "}
+            · {tarefa.responsavel} · {tarefa.prazo?.toLocaleString()} ·{" "}
             {t(
               (
                 {
@@ -124,7 +124,7 @@ export default function Tarefas({ loaderData: d }: Route.ComponentProps) {
         </fieldset>
         <label>
           {t("Prazo da tarefa")}
-          <input type="datetime-local" name="prazo" required />
+          <input type="datetime-local" name="prazo" />
         </label>
         <label>
           {t("Viagem relacionada")}

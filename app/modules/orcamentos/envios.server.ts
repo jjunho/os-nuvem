@@ -1,16 +1,14 @@
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "~/db/client.server";
 import {
   contatos,
   enviosProposta,
   orcamentos,
-  responsaveis,
   usuarios,
   viagemContatos,
   viagens,
 } from "~/db/schema";
 import { registrarFato } from "~/modules/viagens/etapas.server";
-import { criarTarefaAutomatica } from "~/modules/tarefas/tarefas.server";
 import { avisar, entregarPush } from "~/modules/notificacoes/push.server";
 import { calcularOpcao } from "./calculo";
 import { lerOrcamento } from "./orcamentos.server";
@@ -138,20 +136,12 @@ export async function enviarOrcamento(
         .update(orcamentos)
         .set({ memoria, estado: "enviado" })
         .where(eq(orcamentos.id, id));
-      await registrarFato(
-        tx,
-        atual.viagemId,
-        "envio",
-        autorId,
-        agora,
-        memoria.numero,
-      );
     }
     await tx
       .update(viagens)
       .set({ semRespostaDesde: null })
       .where(eq(viagens.id, atual.viagemId));
-    const [envio] = await tx
+    await tx
       .insert(enviosProposta)
       .values({
         orcamentoId: id,
@@ -161,26 +151,14 @@ export async function enviarOrcamento(
         autorId,
       })
       .returning();
-    const [responsavel] = await tx
-      .select()
-      .from(responsaveis)
-      .where(
-        and(
-          eq(responsaveis.viagemId, atual.viagemId),
-          isNull(responsaveis.ate),
-        ),
-      );
-    if (responsavel)
-      await criarTarefaAutomatica(tx, {
-        viagemId: atual.viagemId,
-        tipo: "followup",
-        titulo: "Retomar proposta com o cliente",
-        responsavelId: responsavel.usuarioId,
-        prazo: new Date(agora.getTime() + 3 * 86400000),
-        autorId,
-        agora,
-        chave: `envio:${envio.id}:1`,
-      });
+    await registrarFato(
+      tx,
+      atual.viagemId,
+      "envio",
+      autorId,
+      agora,
+      memoria.numero,
+    );
     for (const [i, c] of memoria.calculos.entries())
       if (c.margemReal !== null && c.margemReal < (c.pisoMargem ?? 0.1)) {
         const admins = await tx

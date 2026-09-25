@@ -124,9 +124,10 @@ export async function mudarMensagem(
       autor_id: number;
       conversa_id: number;
       apagada: boolean;
+      sistema: boolean;
       texto: string;
     }>("select * from mensagens where id=$1 for update", [id]);
-    if (!m) restrito();
+    if (!m || m.sistema) restrito();
     await exigirConversa(u, m.conversa_id, true, tx);
     if (d.acao === "editar") {
       if (m.autor_id !== u.id) restrito();

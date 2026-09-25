@@ -10,7 +10,7 @@ import type { usuarios } from "~/db/schema";
 export type Usuario = Omit<typeof usuarios.$inferSelect, "senhaHash">;
 export type Conversa = {
   id: number;
-  tipo: "direta" | "grupo" | "interna" | "equipe";
+  tipo: "direta" | "grupo" | "interna" | "equipe" | "tarefa";
   nome: string;
   descricao: string;
   privada: boolean;
@@ -32,6 +32,9 @@ export type Mensagem = {
   segmentos: Segmento[];
   criada_em: string;
   apagada: boolean;
+  sistema: boolean;
+  atividade_tipo: string | null;
+  atividade_motivo: string | null;
   urgente: boolean;
   citada_id: number | null;
   versoes: { texto: string; em: string }[];
@@ -79,7 +82,7 @@ export async function exigirConversa(
 export async function listar(u: Usuario) {
   const { rows: conversas } = await pool.query<Conversa>(
     `select c.*,m.notificacao, coalesce(m.lida_ate,0) as lida_ate,
-    (select count(*)::int from mensagens x where x.conversa_id=c.id and x.id>coalesce(m.lida_ate,0)) as nao_lidas,
+    (select count(*)::int from mensagens x where x.conversa_id=c.id and not x.sistema and x.id>coalesce(m.lida_ate,0)) as nao_lidas,
     case when c.tipo='direta' then coalesce((select string_agg(p.nome, ', ') from membros_conversa mm join usuarios p on p.id=mm.usuario_id where mm.conversa_id=c.id and p.id<>$1),c.nome) else c.nome end as nome
     from conversas c left join membros_conversa m on m.conversa_id=c.id and m.usuario_id=$1
     where (c.tipo<>'interna' or $2<>'guiamento') and ($2='admin' or m.usuario_id is not null or (c.tipo='interna' and $2<>'guiamento'))
@@ -143,7 +146,7 @@ export async function ler(u: Usuario, id: number, query: URLSearchParams) {
     const {
       rows: [p],
     } = await pool.query<{ id: number }>(
-      `select min(id) as id from mensagens where conversa_id=$1 and id>coalesce((select lida_ate from membros_conversa where conversa_id=$1 and usuario_id=$2),0)`,
+      `select min(id) as id from mensagens where conversa_id=$1 and not sistema and id>coalesce((select lida_ate from membros_conversa where conversa_id=$1 and usuario_id=$2),0)`,
       [id, u.id],
     );
     if (p?.id) {
@@ -164,10 +167,10 @@ export async function ler(u: Usuario, id: number, query: URLSearchParams) {
     case when m.apagada and $4<>'admin' then '[]'::jsonb else m.segmentos end as segmentos,
     coalesce((select jsonb_agg(jsonb_build_object('emoji',r.emoji,'nome',p.nome)) from reacoes_mensagem r join usuarios p on p.id=r.usuario_id where r.mensagem_id=m.id),'[]') as reacoes,
     case when m.apagada and $4<>'admin' then null else (select jsonb_build_object('id',a.id,'mime',a.mime,'removida',a.removida,'movida',a.viajante_id is not null) from midias_comunicador a where a.mensagem_id=m.id) end as midia,
-    m.criada_em::text,m.apagada,m.urgente,m.citada_id,
+    m.criada_em::text,m.apagada,m.urgente,m.citada_id,m.sistema,h.tipo as atividade_tipo,h.motivo as atividade_motivo,
     case when m.apagada and $4<>'admin' then '[]'::jsonb else m.versoes end as versoes,
     case when m.apagada and $4<>'admin' then '' else m.transcricao end as transcricao
-    from mensagens m join usuarios u on u.id=m.autor_id where m.conversa_id=$1 and m.id<$2 and m.id>$3 order by m.id ${crescente ? "asc" : "desc"} limit 50`,
+    from mensagens m join usuarios u on u.id=m.autor_id left join tarefas_historico h on m.sistema and m.client_id='historico:tarefa:' || h.id where m.conversa_id=$1 and m.id<$2 and m.id>$3 order by m.id ${crescente ? "asc" : "desc"} limit 50`,
     [id, antes, depois, u.papel],
   );
   return {

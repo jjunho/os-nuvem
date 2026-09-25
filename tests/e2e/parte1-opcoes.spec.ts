@@ -83,7 +83,9 @@ test("categoria, idiomas, marca, cidades e meios de contato aceitam opções nov
   await page.getByRole("button", { name: "Criar viagem", exact: true }).click();
   await expect(page.getByTestId("etapa")).toBeVisible();
   for (const [, valor] of escolhas)
-    await expect(page.getByText(valor, { exact: false })).toBeVisible();
+    await expect(
+      page.getByRole("definition").filter({ hasText: valor }),
+    ).toBeVisible();
   await page.goto("/viagens/nova");
   for (const [campo, valor] of escolhas) {
     await page.getByRole("combobox", { name: campo, exact: true }).fill(valor);
@@ -106,18 +108,14 @@ test("Admin renomeia, regulariza e mescla exceção atualizando a viagem; outros
   await expect(page.getByTestId("etapa")).toBeVisible();
   const viagem = page.url();
   await page.goto("/opcoes");
-  let linha = page
-    .getByRole("row")
-    .filter({
-      has: page.getByRole("cell", { name: "Feira Lisboa", exact: true }),
-    });
+  let linha = page.getByRole("row").filter({
+    has: page.getByRole("cell", { name: "Feira Lisboa", exact: true }),
+  });
   await linha.getByLabel("Nome").fill("Feira de Lisboa");
   await linha.getByRole("button", { name: "Renomear", exact: true }).click();
-  linha = page
-    .getByRole("row")
-    .filter({
-      has: page.getByRole("cell", { name: "Feira de Lisboa", exact: true }),
-    });
+  linha = page.getByRole("row").filter({
+    has: page.getByRole("cell", { name: "Feira de Lisboa", exact: true }),
+  });
   await linha
     .getByRole("button", { name: "Tornar regular", exact: true })
     .click();

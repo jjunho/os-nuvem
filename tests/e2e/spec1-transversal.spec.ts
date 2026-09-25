@@ -29,6 +29,12 @@ for (const b2b of [true, false])
       page.getByLabel("Primeira resposta", { exact: true }),
     ).toHaveValue(/Olá/);
     await page
+      .getByLabel("O que ocorreu", { exact: true })
+      .fill("Respondi via WhatsApp");
+    await page
+      .getByLabel("Por quê", { exact: true })
+      .fill("Solicitação do cliente");
+    await page
       .getByRole("button", { name: "Respondi o contato", exact: true })
       .click();
     await expect(
@@ -128,7 +134,7 @@ for (const b2b of [true, false])
     const versao1 = page.url();
     await page.goto(viagem);
     await expect(page.getByTestId("etapa")).toHaveText("Proposta enviada");
-    await expect(page.locator(".acoes")).toContainText("Retomar proposta");
+    await expect(page.locator(".acoes li").filter({ hasText: "Retomar proposta" })).toHaveCount(3);
     await page
       .getByLabel("Resposta do cliente", { exact: true })
       .selectOption("mudancas");

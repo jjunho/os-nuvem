@@ -1,5 +1,5 @@
 import { publicar } from "~/modules/notificacoes/eventos.server";
-import { avisar } from "~/modules/notificacoes/push.server";
+import { avisarTarefa as avisar } from "./notificacoes.server";
 import { and, asc, eq, exists, inArray, lt, ne, or, sql } from "drizzle-orm";
 import { db } from "~/db/client.server";
 import {
@@ -11,22 +11,7 @@ import {
 type Usuario = { id: number; papel: string };
 type Transacao = Parameters<Parameters<typeof db.transaction>[0]>[0];
 function visibilidade(usuario: Usuario) {
-  return usuario.papel === "guiamento"
-    ? or(
-        eq(tarefas.responsavelId, usuario.id),
-        exists(
-          db
-            .select()
-            .from(tarefasCopias)
-            .where(
-              and(
-                eq(tarefasCopias.tarefaId, tarefas.id),
-                eq(tarefasCopias.usuarioId, usuario.id),
-              ),
-            ),
-        ),
-      )
-    : undefined;
+  return sql`tarefa_visivel(${tarefas.id},${usuario.id},${usuario.papel})`;
 }
 async function evento(
   tx: Transacao,
@@ -115,6 +100,7 @@ export async function transferirAutomaticas(
         eq(tarefas.viagemId, viagemId),
         ne(tarefas.tipo, "manual"),
         eq(tarefas.estado, "aberta"),
+        sql`not exists(select 1 from tarefas_etapa te where te.tarefa_id=${tarefas.id} and te.destinatario='usuario')`,
       ),
     )
     .returning({ id: tarefas.id });
@@ -163,12 +149,22 @@ export async function criarTarefa(
   agora: Date,
   origemMensagemId?: number,
   transacao?: Transacao,
+  posicao?: { quadroId: number; listaId: number },
 ) {
   const titulo = String(form.get("titulo") ?? "").trim();
-  const prazo = new Date(String(form.get("prazo")));
+  if (form.has("tipo") && form.get("tipo") !== "manual")
+    throw new Response("Tarefa da etapa não pode ser criada manualmente", {
+      status: 400,
+    });
+  const prazo = form.get("prazo") ? new Date(String(form.get("prazo"))) : null;
   const responsavelId = Number(form.get("responsavelId"));
-  const copias = [...new Set(form.getAll("copias").map(Number))];
-  if (!titulo || !Number.isFinite(prazo.getTime()))
+  const copias = [
+    ...new Set([
+      ...form.getAll("copias").map(Number),
+      ...(responsavelId !== usuario.id ? [usuario.id] : []),
+    ]),
+  ];
+  if (!titulo || (prazo !== null && !Number.isFinite(prazo.getTime())))
     throw new Response("Informe título e prazo", { status: 400 });
   if (
     usuario.papel === "guiamento" &&
@@ -177,6 +173,13 @@ export async function criarTarefa(
   )
     throw new Response("Acesso restrito", { status: 403 });
   const executar = async (tx: Transacao) => {
+    if (posicao) {
+      const autorizada = await tx.execute(
+        sql`select l.id from quadros_listas l join quadros q on q.id=l.quadro_id where l.id=${posicao.listaId} and q.id=${posicao.quadroId} and not l.arquivada and not q.arquivado and not l.conclusao and quadro_visivel(q.id,${usuario.id},${usuario.papel}) for update of l,q`,
+      );
+      if (!autorizada.rows.length)
+        throw new Response("Lista inválida", { status: 403 });
+    }
     const ids = [...new Set([responsavelId, ...copias])];
     const ativos = await tx
       .select()
@@ -198,6 +201,10 @@ export async function criarTarefa(
         tipo: "manual",
       })
       .returning();
+    if (posicao)
+      await tx.execute(
+        sql`update tarefas_posicoes set quadro_id=${posicao.quadroId},lista_id=${posicao.listaId} where tarefa_id=${tarefa.id}`,
+      );
     if (copias.length)
       await tx
         .insert(tarefasCopias)
@@ -385,10 +392,19 @@ export async function proximasTarefas(ids: number[], usuario: Usuario) {
 
 /** Persistent keys keep deadline notifications idempotent across requests/restarts. */
 export async function avisarPrazos(agora: Date) {
-  await db.execute(sql`insert into notificacoes(usuario_id,titulo,texto,url,chave,criada_em)
-    select destinatario.usuario_id,t.codigo,t.titulo,'/tarefas/'||t.id,'tarefa:'||t.id||':vencida',${agora}
-    from tarefas t join lateral (
-      select t.responsavel_id as usuario_id union select c.usuario_id from tarefas_copias c where c.tarefa_id=t.id
-    ) destinatario on true join usuarios u on u.id=destinatario.usuario_id and u.ativo
-    where t.estado='aberta' and t.prazo<${agora} on conflict do nothing`);
+  const pendentes =
+    await db.execute(sql`select t.id,t.codigo,t.titulo,d.usuario_id from tarefas t join lateral (
+    select t.responsavel_id as usuario_id union select c.usuario_id from tarefas_copias c where c.tarefa_id=t.id
+  ) d on true where t.estado='aberta' and t.prazo<${agora} and not exists(select 1 from notificacoes n where n.usuario_id=d.usuario_id and n.chave='tarefa:'||t.id||':vencida') limit 500`);
+  if (!pendentes.rows.length) return;
+  await db.transaction(async (tx) => {
+    for (const t of pendentes.rows)
+      await avisar(tx, [Number(t.usuario_id)], {
+        titulo: String(t.codigo),
+        texto: String(t.titulo),
+        url: `/tarefas/${t.id}`,
+        chave: `tarefa:${t.id}:vencida`,
+        criadaEm: agora,
+      });
+  });
 }

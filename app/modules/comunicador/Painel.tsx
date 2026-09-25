@@ -11,8 +11,9 @@ import { comprimirFoto, enviarArquivo } from "./midia.client";
 import type { Cartao } from "./cartao";
 import { segmentar } from "./leitura";
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router";
 import { useIdioma } from "~/modules/idiomas/idioma";
-import { textos, erroTraduzido } from "./textos";
+import { textos, erroTraduzido, atividadeTarefa } from "./textos";
 import type { Conversa, Mensagem, Pessoa } from "./comunicador.server";
 export async function comando(d: object) {
   const r = await fetch("/comunicador/api", {
@@ -34,6 +35,7 @@ export function Painel({
   aberta: boolean;
   aoNaoLidas: (n: number) => void;
 }) {
+  const rota = useLocation();
   const { idioma, mensagem } = useIdioma(),
     t = textos(idioma);
   const [conversas, setConversas] = useState<Conversa[]>([]),
@@ -189,9 +191,7 @@ export function Painel({
     }
   }
   useEffect(() => {
-    aba.current = crypto.randomUUID();
-    void atualizar();
-    const q = new URLSearchParams(location.search);
+    const q = new URLSearchParams(rota.search);
     const vi = Number(q.get("interna")),
       c = Number(q.get("conversa")),
       m = Number(q.get("mensagem"));
@@ -229,6 +229,10 @@ export function Painel({
       );
       if (salvo > 0) void abrir(salvo, true);
     }
+  }, [rota.search]);
+  useEffect(() => {
+    aba.current = crypto.randomUUID();
+    void atualizar();
     const es = new EventSource("/comunicador/eventos");
     es.onmessage = (e) => {
       void atualizar();
@@ -1016,6 +1020,7 @@ export function Painel({
                 id={`mensagem-${m.id}`}
                 key={m.id}
               >
+                {m.sistema && <small>{t("Atividade da tarefa")}</small>}
                 <strong>
                   {m.autor} {!m.ativo && t("Inativo")}
                 </strong>
@@ -1043,6 +1048,12 @@ export function Painel({
                 )}
                 {m.apagada && <em>{t("Apagada")}</em>}
                 <p>
+                  {m.sistema && (
+                    <>
+                      {atividadeTarefa(idioma, m.atividade_tipo)}
+                      {m.atividade_motivo ? ` · ${m.atividade_motivo}` : ""}
+                    </>
+                  )}
                   {m.segmentos.map((s, i) =>
                     s.tipo === "usuario" ||
                     s.tipo === "todos" ||
@@ -1185,7 +1196,7 @@ export function Painel({
                     {r.emoji} {r.nome}{" "}
                   </small>
                 ))}
-                {!m.apagada && !conversa?.arquivada && (
+                {!m.sistema && !m.apagada && !conversa?.arquivada && (
                   <div>
                     <button
                       onClick={() =>

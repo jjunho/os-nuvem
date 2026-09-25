@@ -1,3 +1,4 @@
+import { origensTarefasViagem } from "~/modules/viagens/tarefas-etapa.server";
 import { aceiteDaViagem } from "~/modules/orcamentos/aceite.server";
 import { atualizarFollowups } from "~/modules/orcamentos/followups.server";
 import { listarEnvios } from "~/modules/orcamentos/envios.server";
@@ -82,6 +83,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     envios: await listarEnvios(d.viagem.id),
     orcamentos: await listarOrcamentos(d.viagem.id),
     historicoEtapas: await historicoEtapas(d.viagem.id),
+    origensTarefas: await origensTarefasViagem(d.viagem.id),
     anexosPlanejamento: await listarAnexosPlanejamento(d.viagem.id),
     respostasConflitantes: await listarRespostasConflitantes(d.viagem.id),
     modeloResposta: await obterModeloResposta(d.viagem.idiomaCliente),
@@ -167,7 +169,11 @@ export async function action({ request, params }: Route.ActionArgs) {
         await alterarViajante(id, f);
         break;
       case "responder":
-        await registrarResposta(id, agora, usuario.id);
+        await registrarResposta(id, agora, usuario.id, {
+          meio: String(f.get("meioContato") ?? ""),
+          ocorreu: String(f.get("ocorreuContato") ?? ""),
+          motivo: String(f.get("motivoContato") ?? ""),
+        });
         break;
       case "trocar-responsavel":
         await trocarResponsavel(
@@ -347,28 +353,105 @@ export default function Viagem({ loaderData }: Route.ComponentProps) {
       />
       <section>
         <h2>{t("Tarefas")}</h2>
-        <ul className="acoes">
-          {acoes.map((a) => {
-            const feita =
-              !!a.concluidaEm ||
-              (respondida && a.titulo.startsWith("Responder"));
-            return (
-              <li key={a.id} className={feita ? "feita" : ""}>
-                {a.titulo === "Responder o primeiro contato"
-                  ? t("Responder o primeiro contato")
-                  : a.titulo}{" "}
-                — {a.responsavel} — {t("prazo")} {quando(a.prazo)}
-                {feita ? " ✓" : ""}
-              </li>
-            );
-          })}
-        </ul>
-        {!respondida && etapa === "lead" && (
-          <resposta.Form method="post">
+        {Array.from(
+          new Set(
+            acoes.map(
+              (a) =>
+                loaderData.origensTarefas.find((o) => o.tarefaId === a.id)
+                  ?.etapa ?? "pessoal",
+            ),
+          ),
+        ).map((grupo) => (
+          <div key={grupo}>
+            <h3>
+              {grupo === "pessoal"
+                ? t("Tarefas pessoais")
+                : t(rotuloEtapa[grupo as Etapa])}
+            </h3>
+            <ul className="acoes">
+              {acoes
+                .filter(
+                  (a) =>
+                    (loaderData.origensTarefas.find((o) => o.tarefaId === a.id)
+                      ?.etapa ?? "pessoal") === grupo,
+                )
+                .map((a) => {
+                  const origem = loaderData.origensTarefas.find(
+                    (o) => o.tarefaId === a.id,
+                  );
+                  return (
+                    <li
+                      key={a.id}
+                      className={a.estado === "concluida" ? "feita" : ""}
+                    >
+                      <Link to={`/tarefas/${a.id}`}>{mensagem(a.titulo)}</Link>{" "}
+                      — {a.responsavel} — {t("prazo")} {quando(a.prazo)} ·{" "}
+                      {a.estado === "concluida"
+                        ? t("Concluída")
+                        : a.estado === "cancelada"
+                          ? t("Cancelada")
+                          : t("Aberta")}
+                      {origem?.fatoId && (
+                        <>
+                          {" "}
+                          ·{" "}
+                          <a href={`#fato-${origem.fatoId}`}>
+                            {t("Fato conclusivo")} #{origem.fatoId}
+                          </a>
+                        </>
+                      )}
+                      {origem?.motivo && (
+                        <>
+                          {" "}
+                          ·{" "}
+                          {origem.motivo.startsWith("Etapa passou para ")
+                            ? `${t("Etapa passou para")} ${mensagem(origem.motivo.slice(17))}`
+                            : mensagem(origem.motivo)}
+                        </>
+                      )}
+                    </li>
+                  );
+                })}
+            </ul>
+          </div>
+        ))}
+        {!["descartada", "perdida", "cancelada", "concluida"].includes(
+          etapa,
+        ) && (
+          <resposta.Form method="post" id="registrar-contato">
+            <label>
+              {t("Meio de contato")}
+              <select
+                name="meioContato"
+                defaultValue={
+                  v.meiosContato[0] ??
+                  loaderData.opcoes.meiosContato?.[0]?.valor
+                }
+              >
+                {loaderData.opcoes.meiosContato?.map((m) => (
+                  <option key={m.valor} value={m.valor}>
+                    {m.nome}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              {t("O que ocorreu")}
+              <input name="ocorreuContato" required />
+            </label>
+            <label>
+              {t("Por quê")}
+              <input name="motivoContato" required />
+            </label>
             <button name="intent" value="responder">
-              {t("Respondi o contato")}
+              {!respondida && etapa === "lead"
+                ? t("Respondi o contato")
+                : t("Registrar contato")}
             </button>
           </resposta.Form>
+        )}
+        {loaderData.usuario.papel === "admin" && (
+          <Link to="/modelos-etapa">{t("Modelos de etapa")}</Link>
         )}
       </section>
 

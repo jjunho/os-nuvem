@@ -11,7 +11,9 @@ test("Interna nasce na primeira mensagem e cartão acompanha a viagem", async ({
   });
   const viagemId = Number(page.url().split("/").at(-1));
   const antes = await (await page.request.get("/comunicador/api")).json();
-  expect(antes.conversas).toHaveLength(0);
+  expect(
+    antes.conversas.filter((c: { tipo: string }) => c.tipo === "interna"),
+  ).toHaveLength(0);
   const r = await page.request.post("/comunicador/api", {
     data: {
       acao: "interna",

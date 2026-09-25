@@ -34,7 +34,9 @@ test("Tarefa tem código, responsável, cópia e prazo, com histórico de conclu
   await expect(
     page.getByRole("heading", { name: "Revisar pedido", exact: true }),
   ).toBeVisible();
-  await expect(page.getByText("Jessica", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("listitem").filter({ hasText: /^Jessica$/ }),
+  ).toBeVisible();
   await page
     .getByRole("button", { name: "Concluir tarefa", exact: true })
     .click();

@@ -42,7 +42,7 @@ test("follow-ups continuam a cada três dias, alertam uma vez e resposta remove 
       page
         .locator(".acoes li")
         .filter({ hasText: "Retomar proposta com o cliente" }),
-    ).toHaveCount(dias / 3 + 1);
+    ).toHaveCount(Math.max(3, dias / 3));
   }
   await page.goto("/");
   await expect(

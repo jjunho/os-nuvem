@@ -118,6 +118,9 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
           </NavLink>
           <NavLink to="/notificacoes">{t("Notificações")}</NavLink>
           <NavLink to="/tabelas">{t("Tabelas de referência")}</NavLink>
+          <NavLink to="/quadros">
+            {idioma === "ko" ? "보드" : "Quadros"}
+          </NavLink>
           <NavLink to="/tarefas">{t("Tarefas")}</NavLink>
           <NavLink to="/viagens/nova">{t("Nova viagem")}</NavLink>
           {loaderData.usuario.papel === "admin" && (

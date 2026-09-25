@@ -1,6 +1,6 @@
 import { Form, data, redirect, useNavigation } from "react-router";
 import type { Route } from "./+types/entrar";
-import { entrar } from "~/modules/acesso/acesso.server";
+import { entrar, usuarioDaSessao } from "~/modules/acesso/acesso.server";
 import { cookieDeSessao, destinoSeguro } from "~/session.server";
 import { now } from "~/clock.server";
 import { useIdioma } from "~/modules/idiomas/idioma";
@@ -13,8 +13,12 @@ export async function action({ request }: Route.ActionArgs) {
     now(request),
   );
   if (!resultado.sessao) return data({ erro: resultado.erro }, { status: 400 });
+  const destinoPedido = new URL(request.url).searchParams.get("destino");
+  const usuario = await usuarioDaSessao(resultado.sessao.token, now(request));
   return redirect(
-    destinoSeguro(new URL(request.url).searchParams.get("destino")),
+    destinoPedido === null && usuario?.papel === "guiamento"
+      ? "/tarefas"
+      : destinoSeguro(destinoPedido),
     {
       headers: {
         "Set-Cookie": await cookieDeSessao(request, resultado.sessao),

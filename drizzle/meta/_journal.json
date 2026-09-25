@@ -253,6 +253,13 @@
       "when": 1790297253806,
       "tag": "0035_warm_black_crow",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1790300000000,
+      "tag": "0036_quadros",
+      "breakpoints": true
     }
   ]
 }

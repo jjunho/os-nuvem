@@ -8,7 +8,6 @@ import {
   taxasElaboracao,
 } from "~/db/schema";
 import { registrarFato } from "~/modules/viagens/etapas.server";
-import { concluirAutomaticas } from "~/modules/tarefas/tarefas.server";
 export async function versoesParaAceite(viagemId: number) {
   return db
     .select({
@@ -117,7 +116,6 @@ export async function aceitarOpcao(
       .update(viagens)
       .set({ semRespostaDesde: null })
       .where(eq(viagens.id, viagemId));
-    await concluirAutomaticas(tx, viagemId, "followup", autorId, agora);
     return aceite;
   });
 }

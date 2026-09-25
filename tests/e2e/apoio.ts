@@ -9,16 +9,14 @@ export async function reiniciar(page: Page) {
 }
 
 export async function relogio(page: Page, iso: string) {
-  await page
-    .context()
-    .addCookies([
-      {
-        name: "x-test-now",
-        value: encodeURIComponent(iso),
-        domain: "localhost",
-        path: "/",
-      },
-    ]);
+  await page.context().addCookies([
+    {
+      name: "x-test-now",
+      value: encodeURIComponent(iso),
+      domain: "localhost",
+      path: "/",
+    },
+  ]);
 }
 
 export async function entrarComo(page: Page, nome: string) {
@@ -26,7 +24,12 @@ export async function entrarComo(page: Page, nome: string) {
   await page.getByLabel("E-mail").fill(`${nome.toLowerCase()}@corealux.com`);
   await page.getByLabel("Senha", { exact: true }).fill("corealux123");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Pipeline" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: nome.toLowerCase() === "jessica" ? "Minhas Tarefas" : "Pipeline",
+      exact: true,
+    }),
+  ).toBeVisible();
 }
 
 export async function novaViagem(

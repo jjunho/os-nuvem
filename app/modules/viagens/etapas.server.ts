@@ -1,21 +1,21 @@
-import { and, asc, eq, isNull, ne } from "drizzle-orm";
+import { avisar } from "~/modules/notificacoes/push.server";
+import { notificar } from "~/modules/comunicador/leitura";
+import { leituraAtual } from "~/modules/comunicador/notificacoes.server";
+import { traduzirMensagem } from "~/modules/idiomas/catalogo";
+import { rotuloEtapa } from "./rotulos";
+import { reconciliarTarefasEtapa } from "./tarefas-etapa.server";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "~/db/client.server";
 import {
   aceites,
   orcamentos,
   fatosEtapa,
   responsaveis,
-  tarefas,
-  tarefasHistorico,
   usuarios,
   viagens,
 } from "~/db/schema";
 import { inferirEtapa, type TipoFatoEtapa } from "./etapas";
 import { ETAPAS_ABERTAS } from "./regras";
-import {
-  cancelarAutomaticas,
-  concluirAutomaticas,
-} from "~/modules/tarefas/tarefas.server";
 type Transacao = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Usuario = { id: number; papel: string };
 /** Called in the same transaction as the domain fact (quote, sending or acceptance). */
@@ -80,41 +80,6 @@ export async function registrarFato(
         ),
       )
       .returning({ orcamentoId: aceites.orcamentoId });
-    if (
-      anteriores.some(
-        (f) =>
-          f.id === corrigeId &&
-          ["aceite", "mudancas", "pensando"].includes(f.tipo),
-      )
-    ) {
-      const reabertas = await tx
-        .update(tarefas)
-        .set({ estado: "aberta", concluidaEm: null })
-        .where(
-          and(
-            eq(tarefas.viagemId, viagemId),
-            eq(tarefas.tipo, "followup"),
-            eq(tarefas.estado, "concluida"),
-            eq(
-              tarefas.concluidaEm,
-              anteriores.find((f) => f.id === corrigeId)!.em,
-            ),
-          ),
-        )
-        .returning({ id: tarefas.id });
-      if (reabertas.length)
-        await tx
-          .insert(tarefasHistorico)
-          .values(
-            reabertas.map((t) => ({
-              tarefaId: t.id,
-              tipo: "reaberta",
-              autorId,
-              criadaEm: em,
-              motivo,
-            })),
-          );
-    }
     for (const a of anulados)
       await tx
         .update(orcamentos)
@@ -133,39 +98,51 @@ export async function registrarFato(
       motivoEncerramento: ETAPAS_ABERTAS.includes(etapa) ? null : motivo.trim(),
     })
     .where(eq(viagens.id, viagemId));
-  if (!ETAPAS_ABERTAS.includes(etapa))
-    await cancelarAutomaticas(tx, viagemId, autorId, motivo, em);
-  // A correction restores tasks canceled only because this trip was mistakenly closed.
+  await reconciliarTarefasEtapa(tx, viagemId, autorId, em, tipo === "correcao");
   if (
-    tipo === "correcao" &&
-    ETAPAS_ABERTAS.includes(etapa) &&
-    !ETAPAS_ABERTAS.includes(viagem.etapa)
+    etapa !== viagem.etapa &&
+    !["perda", "descarte", "cancelamento", "correcao"].includes(tipo)
   ) {
-    const reabertas = await tx
-      .update(tarefas)
-      .set({ estado: "aberta", canceladaEm: null, motivoCancelamento: null })
-      .where(
-        and(
-          eq(tarefas.viagemId, viagemId),
-          ne(tarefas.tipo, "manual"),
-          eq(tarefas.estado, "cancelada"),
-          eq(tarefas.motivoCancelamento, viagem.motivoEncerramento ?? ""),
-        ),
+    const destinatarios = await tx.execute<{
+      id: number;
+      idioma: "pt" | "ko";
+      dnd_inicio: string;
+      dnd_fim: string;
+      fuso: string;
+    }>(
+      sql`select u.id,u.idioma_interface as idioma,p.dnd_inicio,p.dnd_fim,p.fuso from responsaveis r join usuarios u on u.id=r.usuario_id and u.ativo left join preferencias_comunicador p on p.usuario_id=u.id where r.viagem_id=${viagemId} and r.ate is null`,
+    );
+    const conversas = await tx.execute<{ id: number }>(
+      sql`select id from conversas where viagem_id=${viagemId}`,
+    );
+    for (const d of destinatarios.rows) {
+      if (
+        !notificar({
+          tipo: "interna",
+          modo: "todas",
+          mencionado: true,
+          urgente: false,
+          lendo: leituraAtual(
+            d.id,
+            conversas.rows.map((c) => c.id),
+          ),
+          agora: em,
+          dndInicio: d.dnd_inicio,
+          dndFim: d.dnd_fim,
+          fuso: d.fuso,
+        })
       )
-      .returning({ id: tarefas.id });
-    if (reabertas.length)
-      await tx
-        .insert(tarefasHistorico)
-        .values(
-          reabertas.map((t) => ({
-            tarefaId: t.id,
-            tipo: "reaberta",
-            autorId,
-            criadaEm: em,
-            motivo,
-          })),
-        );
+        continue;
+      await avisar(tx, [d.id], {
+        titulo: `${viagem.codigo} · ${traduzirMensagem(d.idioma, "Etapa atualizada")}`,
+        texto: `${traduzirMensagem(d.idioma, rotuloEtapa[viagem.etapa])} → ${traduzirMensagem(d.idioma, rotuloEtapa[etapa])}`,
+        url: `/viagens/${viagemId}`,
+        chave: `viagem:${viagemId}:etapa:${fato.id}`,
+        criadaEm: em,
+      });
+    }
   }
+
   return etapa;
 }
 export async function registrarRespostaCliente(
@@ -192,7 +169,6 @@ export async function registrarRespostaCliente(
       agora,
       String(form.get("motivoResposta") ?? ""),
     );
-    await concluirAutomaticas(tx, viagemId, "followup", usuario.id, agora);
     await tx
       .update(viagens)
       .set({ semRespostaDesde: null })

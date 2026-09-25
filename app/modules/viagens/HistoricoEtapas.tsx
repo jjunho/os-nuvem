@@ -15,6 +15,8 @@ export function Etapas({
   const { t, mensagem, idioma } = useIdioma();
   const corrigidos = new Set(historico.map((f) => f.corrigeId));
   const tipos = {
+    contato: "Nota de contato",
+    cotacao: "Cotação de fornecedor",
     orcamento: "Orçamento criado",
     envio: "Proposta enviada",
     nova_versao: "Nova versão",
@@ -55,7 +57,7 @@ export function Etapas({
         <h3>{t("Histórico de etapas")}</h3>
         <ul>
           {historico.map((f) => (
-            <li key={f.id}>
+            <li key={f.id} id={`fato-${f.id}`}>
               {mensagem(tipos[f.tipo])} ·{" "}
               {mensagem(rotuloEtapa[f.etapaAnterior as Etapa])} →{" "}
               {mensagem(rotuloEtapa[f.etapaResultante as Etapa])} · {f.autor} ·{" "}

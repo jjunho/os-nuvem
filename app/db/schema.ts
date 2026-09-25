@@ -390,7 +390,7 @@ export const tarefas = pgTable(
     viagemId: integer("viagem_id").references(() => viagens.id, {
       onDelete: "cascade",
     }),
-    prazo: timestamp("prazo", { withTimezone: true }).notNull(),
+    prazo: timestamp("prazo", { withTimezone: true }),
     estado: text("estado")
       .$type<"aberta" | "concluida" | "cancelada">()
       .notNull()
@@ -638,7 +638,7 @@ export const conversas = pgTable("conversas", {
   id: serial("id").primaryKey(),
   chave: text("chave").notNull().unique(),
   tipo: text("tipo")
-    .$type<"direta" | "grupo" | "interna" | "equipe">()
+    .$type<"direta" | "grupo" | "interna" | "equipe" | "tarefa">()
     .notNull(),
   nome: text("nome").notNull(),
   descricao: text("descricao").notNull().default(""),
@@ -675,6 +675,7 @@ export const mensagens = pgTable(
   "mensagens",
   {
     id: serial("id").primaryKey(),
+    sistema: boolean("sistema").notNull().default(false),
     clientId: text("client_id").notNull().unique(),
     conversaId: integer("conversa_id")
       .notNull()

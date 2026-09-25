@@ -1,9 +1,7 @@
+import { reconciliarTarefasEtapa } from "./tarefas-etapa.server";
 import { registrarFato } from "./etapas.server";
 import {
-  criarTarefaAutomatica,
-  concluirAutomaticas,
   transferirAutomaticas,
-  cancelarAutomaticas,
   tarefasDaViagem,
   proximasTarefas,
 } from "~/modules/tarefas/tarefas.server";
@@ -39,7 +37,6 @@ import {
   ETAPAS_ABERTAS,
   codigoDaViagem,
   podeDescartar,
-  prazoPrimeiraResposta,
   semRespostaHumana,
   type CanalComercial,
   type Etapa,
@@ -182,32 +179,19 @@ export async function criarViagem(
       });
     }
 
-    await tx
-      .insert(responsaveis)
-      .values({
-        viagemId: viagem.id,
-        usuarioId: input.responsavelId,
-        desde: agora,
-      });
-    await criarTarefaAutomatica(tx, {
+    await tx.insert(responsaveis).values({
       viagemId: viagem.id,
-      tipo: "responder",
-      titulo: "Responder o primeiro contato",
-      autorId,
-      agora,
-      chave: "responder:inicial",
-      responsavelId: input.responsavelId,
-      prazo: prazoPrimeiraResposta(input.canalComercial, agora),
+      usuarioId: input.responsavelId,
+      desde: agora,
     });
+    await reconciliarTarefasEtapa(tx, viagem.id, autorId, agora);
     if (input.nota?.trim()) {
-      await tx
-        .insert(notas)
-        .values({
-          viagemId: viagem.id,
-          autorId,
-          texto: input.nota.trim(),
-          criadaEm: agora,
-        });
+      await tx.insert(notas).values({
+        viagemId: viagem.id,
+        autorId,
+        texto: input.nota.trim(),
+        criadaEm: agora,
+      });
     }
 
     return { id: viagem.id, codigo };
@@ -253,13 +237,29 @@ export async function registrarResposta(
   viagemId: number,
   agora: Date,
   autorId: number | null = null,
+  contato?: { meio: string; ocorreu: string; motivo: string },
 ) {
+  if (
+    !contato?.meio.trim() ||
+    !contato.ocorreu.trim() ||
+    !contato.motivo.trim()
+  )
+    throw new Response("Informe meio, o que ocorreu e por quê", {
+      status: 400,
+    });
   await db.transaction(async (tx) => {
     await tx
       .update(viagens)
       .set({ primeiraRespostaEm: agora })
       .where(and(eq(viagens.id, viagemId), isNull(viagens.primeiraRespostaEm)));
-    await concluirAutomaticas(tx, viagemId, "responder", autorId, agora);
+    await registrarFato(
+      tx,
+      viagemId,
+      "contato",
+      autorId,
+      agora,
+      `${contato.meio}: ${contato.ocorreu} — ${contato.motivo}`,
+    );
   });
 }
 
@@ -317,7 +317,14 @@ export async function pipeline(
   agora: Date,
   pagina: number,
   usuario: { id: number; papel: string },
+  filtros: {
+    responsavelId?: number;
+    canalComercial?: string;
+    atrasada?: boolean;
+  } = {},
 ) {
+  if (usuario.papel === "guiamento")
+    throw new Response("Acesso restrito", { status: 403 });
   const rows = await db
     .select({
       id: viagens.id,
@@ -328,6 +335,8 @@ export async function pipeline(
       primeiraRespostaEm: viagens.primeiraRespostaEm,
       semRespostaDesde: viagens.semRespostaDesde,
       dataInicio: viagens.dataInicio,
+      dataFim: viagens.dataFim,
+      pax: sql<number>`(select count(*)::int from viajantes where viagem_id = ${viagens.id})`,
       responsavel: usuarios.nome,
       contato: sql<
         string | null
@@ -339,7 +348,20 @@ export async function pipeline(
       and(eq(responsaveis.viagemId, viagens.id), isNull(responsaveis.ate)),
     )
     .innerJoin(usuarios, eq(usuarios.id, responsaveis.usuarioId))
-    .where(inArray(viagens.etapa, [...ETAPAS_ABERTAS]))
+    .where(
+      and(
+        inArray(viagens.etapa, [...ETAPAS_ABERTAS]),
+        filtros.responsavelId
+          ? eq(responsaveis.usuarioId, filtros.responsavelId)
+          : undefined,
+        filtros.canalComercial
+          ? eq(viagens.canalComercial, filtros.canalComercial)
+          : undefined,
+        filtros.atrasada
+          ? sql`exists (select 1 from tarefas t where t.viagem_id = ${viagens.id} and t.estado = 'aberta' and t.prazo < ${agora} and tarefa_visivel(t.id, ${usuario.id}, ${usuario.papel}))`
+          : undefined,
+      ),
+    )
     .orderBy(desc(viagens.criadaEm), desc(viagens.id))
     .limit(51)
     .offset((pagina - 1) * 50);
@@ -348,7 +370,7 @@ export async function pipeline(
     rows.map((r) => r.id),
     usuario,
   );
-  return rows.map((r) => {
+  const resultado = rows.map((r) => {
     const proxima = proximas.find((t) => t.viagemId === r.id);
     const prazo = proxima?.prazo ?? null;
     return {
@@ -366,6 +388,7 @@ export async function pipeline(
       ),
     };
   });
+  return resultado;
 }
 
 export async function detalhe(

@@ -138,3 +138,13 @@ export async function avisarMensagem(
 export function limparPresencasDeTeste() {
   if (process.env.TEST_MODE === "1") presencas.clear();
 }
+
+export function leituraAtual(usuarioId: number, conversaIds: number[]) {
+  return [...presencas.values()].some(
+    (p) =>
+      p.usuario === usuarioId &&
+      conversaIds.includes(p.conversa) &&
+      p.lendo &&
+      Date.now() - p.em < 25000,
+  );
+}

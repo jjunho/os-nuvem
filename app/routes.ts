@@ -6,6 +6,7 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
+  route("tarefas/:id/anexos/:anexoId", "routes/tarefa-anexo.ts"),
   route("comunicador/midia", "routes/comunicador-midia.ts"),
   route("comunicador/midia/:id", "routes/comunicador-arquivo.ts"),
   route("test/transcricao", "routes/test-transcricao.ts"),
@@ -29,6 +30,9 @@ export default [
     route("orcamentos/:id", "routes/orcamento.tsx"),
     route("tabelas", "routes/tabelas.tsx"),
     route("tabelas/:codigo", "routes/tabela.tsx"),
+    route("quadros", "routes/quadros.tsx"),
+    route("quadros/:id", "routes/quadro.tsx"),
+    route("modelos-etapa", "routes/modelos-etapa.tsx"),
     route("tarefas", "routes/tarefas.tsx"),
     route("tarefas/:id", "routes/tarefa.tsx"),
     route("modelos-resposta", "routes/modelos-resposta.tsx"),

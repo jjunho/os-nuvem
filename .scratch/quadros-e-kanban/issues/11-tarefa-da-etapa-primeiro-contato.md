@@ -6,16 +6,21 @@ Decisão aprovada por Juliano nesta divisão: a inferência da Etapa nasce em Vi
 
 **Blocked by:** 03 (Concluir, reabrir e arquivar Tarefas); Viagem 07 (Inferência de etapa, Cliente's reply, perdida, Correção).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Criar lead gera uma única Tarefa da etapa “responder”, com Prazo segundo seu modelo e vínculo com a Viagem e a entrada na Etapa.
-- [ ] Registrar contato com Meio de contato, o que ocorreu e por quê conclui a Tarefa e vincula o fato conclusivo.
-- [ ] Tentar concluir por clique, chat, Minhas Tarefas ou lista de conclusão abre a ação de registrar o fato; não aceita marcação simples.
-- [ ] Recusar criação manual de Tarefa da etapa também pela API; somente os resultados da Inferência podem originá-la.
-- [ ] Substituir a geração anterior de “responder” sem duplicar trabalho, perder histórico ou modificar Tarefas pessoais.
-- [ ] A Inferência é pura: recebe fatos datados, Correções, encerramento, modelos e horário explícito; não faz I/O nem lê relógio.
-- [ ] Testes de tabela verificam repetição e chegada fora de ordem dos fatos; a aplicação repetida do resultado não duplica Tarefas.
-- [ ] Manter a Próxima ação como a Tarefa aberta de menor Prazo e preservar os testes existentes do primeiro contato.
-- [ ] Toda interface nova está em português e coreano; campos conhecidos vêm preenchidos conforme ADR-0008.
-- [ ] Cobrir este recorte com testes verticais da parte 4 da spec Quadros, pela app e banco reais, sem mocks dos módulos internos.
+- [x] Criar lead gera uma única Tarefa da etapa “responder”, com Prazo segundo seu modelo e vínculo com a Viagem e a entrada na Etapa.
+- [x] Registrar contato com Meio de contato, o que ocorreu e por quê conclui a Tarefa e vincula o fato conclusivo.
+- [x] Tentar concluir por clique, chat, Minhas Tarefas ou lista de conclusão abre a ação de registrar o fato; não aceita marcação simples.
+- [x] Recusar criação manual de Tarefa da etapa também pela API; somente os resultados da Inferência podem originá-la.
+- [x] Substituir a geração anterior de “responder” sem duplicar trabalho, perder histórico ou modificar Tarefas pessoais.
+- [x] A Inferência é pura: recebe fatos datados, Correções, encerramento, modelos e horário explícito; não faz I/O nem lê relógio.
+- [x] Testes de tabela verificam repetição e chegada fora de ordem dos fatos; a aplicação repetida do resultado não duplica Tarefas.
+- [x] Manter a Próxima ação como a Tarefa aberta de menor Prazo e preservar os testes existentes do primeiro contato.
+- [x] Toda interface nova está em português e coreano; campos conhecidos vêm preenchidos conforme ADR-0008.
+- [x] Cobrir este recorte com testes verticais da parte 4 da spec Quadros, pela app e banco reais, sem mocks dos módulos internos.
 
+
+## Implementação
+
+Concluído com a spec Pipeline e Quadros. Evidências e instruções em
+[`docs/execucao-quadros.md`](../../../docs/execucao-quadros.md).

@@ -1,4 +1,5 @@
 const ko = {
+  "Atividade da tarefa": "업무 활동",
   "Mensagens seguintes": "다음 메시지",
   "Reportar problema": "문제 신고",
   Página: "페이지",
@@ -122,4 +123,22 @@ export function erroTraduzido(idioma: "pt" | "ko", texto: string) {
   return texto
     ? (erros[limpo] ?? "작업을 완료하지 못했습니다. 다시 시도하세요.")
     : "";
+}
+
+export function atividadeTarefa(idioma: "pt" | "ko", tipo: string | null) {
+  const rotulos: Record<string, [string, string]> = {
+    criada: ["Tarefa criada", "업무 생성"],
+    concluida: ["Tarefa concluída", "업무 완료"],
+    reaberta: ["Tarefa reaberta", "업무 다시 열기"],
+    cancelada: ["Tarefa cancelada", "업무 취소"],
+    arquivada: ["Tarefa arquivada", "업무 보관"],
+    delegada: ["Responsável alterado", "담당자 변경"],
+    transferida: ["Responsável alterado", "담당자 변경"],
+    movida: ["Tarefa movida", "업무 이동"],
+    checklist: ["Checklist atualizado", "체크리스트 변경"],
+    editada: ["Tarefa atualizada", "업무 수정"],
+  };
+  return (rotulos[tipo ?? ""] ?? ["Atividade da tarefa", "업무 활동"])[
+    idioma === "ko" ? 1 : 0
+  ];
 }

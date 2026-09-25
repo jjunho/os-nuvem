@@ -70,6 +70,7 @@ export function notificar(d: {
   dndFim?: string;
   fuso?: string;
 }) {
+  if (d.tipo === "tarefa" && !d.mencionado) return false;
   if (d.lendo || (d.tipo !== "direta" && d.modo === "mudo")) return false;
   if (d.tipo !== "direta" && d.modo !== "todas" && !d.mencionado && !d.urgente)
     return false;

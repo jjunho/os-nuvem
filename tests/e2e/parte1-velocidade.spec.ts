@@ -42,6 +42,12 @@ test("resposta visível a um clique em até 100 ms", async ({ page }) => {
   await entrarComo(page, "Carlos");
   await relogio(page, "2026-09-24T09:00:00+09:00");
   await page.goto("/viagens/4995");
+  await page
+    .getByLabel("O que ocorreu", { exact: true })
+    .fill("Respondi via WhatsApp");
+  await page
+    .getByLabel("Por quê", { exact: true })
+    .fill("Solicitação do cliente");
   const botao = page.getByRole("button", { name: "Respondi o contato" });
   await expect(botao).toBeVisible();
   const ms = await page.evaluate(async () => {

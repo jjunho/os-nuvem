@@ -1,5 +1,7 @@
 import type { Etapa } from "./regras";
 export type TipoFatoEtapa =
+  | "contato"
+  | "cotacao"
   | "orcamento"
   | "envio"
   | "nova_versao"

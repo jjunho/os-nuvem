@@ -424,6 +424,26 @@ export async function salvarOrcamento(
       .set({ dados, referencias, revisao: atual.revisao + 1 })
       .where(eq(orcamentos.id, id))
       .returning();
+    const cotada = dados.opcoes
+      .flatMap((o) => o.dias.flatMap((d) => d.linhas))
+      .find(
+        (l) =>
+          l.hotel?.fonte?.trim() &&
+          l.hotel.dataFonte &&
+          l.custoRealUSD !== undefined &&
+          (JSON.stringify(l.hotel) !==
+            JSON.stringify(anteriores.get(l.id)?.hotel) ||
+            l.custoRealUSD !== anteriores.get(l.id)?.custoRealUSD),
+      );
+    if (cotada)
+      await registrarFato(
+        tx,
+        atual.viagemId,
+        "cotacao",
+        autorId,
+        agora,
+        `${cotada.nome}: ${cotada.hotel!.fonte}`,
+      );
     return salvo;
   });
 }

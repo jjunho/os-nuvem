@@ -1,0 +1,44 @@
+.pipeline-filtros {
+  margin-block: 1rem;
+  flex-wrap: wrap;
+  align-items: end;
+}
+.pipeline-kanban {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(240px, 1fr));
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+}
+.pipeline-coluna {
+  background: #f4f6f8;
+  border: 1px solid #dce2e7;
+  border-radius: 8px;
+  padding: 0.8rem;
+  min-height: 180px;
+}
+.pipeline-coluna h2 {
+  font-size: 1rem;
+  margin: 0 0 1rem;
+}
+.pipeline-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  background: white;
+  border: 1px solid #ccd4dd;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  color: #172b4d;
+  text-decoration: none;
+}
+.pipeline-cartao:hover,
+.pipeline-cartao:focus-visible {
+  border-color: #2465aa;
+  outline: 2px solid #2465aa;
+}
+.pipeline-atrasada {
+  color: #b42318;
+  font-weight: 700;
+}
