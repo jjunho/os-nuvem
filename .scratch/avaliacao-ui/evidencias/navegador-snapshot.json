@@ -1,0 +1,32 @@
+[
+  {
+    "case": "quadro: erro de Form normal",
+    "observed": "actionData.ok=false; nenhum alerta; lista permanece",
+    "confirmed": true
+  },
+  {
+    "case": "tarefas: voltar no histórico",
+    "observed": "URL e loader responsavel=1; select ainda mostra 2",
+    "confirmed": true
+  },
+  {
+    "case": "quadro: reordenação otimista",
+    "observed": "antesId=1 enviado para tarefa 2; ordem visual segue 1,2 durante operação",
+    "confirmed": true
+  },
+  {
+    "case": "Seletor: refocar e Enter",
+    "observed": "código b substituído pelo rótulo Beta sem edição do texto",
+    "confirmed": true
+  },
+  {
+    "case": "Contato: abandonar seleção",
+    "observed": "payload nome João, contatoId vazio, email e telefone da Maria",
+    "confirmed": true
+  },
+  {
+    "case": "Aceite: voltar no histórico",
+    "observed": "seletor exibe versão 2, URL e campo enviado usam versão 1",
+    "confirmed": true
+  }
+]

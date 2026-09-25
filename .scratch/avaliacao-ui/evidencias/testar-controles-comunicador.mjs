@@ -1,0 +1,60 @@
+import {createRequire} from 'node:module';
+import {readFile,writeFile,mkdtemp} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {createServer} from 'node:http';
+import assert from 'node:assert/strict';
+const repo=process.cwd(), require=createRequire(repo+'/package.json');
+const {build}=require(repo+'/node_modules/.pnpm/esbuild@0.28.2/node_modules/esbuild');
+const {chromium}=require('playwright');
+const dir=await mkdtemp(tmpdir()+'/ui-comunicador-');
+const idioma='const useIdioma=()=>({idioma:"pt",t:x=>x});';
+for (const nome of ['Reporte','Instalacao']) {
+ let src=await readFile(repo+'/app/modules/comunicador/'+nome+'.tsx','utf8');
+ src=src.replace('import { useIdioma } from "~/modules/idiomas/idioma";',idioma).replace('import { comando } from "./Painel";','const comando = async(d)=>{const r=await fetch("/comando",{method:"POST",body:JSON.stringify(d)});if(!r.ok)throw Error(await r.text());return r.json()};');
+ await writeFile(dir+'/'+nome+'.tsx',src);
+}
+for(const nome of ['estado-ui.ts','textos.ts']) await writeFile(dir+'/'+nome,await readFile(repo+'/app/modules/comunicador/'+nome,'utf8'));
+const src=await readFile(repo+'/app/routes/notificacoes.tsx','utf8');
+await writeFile(dir+'/Notificacoes.tsx',`import {useEffect,useRef,useState} from 'react'; import {Link} from 'react-router'; ${idioma}\n`+src.slice(src.indexOf('export default function Notificacoes')));
+await writeFile(dir+'/entry.tsx',`
+import React,{useState} from 'react'; import {createRoot} from 'react-dom/client'; import {MemoryRouter} from 'react-router';
+import {Reporte} from './Reporte'; import {Instalacao} from './Instalacao'; import Notificacoes from './Notificacoes';
+window.sent=[];window.permissionCalls=0;window.commands=0;window.fail=true;
+Object.defineProperty(window,'Notification',{value:{requestPermission:()=>{window.permissionCalls++;return new Promise(r=>window.permit=r)}}});
+Object.defineProperty(navigator,'serviceWorker',{value:{register:async()=>({pushManager:{getSubscription:async()=>({endpoint:'test'})}}),ready:Promise.resolve()}});
+window.fetch=async(url)=>{if(url==='/comando'){window.commands++;return new Response(window.fail?'Falha':'{}',{status:window.fail?500:200})}return new Response('{}',{status:window.fail?500:200})};
+function App(){const [which,setWhich]=useState('report');window.select=setWhich;return <MemoryRouter><main className="pagina">Página</main>{which==='report'?<Reporte cancelar={()=>setWhich('none')} enviar={async(texto,arquivo,clientId)=>{window.sent.push({texto,clientId,size:arquivo.size});await new Promise((res,rej)=>{window.resolveSend=res;window.rejectSend=rej})}}/>:which==='notify'?<Notificacoes loaderData={{chave:'AQ',notificacoes:[]}}/>:which==='install'?<Instalacao visto={false}/>:null}</MemoryRouter>};
+createRoot(document.getElementById('root')).render(<App/>);
+`);
+await build({entryPoints:[dir+'/entry.tsx'],bundle:true,format:'iife',outfile:dir+'/bundle.js',jsx:'automatic',nodePaths:[repo+'/node_modules'],logLevel:'silent'});
+const bundle=await readFile(dir+'/bundle.js');
+const server=createServer((req,res)=>{res.setHeader('Content-Type',req.url==='/bundle.js'?'application/javascript':'text/html');res.end(req.url==='/bundle.js'?bundle:'<div id="root"></div><script src="/bundle.js"></script>')});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const browser=await chromium.launch();const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+try {
+ await page.goto('http://127.0.0.1:'+server.address().port);
+ const enviar=page.getByRole('button',{name:'Enviar reporte',exact:true});
+ await page.waitForFunction(()=>document.querySelector('form button')?.disabled===false);
+ for(const campo of ['Ação','Esperado','Observado','Reprodução'])await page.getByLabel(campo,{exact:true}).fill('Rascunho');
+ await page.locator('form').evaluate(f=>{f.requestSubmit();f.requestSubmit()});
+ await page.waitForFunction(()=>window.sent.length===1);assert.equal(await enviar.isDisabled(),true);
+ await page.evaluate(()=>window.rejectSend(Error('rede')));
+ await page.getByRole('alert').waitFor();assert.equal(await page.getByLabel('Ação',{exact:true}).inputValue(),'Rascunho');
+ await page.getByRole('button',{name:'Tentar novamente'}).evaluate(b=>{b.click();b.click()});
+ await page.waitForFunction(()=>window.sent.length===2);
+ const tentativas=await page.evaluate(()=>window.sent);assert.equal(tentativas[0].clientId,tentativas[1].clientId);assert.ok(tentativas[0].size>0);
+ await page.evaluate(()=>window.resolveSend());
+ await page.evaluate(()=>window.select('notify'));
+ await page.getByRole('button',{name:'Ativar notificações'}).evaluate(b=>{b.click();b.click()});
+ assert.equal(await page.evaluate(()=>window.permissionCalls),1);
+ await page.evaluate(()=>window.permit('denied'));await page.getByText('Notificações não autorizadas',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Ativar notificações'}).click();await page.evaluate(()=>window.permit('granted'));
+ await page.getByRole('alert').waitFor();assert.equal(await page.getByRole('alert').textContent(),'Não foi possível ativar notificações');
+ await page.evaluate(()=>window.fail=false);await page.getByRole('button',{name:'Ativar notificações'}).click();await page.evaluate(()=>window.permit('granted'));
+ await page.getByText('Notificações ativadas',{exact:true}).waitFor();
+ await page.evaluate(()=>{window.fail=true;window.select('install')});await page.getByRole('button',{name:'Entendi'}).click();
+ await page.getByRole('alert').waitFor();await page.evaluate(()=>window.fail=false);await page.getByRole('button',{name:'Entendi'}).click();
+ await page.waitForFunction(()=>!document.querySelector('.aviso-comunicador'));
+ assert.deepEqual(errors,[]);
+ console.log(JSON.stringify({passed:['Reporte double-submit guards handler; retry keeps payload/clientId/capture','Notifications duplicate clicks, denied, POST error, retry success','Installation recoverable error and retry'],browserErrors:errors}));
+}finally{await browser.close();server.close()}

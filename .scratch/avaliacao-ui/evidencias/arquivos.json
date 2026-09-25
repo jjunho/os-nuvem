@@ -1,0 +1,197 @@
+{
+  "app/modules/comunicador/Instalacao.tsx": {
+    "sha256_snapshot": "147d8f23474f5339c747e4fef727ea62f35b02b774d3f824631dd3b2709601d9",
+    "sha256_final": "147d8f23474f5339c747e4fef727ea62f35b02b774d3f824631dd3b2709601d9",
+    "linhas_snapshot": 42
+  },
+  "app/modules/comunicador/Painel.tsx": {
+    "sha256_snapshot": "51ad974af6be3048ee2223152b4566432f04599a67da65ef0d4f0283b6ac7f1c",
+    "sha256_final": "51ad974af6be3048ee2223152b4566432f04599a67da65ef0d4f0283b6ac7f1c",
+    "linhas_snapshot": 1407
+  },
+  "app/modules/comunicador/Reporte.tsx": {
+    "sha256_snapshot": "d28e9f39224faf34c419106f2075deac6df1c7f3e69a3c133a5ea8a1d8444cc1",
+    "sha256_final": "d28e9f39224faf34c419106f2075deac6df1c7f3e69a3c133a5ea8a1d8444cc1",
+    "linhas_snapshot": 123
+  },
+  "app/modules/documentos/proposta.tsx": {
+    "sha256_snapshot": "2eef7772eaa48915d525b47f0b378e7e7550a245607abc1517542bc3fc8f73f4",
+    "sha256_final": "2eef7772eaa48915d525b47f0b378e7e7550a245607abc1517542bc3fc8f73f4",
+    "linhas_snapshot": 389
+  },
+  "app/modules/opcoes/Seletor.tsx": {
+    "sha256_snapshot": "987f06682dc1f49677f1f4a4c84ee8efa53c7cac87af77da8102a2c725044997",
+    "sha256_final": "987f06682dc1f49677f1f4a4c84ee8efa53c7cac87af77da8102a2c725044997",
+    "linhas_snapshot": 141
+  },
+  "app/modules/quadros/Detalhes.tsx": {
+    "sha256_snapshot": "e73a8deb1f4ac91f6dfc0c56f0bd395772a0ad88c842e42d87b07b66955bcd49",
+    "sha256_final": "fc7f42692128a942560dc470671816ec47c2edde45e25102ae6a08557b5b75e8",
+    "linhas_snapshot": 204
+  },
+  "app/modules/viagens/ColaboracaoViagem.tsx": {
+    "sha256_snapshot": "2c88b8c848d3ba7214cd5d35a07f1a48665529cb3f6a9eba9825dab1d1731946",
+    "sha256_final": "2c88b8c848d3ba7214cd5d35a07f1a48665529cb3f6a9eba9825dab1d1731946",
+    "linhas_snapshot": 117
+  },
+  "app/modules/viagens/ContatoCampos.tsx": {
+    "sha256_snapshot": "4583c71a70461cc2304f4d8865f698944652630045edbaff146ba62f2724ef31",
+    "sha256_final": "4583c71a70461cc2304f4d8865f698944652630045edbaff146ba62f2724ef31",
+    "linhas_snapshot": 77
+  },
+  "app/modules/viagens/DocumentosViajante.tsx": {
+    "sha256_snapshot": "11b311e1f6743027fcead5af46c27a839a85aebe6208dc54d6252a7d4d1ae3e1",
+    "sha256_final": "11b311e1f6743027fcead5af46c27a839a85aebe6208dc54d6252a7d4d1ae3e1",
+    "linhas_snapshot": 27
+  },
+  "app/modules/viagens/FormularioPlanejamento.tsx": {
+    "sha256_snapshot": "c00c5573f65ff1763139f0a0e1c64b63188d62793630ec3cfee69553a61d8f14",
+    "sha256_final": "c00c5573f65ff1763139f0a0e1c64b63188d62793630ec3cfee69553a61d8f14",
+    "linhas_snapshot": 85
+  },
+  "app/modules/viagens/HistoricoEtapas.tsx": {
+    "sha256_snapshot": "2f989e73a9b8553225b62c8d0a5b8f57abf9e9f58ebb0dfb1192751a0f9380d7",
+    "sha256_final": "2f989e73a9b8553225b62c8d0a5b8f57abf9e9f58ebb0dfb1192751a0f9380d7",
+    "linhas_snapshot": 85
+  },
+  "app/modules/viagens/PerfilCliente.tsx": {
+    "sha256_snapshot": "9207cbeef3cb4d1b91ab0d49a0a0118f6958f5ce192e346756c6044647d88151",
+    "sha256_final": "9207cbeef3cb4d1b91ab0d49a0a0118f6958f5ce192e346756c6044647d88151",
+    "linhas_snapshot": 67
+  },
+  "app/modules/viagens/Planejamento.tsx": {
+    "sha256_snapshot": "ab920090f39e7733b369b1ecec8e22f79324b0cc84a6085be276657b1bc17592",
+    "sha256_final": "ab920090f39e7733b369b1ecec8e22f79324b0cc84a6085be276657b1bc17592",
+    "linhas_snapshot": 133
+  },
+  "app/modules/viagens/Viajantes.tsx": {
+    "sha256_snapshot": "b47dfca7b61ccb4b085eeca4e8d917256fafee5db79a83de02943bff48524526",
+    "sha256_final": "b47dfca7b61ccb4b085eeca4e8d917256fafee5db79a83de02943bff48524526",
+    "linhas_snapshot": 192
+  },
+  "app/root.tsx": {
+    "sha256_snapshot": "fc160e09913135cab872ba3d08ea166031c29530114d95bcc015f467aa6bb147",
+    "sha256_final": "fc160e09913135cab872ba3d08ea166031c29530114d95bcc015f467aa6bb147",
+    "linhas_snapshot": 63
+  },
+  "app/routes/aceite.tsx": {
+    "sha256_snapshot": "b9ce4d73c7b3edb952987731d664ab74e38245c8da17200ba9b9d5d06ccdef63",
+    "sha256_final": "b9ce4d73c7b3edb952987731d664ab74e38245c8da17200ba9b9d5d06ccdef63",
+    "linhas_snapshot": 98
+  },
+  "app/routes/app-layout.tsx": {
+    "sha256_snapshot": "5ea7f718f7c9ed8632016c36482937b065c8c2df9bfc25f7fb5dfcfa01de1d47",
+    "sha256_final": "5ea7f718f7c9ed8632016c36482937b065c8c2df9bfc25f7fb5dfcfa01de1d47",
+    "linhas_snapshot": 233
+  },
+  "app/routes/buscar.tsx": {
+    "sha256_snapshot": "86a3b6156031204219b5611f6e413585037d58b9401c902dcc2d62cbf4a08640",
+    "sha256_final": "86a3b6156031204219b5611f6e413585037d58b9401c902dcc2d62cbf4a08640",
+    "linhas_snapshot": 9
+  },
+  "app/routes/comunicador.tsx": {
+    "sha256_snapshot": "1460d6ae599dfa94e43a756816963fc9e4489448adf634b4da9821c2326691b7",
+    "sha256_final": "1460d6ae599dfa94e43a756816963fc9e4489448adf634b4da9821c2326691b7",
+    "linhas_snapshot": 6
+  },
+  "app/routes/entrar.tsx": {
+    "sha256_snapshot": "e98558ee11f9400624f4ea6e16fb89d8dc91ff65c70dac49b8fc2a66295b8b1e",
+    "sha256_final": "e98558ee11f9400624f4ea6e16fb89d8dc91ff65c70dac49b8fc2a66295b8b1e",
+    "linhas_snapshot": 57
+  },
+  "app/routes/formulario.tsx": {
+    "sha256_snapshot": "dc69f9236f4c0ca5f5c967e971c56e79e253d246ab1d6490d9f27868222353ce",
+    "sha256_final": "dc69f9236f4c0ca5f5c967e971c56e79e253d246ab1d6490d9f27868222353ce",
+    "linhas_snapshot": 196
+  },
+  "app/routes/modelos-etapa.tsx": {
+    "sha256_snapshot": "8add55b26a7a83bcf99de572362dfc9046a488e01348b9c42136e2aef25336b8",
+    "sha256_final": "8add55b26a7a83bcf99de572362dfc9046a488e01348b9c42136e2aef25336b8",
+    "linhas_snapshot": 113
+  },
+  "app/routes/modelos-resposta.tsx": {
+    "sha256_snapshot": "ae885b008762f2864cad1bcf0ad504fa161d1b060a719d00e174238b3e56b6ad",
+    "sha256_final": "ae885b008762f2864cad1bcf0ad504fa161d1b060a719d00e174238b3e56b6ad",
+    "linhas_snapshot": 46
+  },
+  "app/routes/notificacoes.tsx": {
+    "sha256_snapshot": "f6a274ce9f4ebd1dc69556b0cdbba065fe5510f431d1d8c1b3ce192c103d4c29",
+    "sha256_final": "f6a274ce9f4ebd1dc69556b0cdbba065fe5510f431d1d8c1b3ce192c103d4c29",
+    "linhas_snapshot": 83
+  },
+  "app/routes/opcoes.tsx": {
+    "sha256_snapshot": "d6675a764ff6a47c7312cb91654b7107cf0968622ad2e997a2fda5d1a760d4fe",
+    "sha256_final": "d6675a764ff6a47c7312cb91654b7107cf0968622ad2e997a2fda5d1a760d4fe",
+    "linhas_snapshot": 101
+  },
+  "app/routes/orcamento.tsx": {
+    "sha256_snapshot": "d7fc0d267871c07d81c55a8f28ed2166b84ac857c7142a87dbdbea6e4228be87",
+    "sha256_final": "d7fc0d267871c07d81c55a8f28ed2166b84ac857c7142a87dbdbea6e4228be87",
+    "linhas_snapshot": 1970
+  },
+  "app/routes/pipeline.tsx": {
+    "sha256_snapshot": "306387f0e0101bdffcdd294ee03fd5c613cb0fc3bb7d46bb2dbac9bbbe8939f7",
+    "sha256_final": "f822862daacfa17b699afe8bfce9f756039badc256ba5eddcc2d83cc57ddf7bd",
+    "linhas_snapshot": 327
+  },
+  "app/routes/profissionais.tsx": {
+    "sha256_snapshot": "2509f2e0dddaafa2938a0e471cf0608afc8ff85c0a6981275ca31bbe272b0be1",
+    "sha256_final": "2509f2e0dddaafa2938a0e471cf0608afc8ff85c0a6981275ca31bbe272b0be1",
+    "linhas_snapshot": 120
+  },
+  "app/routes/proposta.tsx": {
+    "sha256_snapshot": "6bc607e7db5ec81029097febf99f03e86e0b64903ca8963983f9220c232e8a83",
+    "sha256_final": "6bc607e7db5ec81029097febf99f03e86e0b64903ca8963983f9220c232e8a83",
+    "linhas_snapshot": 57
+  },
+  "app/routes/quadro.tsx": {
+    "sha256_snapshot": "c978aeebc903ad94c9820a3b4495e7c38b78fee540a126afd6cf7c3a3eb57b8c",
+    "sha256_final": "55683f77f6953beb9af0f00798633992eb1b79031780eb3681da31ca4d25e50a",
+    "linhas_snapshot": 436
+  },
+  "app/routes/quadros.tsx": {
+    "sha256_snapshot": "36a74b11ec33acd51034d379a297ca164564e2085ccaee0a7c5c033824fa56ef",
+    "sha256_final": "36a74b11ec33acd51034d379a297ca164564e2085ccaee0a7c5c033824fa56ef",
+    "linhas_snapshot": 47
+  },
+  "app/routes/sair.tsx": {
+    "sha256_snapshot": "b892d3edf5cc1caf02d2f7fc0a2edc135cc65ab735304b0bc1bb8f696104a664",
+    "sha256_final": "b892d3edf5cc1caf02d2f7fc0a2edc135cc65ab735304b0bc1bb8f696104a664",
+    "linhas_snapshot": 13
+  },
+  "app/routes/tabela.tsx": {
+    "sha256_snapshot": "837c6211c0866d5c43782571fdcab153f65553e3a4e78458b03a5e02b12ea294",
+    "sha256_final": "837c6211c0866d5c43782571fdcab153f65553e3a4e78458b03a5e02b12ea294",
+    "linhas_snapshot": 135
+  },
+  "app/routes/tabelas.tsx": {
+    "sha256_snapshot": "867effe3bf68f4951b830495561088b459259904b812240a41f13485628706e7",
+    "sha256_final": "867effe3bf68f4951b830495561088b459259904b812240a41f13485628706e7",
+    "linhas_snapshot": 24
+  },
+  "app/routes/tarefa.tsx": {
+    "sha256_snapshot": "337aa599c865152df06ea7dc431c7058ca986b53e5f00230e9b1724d5eefe173",
+    "sha256_final": "337aa599c865152df06ea7dc431c7058ca986b53e5f00230e9b1724d5eefe173",
+    "linhas_snapshot": 143
+  },
+  "app/routes/tarefas.tsx": {
+    "sha256_snapshot": "a192d80c53254b706fbd4599e18b35dbfdcb8a512e37e191022d4a5a4ca2934a",
+    "sha256_final": "a192d80c53254b706fbd4599e18b35dbfdcb8a512e37e191022d4a5a4ca2934a",
+    "linhas_snapshot": 137
+  },
+  "app/routes/test-reset.tsx": {
+    "sha256_snapshot": "a19f9092393e808c76a86af51f61245c2ec2a8ff82f3e78344a0a9bd60083349",
+    "sha256_final": "a19f9092393e808c76a86af51f61245c2ec2a8ff82f3e78344a0a9bd60083349",
+    "linhas_snapshot": 19
+  },
+  "app/routes/viagem-nova.tsx": {
+    "sha256_snapshot": "2627f4a7c2bd5800213e60ea12b440537826710b9261d9f77e71f2bd27721966",
+    "sha256_final": "2627f4a7c2bd5800213e60ea12b440537826710b9261d9f77e71f2bd27721966",
+    "linhas_snapshot": 345
+  },
+  "app/routes/viagem.tsx": {
+    "sha256_snapshot": "bf501f12e34c3ab9c9e35efa5a66da2cf33c236557bc0bf591a3306e695e0b1e",
+    "sha256_final": "bf501f12e34c3ab9c9e35efa5a66da2cf33c236557bc0bf591a3306e695e0b1e",
+    "linhas_snapshot": 602
+  }
+}
