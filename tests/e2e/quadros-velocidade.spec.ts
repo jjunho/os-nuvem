@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import pg from "pg";
-import { DATABASE_URL_TEST } from "../../playwright.config";
+import { DATABASE_URL_TEST } from "./ambiente";
 import { entrarComo, reiniciar, relogio, T0 } from "./apoio";
 
 // ADR-0003: browser-visible latency, real authorization, persistence and SSE.

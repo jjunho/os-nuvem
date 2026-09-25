@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import pg from "pg";
-import { DATABASE_URL_TEST } from "../../playwright.config";
+import { DATABASE_URL_TEST } from "./ambiente";
 import { entrarComo, reiniciar } from "./apoio";
 
 test("Conversa da tarefa mantém participantes, comentários e atividade sem avisos duplicados", async ({

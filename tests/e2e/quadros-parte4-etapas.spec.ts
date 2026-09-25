@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import pg from "pg";
-import { DATABASE_URL_TEST } from "../../playwright.config";
+import { DATABASE_URL_TEST } from "./ambiente";
 import {
   T0,
   entrarComo,

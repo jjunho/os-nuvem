@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import pg from "pg";
-import { DATABASE_URL_TEST } from "../../playwright.config";
+import { DATABASE_URL_TEST } from "./ambiente";
 import { reiniciar, entrarComo } from "./apoio";
 test("300 mil mensagens: leitura <100 ms e entrega <300 ms", async ({
   page,

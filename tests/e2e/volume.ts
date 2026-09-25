@@ -1,6 +1,6 @@
 import { expect, type APIRequestContext } from "@playwright/test";
 import pg from "pg";
-import { DATABASE_URL_TEST } from "../../playwright.config";
+import { DATABASE_URL_TEST } from "./ambiente";
 
 const VIAGENS = 5000;
 

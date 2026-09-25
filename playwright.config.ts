@@ -1,7 +1,7 @@
 import { defineConfig } from "@playwright/test";
+import { DATABASE_URL_TEST } from "./tests/e2e/ambiente";
 
 const PORT = 5179;
-export const DATABASE_URL_TEST = "postgres://corealux@localhost:54329/corealux_test";
 
 // Vertical tests run against the production build and a real PostgreSQL,
 // so the speed budgets in ADR-0003 are measured on what we ship.
