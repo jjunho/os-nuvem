@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import { db } from "~/db/client.server";
 import { avisar } from "~/modules/notificacoes/push.server";
 import { notificar } from "~/modules/comunicador/leitura";
-import { leituraAtual } from "~/modules/comunicador/notificacoes.server";
+import { leituraAtual } from "~/modules/comunicador/presenca.server";
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 export async function avisarTarefa(
   tx: Tx,

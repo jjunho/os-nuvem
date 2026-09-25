@@ -1,4 +1,7 @@
 export type IdiomaInterface = "pt" | "ko";
+export function idiomaValido(valor: unknown): valor is IdiomaInterface {
+  return valor === "pt" || valor === "ko";
+}
 
 const coreano = {
   "Tentativa inválida": "요청 식별자가 올바르지 않습니다",

@@ -1,4 +1,4 @@
-import type { DadosReferencia } from "~/modules/tabelas/referencias";
+import type { DadosReferencia } from "~/modules/tabelas/linha";
 export type Referencias = Record<string, DadosReferencia>;
 export function valorReferencia(
   refs: Referencias,

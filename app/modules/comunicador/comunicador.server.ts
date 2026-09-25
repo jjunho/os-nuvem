@@ -2,83 +2,13 @@ import { publicar } from "~/modules/notificacoes/eventos.server";
 import type { Pool, PoolClient } from "pg";
 import type { MidiaNova } from "./midia.server";
 import { segmentar, type Segmento } from "./leitura";
-import { avisarMensagem, preferencia } from "./notificacoes.server";
+import { avisarMensagem } from "./notificacoes.server";
+import { preferencia } from "./preferencias.server";
 import { entregarPush } from "~/modules/notificacoes/push.server";
 import { randomUUID } from "node:crypto";
 import { pool } from "~/db/client.server";
-import type { usuarios } from "~/db/schema";
-export type Usuario = Omit<typeof usuarios.$inferSelect, "senhaHash">;
-export type Conversa = {
-  id: number;
-  tipo: "direta" | "grupo" | "interna" | "equipe" | "tarefa";
-  nome: string;
-  descricao: string;
-  privada: boolean;
-  arquivada: boolean;
-  criador_id: number;
-  viagem_id: number | null;
-  nao_lidas: number;
-  lida_ate: number;
-  notificacao: string;
-};
-export type Mensagem = {
-  id: number;
-  client_id: string;
-  conversa_id: number;
-  autor_id: number;
-  autor: string;
-  ativo: boolean;
-  texto: string;
-  segmentos: Segmento[];
-  criada_em: string;
-  apagada: boolean;
-  sistema: boolean;
-  atividade_tipo: string | null;
-  atividade_motivo: string | null;
-  urgente: boolean;
-  citada_id: number | null;
-  versoes: { texto: string; em: string }[];
-  transcricao: string;
-  reacoes: { emoji: string; nome: string }[];
-  midia: {
-    id: string;
-    mime: string;
-    removida: boolean;
-    movida: boolean;
-  } | null;
-};
-export type Pessoa = { id: number; nome: string; papel: string };
-export { eventos, publicar } from "~/modules/notificacoes/eventos.server";
-export function restrito(): never {
-  throw new Response("Acesso restrito", { status: 403 });
-}
-export function invalido(texto = "Dados inválidos"): never {
-  throw new Response(texto, { status: 400 });
-}
-export async function podeLer(
-  u: Usuario,
-  id: number,
-  cliente: Pool | PoolClient = pool,
-) {
-  const { rows } = await cliente.query<Conversa>(
-    `select c.* from conversas c where c.id=$1 and
-    (c.tipo <> 'interna' or $3 <> 'guiamento') and ($3='admin' or (c.tipo='interna' and $3<>'guiamento') or exists
-    (select 1 from membros_conversa m where m.conversa_id=c.id and m.usuario_id=$2))`,
-    [id, u.id, u.papel],
-  );
-  return rows[0] ?? null;
-}
-export async function exigirConversa(
-  u: Usuario,
-  id: number,
-  escrever = false,
-  cliente: Pool | PoolClient = pool,
-) {
-  const c = await podeLer(u, id, cliente);
-  if (!c) restrito();
-  if (escrever && c.arquivada) invalido("Conversa arquivada");
-  return c;
-}
+import type { Conversa, Mensagem, Pessoa, Usuario } from "./tipos";
+import { exigirConversa, invalido, restrito } from "./acesso.server";
 export async function listar(u: Usuario) {
   const { rows: conversas } = await pool.query<Conversa>(
     `select c.*,m.notificacao, coalesce(m.lida_ate,0) as lida_ate,

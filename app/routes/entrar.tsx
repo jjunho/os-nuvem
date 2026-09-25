@@ -12,7 +12,7 @@ export async function action({ request }: Route.ActionArgs) {
     String(form.get("senha") ?? ""),
     now(request),
   );
-  if (!resultado.sessao) return data({ erro: resultado.erro }, { status: 400 });
+  if ("erro" in resultado) return data({ erro: resultado.erro }, { status: 400 });
   const destinoPedido = new URL(request.url).searchParams.get("destino");
   const usuario = await usuarioDaSessao(resultado.sessao.token, now(request));
   return redirect(

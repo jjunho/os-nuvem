@@ -1,4 +1,5 @@
-import { criarPrimeiroAdmin, ErroAcesso } from "../app/modules/acesso/acesso.server";
+import { criarPrimeiroAdmin } from "../app/modules/acesso/acesso.server";
+import { ErroAcesso } from "../app/modules/acesso/regras";
 import { pool } from "../app/db/client.server";
 
 try {

@@ -1,4 +1,4 @@
-import type { calcularOpcao, RascunhoOrcamento } from "./calculo";
+import type { CalculoOpcao, RascunhoOrcamento } from "./calculo";
 import type { Referencias } from "./sugestoes";
 export type CondicoesProposta = {
   sinal: number;
@@ -49,7 +49,7 @@ export type MemoriaOrcamento = {
     idade: number | null;
     pagante: boolean;
   }[];
-  calculos: ReturnType<typeof calcularOpcao>[];
+  calculos: CalculoOpcao[];
   condicoes: CondicoesProposta;
 };
 export function localizarCondicoes(

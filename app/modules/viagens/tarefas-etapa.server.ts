@@ -1,5 +1,5 @@
 import { notificar } from "~/modules/comunicador/leitura";
-import { leituraAtual } from "~/modules/comunicador/notificacoes.server";
+import { leituraAtual } from "~/modules/comunicador/presenca.server";
 import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "~/db/client.server";
 import {

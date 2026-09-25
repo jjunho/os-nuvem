@@ -42,6 +42,12 @@ import {
   type CanalComercial,
   type Etapa,
 } from "./regras";
+export type ResultadoBusca = {
+  id: number;
+  codigo: string;
+  etapa: Etapa;
+  contato: string | null;
+};
 
 export type ContatoInput = {
   contatoId?: number;
@@ -484,7 +490,7 @@ export async function detalhe(
   };
 }
 
-export async function buscar(q: string) {
+export async function buscar(q: string): Promise<ResultadoBusca[]> {
   const termo = q.trim();
   if (termo.length < 2) return [];
   const like = `%${termo}%`;

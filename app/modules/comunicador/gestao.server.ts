@@ -1,14 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { pool } from "~/db/client.server";
-import {
-  exigirConversa,
-  analisarMensagem,
-  invalido,
-  publicar,
-  restrito,
-  type Usuario,
-  type Conversa,
-} from "./comunicador.server";
+import { exigirConversa, invalido, restrito } from "./acesso.server";
+import { analisarMensagem } from "./comunicador.server";
+import { publicar } from "~/modules/notificacoes/eventos.server";
+import type { Usuario, Conversa } from "./tipos";
 export async function grupo(u: Usuario, d: Record<string, unknown>) {
   if (u.papel === "guiamento") restrito();
   const nome = String(d.nome ?? "").trim(),

@@ -1,5 +1,6 @@
 import { exigirUsuario } from "~/session.server";
-import { eventos, podeLer } from "~/modules/comunicador/comunicador.server";
+import { eventos } from "~/modules/notificacoes/eventos.server";
+import { podeLer } from "~/modules/comunicador/acesso.server";
 export async function loader({ request }: { request: Request }) {
   await exigirUsuario(request);
   const enc = new TextEncoder();

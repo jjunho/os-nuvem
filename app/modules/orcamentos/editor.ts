@@ -33,6 +33,26 @@ export function iniciarEditor<T>(
 export function reconciliar<T>(snapshot: T, atual: T, salvo: T): T {
   return JSON.stringify(snapshot) === JSON.stringify(atual) ? salvo : atual;
 }
+export function emConflito<T>(estado: Editor<T>, revisao: number): boolean {
+  return (
+    (estado.revisao !== revisao || estado.revisao !== estado.remota) &&
+    estado.operacao.fase === "idle"
+  );
+}
+
+export function sincronizarFormulario<T>(entrada: {
+  snapshot: T;
+  atual: T;
+  salvo: T;
+  confirmacao: boolean;
+}): { reset: T; manter: T | null } {
+  const { snapshot, atual, salvo, confirmacao } = entrada;
+  const conciliado = reconciliar(snapshot, atual, salvo);
+  return {
+    reset: salvo,
+    manter: !confirmacao && conciliado !== salvo ? conciliado : null,
+  };
+}
 export function editor<T>(s: Editor<T>, e: EventoEditor<T>): Editor<T> {
   switch (e.tipo) {
     case "editado":

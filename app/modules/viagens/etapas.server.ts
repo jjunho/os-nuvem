@@ -1,6 +1,6 @@
 import { avisar } from "~/modules/notificacoes/push.server";
 import { notificar } from "~/modules/comunicador/leitura";
-import { leituraAtual } from "~/modules/comunicador/notificacoes.server";
+import { leituraAtual } from "~/modules/comunicador/presenca.server";
 import { traduzirMensagem } from "~/modules/idiomas/catalogo";
 import { rotuloEtapa } from "./rotulos";
 import { reconciliarTarefasEtapa } from "./tarefas-etapa.server";

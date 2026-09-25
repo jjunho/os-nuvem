@@ -6,14 +6,10 @@ import {
   criarTarefa,
   mudarEstadoTarefa,
 } from "~/modules/tarefas/tarefas.server";
-import {
-  enviar,
-  exigirConversa,
-  invalido,
-  restrito,
-  publicar,
-  type Usuario,
-} from "./comunicador.server";
+import { enviar } from "./comunicador.server";
+import { exigirConversa, invalido, restrito } from "./acesso.server";
+import { publicar } from "~/modules/notificacoes/eventos.server";
+import type { Usuario } from "./tipos";
 export async function interna(
   u: Usuario,
   viagemId: number,

@@ -51,7 +51,22 @@ export async function criarViajantes(
     })),
   );
 }
-export async function listarViajantes(viagemId: number) {
+export type ViajanteOrcamento = {
+  id: number;
+  malas: number;
+  bagagemMao: number;
+  contatoId: number | null;
+  nome: string | null;
+  mobilidade: string | null;
+  alimentacao: string | null;
+  pagante: boolean;
+  faixa: string;
+  idade: number | null;
+  nascimento: string | null;
+};
+export async function listarViajantes(
+  viagemId: number,
+): Promise<ViajanteOrcamento[]> {
   return db
     .select({
       id: viajantes.id,

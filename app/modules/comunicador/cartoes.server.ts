@@ -7,7 +7,7 @@ import {
   cartaoTarefa,
   buscarCartoesTarefa,
 } from "~/modules/tarefas/cartoes.server";
-import type { Usuario, Mensagem } from "./comunicador.server";
+import type { Usuario, Mensagem } from "./tipos";
 import type { Cartao } from "./cartao";
 export async function cartoesDasMensagens(
   ms: Mensagem[],

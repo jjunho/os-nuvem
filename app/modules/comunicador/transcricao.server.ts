@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { pool } from "~/db/client.server";
-import { publicar } from "./comunicador.server";
+import { publicar } from "~/modules/notificacoes/eventos.server";
 export const fakeTranscricao = {
   falhar: false,
   texto: "Transcrição de teste",

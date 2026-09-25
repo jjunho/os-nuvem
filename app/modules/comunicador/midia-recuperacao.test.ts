@@ -13,15 +13,19 @@ vi.mock("node:fs/promises", () => ({
 }));
 vi.mock("./comunicador.server", () => ({
   enviar: dependencias.enviar,
+}));
+vi.mock("./acesso.server", () => ({
   exigirConversa: vi.fn(),
   invalido: () => {
     throw Error("Inválido");
   },
   restrito: vi.fn(),
+}));
+vi.mock("~/modules/notificacoes/eventos.server", () => ({
   publicar: vi.fn(),
 }));
 import { receberMidia } from "./midia.server";
-import type { Usuario } from "./comunicador.server";
+import type { Usuario } from "./tipos";
 // Only the authenticated identity is consumed by this upload path.
 const usuario = { id: 1 } as Usuario;
 function formulario() {

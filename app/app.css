@@ -269,6 +269,16 @@ dd {
   .grade {
     grid-template-columns: 1fr;
   }
+  .topo {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .topo nav {
+    order: 2;
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+  }
 }
 
 .seletor {

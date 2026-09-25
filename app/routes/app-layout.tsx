@@ -1,30 +1,34 @@
+import { deveAbrirPainel } from "~/modules/comunicador/endereco";
 import { Instalacao } from "~/modules/comunicador/Instalacao";
-import { preferencia } from "~/modules/comunicador/notificacoes.server";
+import { preferencia } from "~/modules/comunicador/preferencias.server";
+import {
+  guardarPaginaSessao,
+  prepararShell,
+} from "~/modules/comunicador/shell.client";
 import { limparOffline } from "~/modules/comunicador/offline.client";
 import { iniciarTranscricoes } from "~/modules/comunicador/transcricao.server";
 import { Painel } from "~/modules/comunicador/Painel";
 import { textos } from "~/modules/comunicador/textos";
 import { iniciarFollowups } from "~/modules/orcamentos/agendador.server";
-import { rotuloEtapa } from "~/modules/viagens/rotulos";
-import { useEffect, useRef, useState } from "react";
+import { Busca } from "~/modules/interface/Busca";
+import { useEffect, useState } from "react";
 import {
   Form,
   Link,
   NavLink,
   Outlet,
   useFetcher,
-  useNavigate,
   useLocation,
   data,
 } from "react-router";
-import { eq } from "drizzle-orm";
-import { db } from "~/db/client.server";
-import { usuarios } from "~/db/schema";
-import { cookieIdioma } from "~/modules/idiomas/idioma.server";
-import { useIdioma } from "~/modules/idiomas/idioma";
+import {
+  cookieIdioma,
+  definirIdioma,
+} from "~/modules/idiomas/idioma.server";
+import { idiomaValido } from "~/modules/idiomas/catalogo";
 import type { Route } from "./+types/app-layout";
 import { exigirUsuario } from "~/session.server";
-import type { loader as buscarLoader } from "./buscar";
+import { useIdioma } from "~/modules/idiomas/idioma";
 
 export async function loader({ request }: Route.LoaderArgs) {
   iniciarFollowups();
@@ -37,12 +41,9 @@ export async function action({ request }: Route.ActionArgs) {
   const usuario = await exigirUsuario(request);
   const form = await request.formData();
   const idioma = form.get("idioma");
-  if (idioma !== "pt" && idioma !== "ko")
+  if (!idiomaValido(idioma))
     throw new Response("Idioma inválido", { status: 400 });
-  await db
-    .update(usuarios)
-    .set({ idiomaInterface: idioma })
-    .where(eq(usuarios.id, usuario.id));
+  await definirIdioma(usuario.id, idioma);
   return data(
     { ok: true },
     { headers: { "Set-Cookie": await cookieIdioma.serialize(idioma) } },
@@ -55,39 +56,19 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
   const location = useLocation();
   useEffect(() => {
     if (location.pathname !== "/comunicador")
-      sessionStorage.setItem("comunicador-pagina", window.location.href);
+      guardarPaginaSessao(window.location.href);
     const q = new URLSearchParams(location.search);
-    if (
-      location.pathname === "/comunicador" ||
-      q.has("conversa") ||
-      q.has("interna") ||
-      q.has("mensagem")
-    )
-      setComunicador(true);
+    if (deveAbrirPainel(location.pathname, q)) setComunicador(true);
   }, [location.search, location.pathname]);
   const [naoLidas, setNaoLidas] = useState(0);
   const [comunicador, setComunicador] = useState(false);
   const [aberto, setAberto] = useState(false);
+  const [cliente, setCliente] = useState(false);
+
+  useEffect(() => setCliente(true), []);
 
   useEffect(() => {
-    const anterior = localStorage.getItem("comunicador-usuario");
-    const preparar = async () => {
-      if (anterior && anterior !== String(loaderData.usuario.id))
-        await limparOffline();
-      localStorage.setItem(
-        "comunicador-usuario",
-        String(loaderData.usuario.id),
-      );
-      if ("serviceWorker" in navigator) {
-        await navigator.serviceWorker.register("/push-sw.js");
-        const reg = await navigator.serviceWorker.ready;
-        reg.active?.postMessage({
-          type: "cache-assets",
-          urls: performance.getEntriesByType("resource").map((r) => r.name),
-        });
-      }
-    };
-    void preparar().catch(() => {});
+    void prepararShell(loaderData.usuario.id).catch(() => {});
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
@@ -170,73 +151,17 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
       <main className="pagina">
         <Outlet />
       </main>
-      <Painel
-        key={loaderData.usuario.id}
-        aberta={comunicador}
-        aoNaoLidas={setNaoLidas}
-        usuarioId={loaderData.usuario.id}
-        fechar={() => setComunicador(false)}
-      />
-      {aberto && <Busca onFechar={() => setAberto(false)} />}
+      {cliente && (
+        <Painel
+          key={loaderData.usuario.id}
+          aberta={comunicador}
+          aoNaoLidas={setNaoLidas}
+          usuarioId={loaderData.usuario.id}
+          fechar={() => setComunicador(false)}
+        />
+      )}
+      {aberto && <Busca aoFechar={() => setAberto(false)} />}
     </>
   );
 }
 
-function Busca({ onFechar }: { onFechar: () => void }) {
-  const { t } = useIdioma();
-  const fetcher = useFetcher<typeof buscarLoader>();
-  const navigate = useNavigate();
-  const input = useRef<HTMLInputElement>(null);
-  const [sel, setSel] = useState(0);
-  const resultados =
-    fetcher.state === "idle" ? (fetcher.data?.resultados ?? []) : [];
-  const indice = Math.min(Math.max(0, sel), Math.max(0, resultados.length - 1));
-
-  useEffect(() => input.current?.focus(), []);
-
-  const abrir = (id: number) => {
-    onFechar();
-    navigate(`/viagens/${id}`);
-  };
-
-  return (
-    <div className="busca-fundo" onClick={onFechar}>
-      <div
-        className="busca"
-        role="dialog"
-        aria-label={t("Buscar viagem")}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <input
-          ref={input}
-          placeholder={t("Código, contato, telefone, e-mail ou agência")}
-          onChange={(e) => {
-            setSel(0);
-            fetcher.load(`/buscar?q=${encodeURIComponent(e.target.value)}`);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "ArrowDown")
-              setSel((s) =>
-                Math.max(0, Math.min(s + 1, resultados.length - 1)),
-              );
-            if (e.key === "ArrowUp") setSel((s) => Math.max(s - 1, 0));
-            if (e.key === "Enter" && resultados[indice])
-              abrir(resultados[indice].id);
-          }}
-        />
-        <ul>
-          {resultados.map((r, i) => (
-            <li
-              key={`${r.id}-${r.contato}`}
-              className={i === indice ? "ativo" : ""}
-              onMouseDown={() => abrir(r.id)}
-            >
-              <strong>{r.codigo}</strong> {r.contato}{" "}
-              <span className="etapa">{t(rotuloEtapa[r.etapa])}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-}

@@ -1,20 +1,5 @@
 import { condicoesPadrao } from "~/modules/orcamentos/versoes";
-export type ValorReferencia = string | number | null;
-export type ColunaReferencia = {
-  chave: string;
-  nome: string;
-  tipo: "texto" | "numero" | "data";
-};
-export type LinhaReferencia = {
-  id: string;
-  nome: string;
-  provisorio?: string;
-  [chave: string]: ValorReferencia | undefined;
-};
-export type DadosReferencia = {
-  colunas: ColunaReferencia[];
-  linhas: LinhaReferencia[];
-};
+import type { ColunaReferencia, DadosReferencia } from "./linha";
 export type TabelaInicial = DadosReferencia & {
   codigo: string;
   titulo: string;

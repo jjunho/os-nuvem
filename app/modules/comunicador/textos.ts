@@ -114,6 +114,8 @@ const ko = {
   "Nenhuma conversa": "대화 없음",
   "Acesso restrito": "접근 제한",
 } as const;
+export type TradutorComunicador = (chave: keyof typeof ko) => string;
+
 export function textos(idioma: "pt" | "ko") {
   return (s: keyof typeof ko) => (idioma === "ko" ? ko[s] : s);
 }

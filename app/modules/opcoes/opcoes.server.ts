@@ -19,12 +19,12 @@ import {
   type ChaveTraducao,
   type IdiomaInterface,
 } from "~/modules/idiomas/catalogo";
-const normalizar = (texto: string) =>
-  texto
-    .trim()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLocaleLowerCase();
+export type OpcaoConhecida = {
+  valor: string;
+  nome: string;
+  contexto: Record<string, string>;
+};
+import { normalizar, novosContextos, opcaoExistente, planoDeMesclagem } from "./normalizacao";
 const iniciais: Record<string, Record<string, ChaveTraducao>> = {
   periodo: {
     completo: "Dia completo",
@@ -58,7 +58,10 @@ export async function semearOpcoes() {
     }
   }
 }
-export async function listarOpcoes(campo: string, idioma: IdiomaInterface) {
+export async function listarOpcoes(
+  campo: string,
+  idioma: IdiomaInterface,
+): Promise<OpcaoConhecida[]> {
   const linhas = await db
     .select()
     .from(opcoesConhecidas)
@@ -81,16 +84,9 @@ export async function registrarOpcao(
     .select()
     .from(opcoesConhecidas)
     .where(eq(opcoesConhecidas.campo, campo));
-  const existente = conhecidas.find(
-    (o) =>
-      o.valor === valor ||
-      normalizar(o.nomePt) === normalizar(valor) ||
-      normalizar(o.nomeKo) === normalizar(valor),
-  );
+  const existente = opcaoExistente(conhecidas, valor);
   if (existente) {
-    const novos = Object.fromEntries(
-      Object.entries(contexto).filter(([k, v]) => v && !existente.contexto[k]),
-    );
+    const novos = novosContextos(existente.contexto, contexto);
     if (Object.keys(novos).length)
       await db
         .update(opcoesConhecidas)
@@ -218,23 +214,17 @@ export async function administrarOpcoes(
         .where(eq(opcoesConhecidas.id, destinoId));
       if (!destino || destino.campo !== origem.campo || destino.id === id)
         throw new Response("Destino inválido", { status: 400 });
+      const plano = planoDeMesclagem(origem.campo);
+      if (!plano) throw new Response("Campo inválido", { status: 400 });
       const rascunhos = await tx
         .select()
         .from(orcamentos)
         .where(isNull(orcamentos.memoria))
         .for("update");
-      const campoJson: Record<string, string> = {
-        canalComercial: "canal",
-        categoria: "categoria",
-        periodo: "periodo",
-        moeda: "moeda",
-        veiculo: "veiculo",
-        cidades: "cidade",
-      };
       for (const o of rascunhos) {
         const antes = JSON.stringify(o.dados);
         const dados = JSON.parse(antes, (chave, valor) =>
-          chave === campoJson[origem.campo] && valor === origem.valor
+          chave === plano.chaveJson && valor === origem.valor
             ? destino.valor
             : valor,
         );
@@ -244,17 +234,19 @@ export async function administrarOpcoes(
             .set({ dados, revisao: o.revisao + 1 })
             .where(eq(orcamentos.id, o.id));
       }
-      if (["periodo", "moeda", "veiculo"].includes(origem.campo)) {
+      if (plano.modo === "apagar") {
         await tx.delete(opcoesConhecidas).where(eq(opcoesConhecidas.id, id));
         return;
       }
-      if (origem.campo === "cidades" || origem.campo === "meiosContato") {
+      if (plano.modo === "array") {
+        if (plano.coluna !== "cidades" && plano.coluna !== "meiosContato")
+          throw new Response("Campo inválido", { status: 400 });
         const coluna =
-          origem.campo === "cidades" ? viagens.cidades : viagens.meiosContato;
+          plano.coluna === "cidades" ? viagens.cidades : viagens.meiosContato;
         await tx
           .update(viagens)
           .set({
-            [origem.campo]: sql`array(select distinct unnest(array_replace(${coluna}, ${origem.valor}, ${destino.valor})))`,
+            [plano.coluna]: sql`array(select distinct unnest(array_replace(${coluna}, ${origem.valor}, ${destino.valor})))`,
           });
         await tx.delete(opcoesConhecidas).where(eq(opcoesConhecidas.id, id));
         return;
@@ -270,14 +262,15 @@ export async function administrarOpcoes(
         idiomaCliente: viagens.idiomaCliente,
         idiomaGuiamento: viagens.idiomaGuiamento,
       };
-      if (!(origem.campo in campos))
+      const campo = plano.coluna;
+      if (!campo || !(campo in campos))
         throw new Response("Campo inválido", { status: 400 });
-      const campo = origem.campo as keyof typeof campos;
+      const coluna = campo as keyof typeof campos;
       await tx
         .update(viagens)
-        .set({ [campo]: destino.valor })
-        .where(eq(campos[campo], origem.valor));
-      if (campo === "canalComercial")
+        .set({ [coluna]: destino.valor })
+        .where(eq(campos[coluna], origem.valor));
+      if (coluna === "canalComercial")
         await tx
           .update(intermediarios)
           .set({ canalComercial: destino.valor })

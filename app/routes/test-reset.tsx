@@ -1,4 +1,4 @@
-import { limparPresencasDeTeste } from "~/modules/comunicador/notificacoes.server";
+import { limparPresencasDeTeste } from "~/modules/comunicador/presenca.server";
 import { fakeTranscricao } from "~/modules/comunicador/transcricao.server";
 import type { Route } from "./+types/test-reset";
 import { limparTudo, semear } from "~/db/seed.server";

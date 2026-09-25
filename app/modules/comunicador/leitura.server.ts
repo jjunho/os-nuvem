@@ -1,10 +1,7 @@
 import { pool } from "~/db/client.server";
-import {
-  exigirConversa,
-  invalido,
-  publicar,
-  type Usuario,
-} from "./comunicador.server";
+import { exigirConversa, invalido } from "./acesso.server";
+import { publicar } from "~/modules/notificacoes/eventos.server";
+import type { Usuario } from "./tipos";
 export async function marcarLeitura(
   u: Usuario,
   id: number,

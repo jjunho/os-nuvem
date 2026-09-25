@@ -15,6 +15,19 @@ import {
 } from "~/db/schema";
 import { registrarFato } from "~/modules/viagens/etapas.server";
 import type { DiaOrcamento, RascunhoOrcamento } from "./calculo";
+import type { DadosReferencia } from "~/modules/tabelas/linha";
+import type { ViajanteOrcamento } from "~/modules/viagens/viajantes.server";
+import type { OpcaoConhecida } from "~/modules/opcoes/opcoes.server";
+export type OrcamentoLido = {
+  orcamento: typeof orcamentos.$inferSelect;
+  viagem: typeof viagens.$inferSelect;
+  opcoesConhecidas: Record<string, OpcaoConhecida[]>;
+  autores: { id: number; nome: string }[];
+  pessoas: ViajanteOrcamento[];
+  hoteis: OpcaoConhecida[];
+  taxaPaga: (typeof taxasElaboracao.$inferSelect) | null;
+  referencias: Record<string, DadosReferencia>;
+};
 export async function criarOrcamento(
   viagemId: number,
   autorId: number,
@@ -179,7 +192,7 @@ export async function listarOrcamentos(viagemId: number) {
     .where(eq(orcamentos.viagemId, viagemId))
     .orderBy(desc(orcamentos.versao));
 }
-export async function lerOrcamento(id: number) {
+export async function lerOrcamento(id: number): Promise<OrcamentoLido> {
   const [o] = await db
     .select({ orcamento: orcamentos, viagem: viagens })
     .from(orcamentos)

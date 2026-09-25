@@ -9,6 +9,7 @@ import {
   tarefasHistorico,
   usuarios,
 } from "~/db/schema";
+import { decidirMudancaEstado, validarCriacaoTarefa } from "./decisoes";
 type Usuario = { id: number; papel: string };
 type Transacao = Parameters<Parameters<typeof db.transaction>[0]>[0];
 function visibilidade(usuario: Usuario) {
@@ -159,20 +160,18 @@ export async function criarTarefa(
     });
   const prazo = form.get("prazo") ? new Date(String(form.get("prazo"))) : null;
   const responsavelId = inteiroEntrada(form.get("responsavelId"));
-  const copias = [
-    ...new Set([
-      ...form.getAll("copias").map((id) => inteiroEntrada(id)),
-      ...(responsavelId !== usuario.id ? [usuario.id] : []),
-    ]),
-  ];
-  if (!titulo || (prazo !== null && !Number.isFinite(prazo.getTime())))
-    throw new Response("Informe título e prazo", { status: 400 });
-  if (
-    usuario.papel === "guiamento" &&
-    responsavelId !== usuario.id &&
-    !copias.includes(usuario.id)
-  )
-    throw new Response("Acesso restrito", { status: 403 });
+  const validacao = validarCriacaoTarefa(
+    {
+      titulo,
+      prazo,
+      responsavelId,
+      copias: form.getAll("copias").map((id) => inteiroEntrada(id)),
+    },
+    usuario,
+  );
+  if (!validacao.ok)
+    throw new Response(validacao.texto, { status: validacao.status });
+  const { copias } = validacao.dados;
   const executar = async (tx: Transacao) => {
     if (posicao) {
       const autorizada = await tx.execute(
@@ -319,38 +318,21 @@ export async function mudarEstadoTarefa(
       .where(and(eq(tarefas.id, id), visibilidade(usuario)))
       .for("update");
     if (!tarefa) throw new Response("Acesso restrito", { status: 403 });
-    if (tarefa.tipo !== "manual")
-      throw new Response(
-        "Registre o fato na Viagem para concluir esta Tarefa",
-        { status: 400 },
-      );
-    const estado =
-      intent === "concluir"
-        ? "concluida"
-        : intent === "reabrir"
-          ? "aberta"
-          : intent === "cancelar"
-            ? "cancelada"
-            : null;
-    if (!estado || (estado === "cancelada" && !motivo.trim()))
-      throw new Response("Informe o motivo", { status: 400 });
-    if (estado === tarefa.estado) return;
+    const decisao = decidirMudancaEstado(tarefa, intent, motivo, agora);
+    if (decisao.tipo === "recusa")
+      throw new Response(decisao.texto, { status: decisao.status });
+    if (decisao.tipo === "sem-alteracao") return;
     await tx
       .update(tarefas)
-      .set({
-        estado,
-        concluidaEm: estado === "concluida" ? agora : null,
-        canceladaEm: estado === "cancelada" ? agora : null,
-        motivoCancelamento: estado === "cancelada" ? motivo.trim() : null,
-      })
+      .set(decisao.campos)
       .where(eq(tarefas.id, id));
     await evento(
       tx,
       [id],
-      estado === "aberta" ? "reaberta" : estado,
+      decisao.evento,
       usuario.id,
       agora,
-      motivo.trim(),
+      decisao.motivo,
     );
   });
   publicar(0);

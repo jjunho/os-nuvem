@@ -3,6 +3,8 @@ import {
   iniciarEditor,
   editor,
   reconciliar,
+  emConflito,
+  sincronizarFormulario,
   iniciarRevisao,
   revisar,
 } from "./editor";
@@ -102,27 +104,34 @@ it("editar ou substituir prévia invalida respostas antigas inclusive A→B→A"
   });
 });
 
-it("RHF mantém B dirty ao reconhecer A e limpa dirty somente após salvar B", async () => {
-  const { createFormControl } = await import("react-hook-form");
-  const f = createFormControl({
-    defaultValues: { dados: { valor: "original" } },
+it("conflito só aparece com operação ociosa e sincronização preserva edição concorrente", () => {
+  const base = inicial();
+  const externo = editor(base, { tipo: "externo", revisao: 4 });
+  expect(emConflito(externo, 3)).toBe(true);
+  const salvando = editor(base, {
+    tipo: "salvar",
+    id: "a",
+    snapshot: { valor: "A" },
+    alterado: true,
   });
-  let dirty = false;
-  const unsubscribe = f.subscribe({
-    formState: { isDirty: true },
-    callback: (s) => {
-      if (s.isDirty !== undefined) dirty = s.isDirty;
-    },
+  expect(emConflito(editor(salvando, { tipo: "externo", revisao: 4 }), 3)).toBe(false);
+  expect(
+    sincronizarFormulario({
+      snapshot: { valor: "A" },
+      atual: { valor: "B" },
+      salvo: { valor: "salvo" },
+      confirmacao: false,
+    }),
+  ).toEqual({
+    reset: { valor: "salvo" },
+    manter: { valor: "B" },
   });
-  f.setValue("dados", { valor: "A" }, { shouldDirty: true });
-  const snapshot = structuredClone(f.getValues("dados"));
-  f.setValue("dados", { valor: "B" }, { shouldDirty: true });
-  const atual = reconciliar(snapshot, f.getValues("dados"), { valor: "A" });
-  f.reset({ dados: { valor: "A" } });
-  f.setValue("dados", atual, { shouldDirty: true });
-  expect(f.getValues("dados")).toEqual({ valor: "B" });
-  expect(dirty).toBe(true);
-  f.reset({ dados: { valor: "B" } });
-  expect(dirty).toBe(false);
-  unsubscribe();
+  expect(
+    sincronizarFormulario({
+      snapshot: { valor: "A" },
+      atual: { valor: "B" },
+      salvo: { valor: "confirmado" },
+      confirmacao: true,
+    }),
+  ).toEqual({ reset: { valor: "confirmado" }, manter: null });
 });

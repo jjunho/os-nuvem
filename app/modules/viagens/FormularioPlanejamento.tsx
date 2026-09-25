@@ -1,4 +1,8 @@
-import { assinaturaEnvio, prepararTentativa } from "./tentativa-planejamento";
+import {
+  assinaturaEnvio,
+  prepararTentativa,
+} from "./tentativa-planejamento.client";
+import type { ResultadoFormulario } from "./resultado-formulario";
 import { useEffect, useRef, useState } from "react";
 import {
   camposReconhecidos,
@@ -16,11 +20,7 @@ export function FormularioPlanejamento({
   conflitos: { id: number; atual: string; recebido: string }[];
 }) {
   const { t, mensagem } = useIdioma();
-  const formulario = useFetcher<
-    | { ok: true; link: string; revogado?: never; erro?: never }
-    | { ok: true; revogado: true; link?: never; erro?: never }
-    | { erro: string; link?: never; revogado?: never }
-  >();
+  const formulario = useFetcher<ResultadoFormulario>();
   const formularioEmCurso = useRef(false);
   const chaveFormulario = `planejamento:${viagemId}:formulario`;
   const chaveRespostas = `planejamento:${viagemId}:respostas`;
@@ -37,7 +37,8 @@ export function FormularioPlanejamento({
     if (formulario.state === "idle") {
       if (
         formularioEmCurso.current &&
-        (formulario.data?.link || formulario.data?.revogado)
+        formulario.data &&
+        ("link" in formulario.data || "revogado" in formulario.data)
       ) {
         try {
           sessionStorage.removeItem(chaveFormulario);
@@ -94,7 +95,12 @@ export function FormularioPlanejamento({
             if (intent === "gerar-formulario")
               form.set(
                 "tentativaId",
-                prepararTentativa(chaveFormulario, "formulario"),
+                prepararTentativa(
+                  sessionStorage,
+                  chaveFormulario,
+                  "formulario",
+                  () => crypto.randomUUID(),
+                ),
               );
             void formulario.submit(form, { method: "post" }).catch((erro) => {
               formularioEmCurso.current = false;
@@ -124,7 +130,7 @@ export function FormularioPlanejamento({
           {t("Revogar formulário")}
         </button>
       </formulario.Form>
-      {formulario.data?.erro && (
+      {formulario.data && "erro" in formulario.data && (
         <p role="alert">{mensagem(formulario.data.erro)}</p>
       )}
       {conflitos.length > 0 && (
@@ -166,11 +172,18 @@ export function FormularioPlanejamento({
           setPreparando(true);
           setErroLocal(null);
           try {
-            const assinatura = await assinaturaEnvio(form);
+            const assinatura = await assinaturaEnvio(form, (bytes) =>
+              crypto.subtle.digest("SHA-256", bytes),
+            );
             if (!montado.current) return;
             form.set(
               "tentativaId",
-              prepararTentativa(chaveRespostas, assinatura),
+              prepararTentativa(
+                sessionStorage,
+                chaveRespostas,
+                assinatura,
+                () => crypto.randomUUID(),
+              ),
             );
             await anexar.submit(form, {
               method: "post",
@@ -214,12 +227,16 @@ export function FormularioPlanejamento({
           </li>
         ))}
       </ul>
-      {formulario.state === "idle" && formulario.data?.revogado && (
-        <p role="status">{t("Formulário revogado")}</p>
-      )}
-      {formulario.state === "idle" && formulario.data?.link && (
-        <Link to={formulario.data.link}>{t("Abrir formulário")}</Link>
-      )}
+      {formulario.state === "idle" &&
+        formulario.data &&
+        "revogado" in formulario.data && (
+          <p role="status">{t("Formulário revogado")}</p>
+        )}
+      {formulario.state === "idle" &&
+        formulario.data &&
+        "link" in formulario.data && (
+          <Link to={formulario.data.link}>{t("Abrir formulário")}</Link>
+        )}
     </section>
   );
 }

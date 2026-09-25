@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import type { DadosReferencia } from "~/modules/tabelas/linha";
 import {
   pgTable,
   jsonb,
@@ -487,7 +488,7 @@ export const versoesReferencia = pgTable(
       .references(() => tabelasReferencia.codigo),
     versao: integer("versao").notNull(),
     dados: jsonb("dados")
-      .$type<import("~/modules/tabelas/referencias").DadosReferencia>()
+      .$type<DadosReferencia>()
       .notNull(),
     autorId: integer("autor_id").references(() => usuarios.id),
     criadaEm: timestamp("criada_em", { withTimezone: true })

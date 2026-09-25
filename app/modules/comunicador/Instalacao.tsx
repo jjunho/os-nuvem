@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useIdioma } from "~/modules/idiomas/idioma";
 import { textos } from "./textos";
-import { comando } from "./Painel";
+import { comando } from "./api.client";
 export function Instalacao({ visto }: { visto: boolean }) {
   const { idioma } = useIdioma(),
     t = textos(idioma);

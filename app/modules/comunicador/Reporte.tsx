@@ -1,4 +1,5 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useMaquina } from "~/modules/interface/use-maquina";
 import { useIdioma } from "~/modules/idiomas/idioma";
 import { textos } from "./textos";
 import { reporte, type ReporteEstado } from "./estado-ui";
@@ -12,18 +13,14 @@ export function Reporte({
 }) {
   const { idioma } = useIdioma(),
     t = textos(idioma);
-  const [estado, dispatch] = useReducer(reporte, { fase: "capturando" });
-  const atual = useRef<ReporteEstado>(estado);
-  atual.current = estado;
+  const { estado, emitir, atual } = useMaquina(reporte, {
+    fase: "capturando",
+  });
   const ativo = useRef(true);
   const capturaAtual = useRef<AbortController | null>(null);
   const [pagina] = useState(
     () => sessionStorage.getItem("comunicador-pagina") ?? location.href,
   );
-  function emitir(evento: Parameters<typeof reporte>[1]) {
-    atual.current = reporte(atual.current, evento);
-    dispatch(evento);
-  }
   async function capturar() {
     if (!ativo.current) return;
     capturaAtual.current?.abort();
@@ -124,7 +121,8 @@ export function Reporte({
       onSubmit={(e) => {
         e.preventDefault();
         // A guarda síncrona vale também para dois submits antes do próximo render.
-        if (atual.current.fase !== "pronta" || !ativo.current) return;
+        const estadoAtual = atual();
+        if (estadoAtual.fase !== "pronta" || !ativo.current) return;
         const f = new FormData(e.currentTarget);
         const texto = [
           `Página: ${f.get("pagina")}`,
@@ -136,7 +134,7 @@ export function Reporte({
         ].join("\n");
         const tentativa = {
           fase: "enviando" as const,
-          captura: atual.current.captura,
+          captura: estadoAtual.captura,
           texto,
           clientId: crypto.randomUUID(),
         };
@@ -187,9 +185,8 @@ export function Reporte({
         <button
           type="button"
           onClick={() => {
-            if (atual.current.fase !== "erro-captura") return;
+            if (atual().fase !== "erro-captura") return;
             emitir({ tipo: "capturar" });
-            void capturar();
           }}
         >
           {t("Tentar novamente")}
@@ -199,7 +196,7 @@ export function Reporte({
         <button
           type="button"
           onClick={() => {
-            const tentativa = atual.current;
+            const tentativa = atual();
             if (tentativa.fase !== "erro-envio" || !ativo.current) return;
             emitir({ tipo: "retentar" });
             void transmitir(tentativa);

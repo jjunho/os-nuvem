@@ -2,6 +2,7 @@ import webpush from "web-push";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "~/db/client.server";
 import { inscricoesPush, notificacoes } from "~/db/schema";
+import { analisarInscricao } from "./inscricao";
 type Transacao = Parameters<Parameters<typeof db.transaction>[0]>[0];
 export async function avisar(
   tx: Transacao,
@@ -79,44 +80,26 @@ export async function entregarPush() {
   }
 }
 export async function guardarInscricao(usuarioId: number, valor: unknown) {
-  if (
-    typeof valor !== "object" ||
-    valor === null ||
-    !("endpoint" in valor) ||
-    !("keys" in valor)
-  )
-    throw new Response("Inscrição inválida", { status: 400 });
-  const endpoint = String(valor.endpoint);
-  let url: URL;
-  try {
-    url = new URL(endpoint);
-  } catch {
-    throw new Response("Endpoint inválido", { status: 400 });
+  const resultado = analisarInscricao(valor);
+  if (!resultado.ok) {
+    const mensagens = {
+      payload: "Inscrição inválida",
+      endpoint: "Endpoint inválido",
+      servico: "Serviço de push não reconhecido",
+      chaves: "Chaves inválidas",
+    } as const;
+    throw new Response(mensagens[resultado.motivo], { status: 400 });
   }
-  const host = url.hostname;
-  if (
-    url.protocol !== "https:" ||
-    !(
-      [
-        "fcm.googleapis.com",
-        "updates.push.services.mozilla.com",
-        "web.push.apple.com",
-      ].includes(host) || host.endsWith(".notify.windows.com")
-    )
-  )
-    throw new Response("Serviço de push não reconhecido", { status: 400 });
-  const chaves = valor.keys as { p256dh?: string; auth?: string };
-  if (typeof chaves?.p256dh !== "string" || typeof chaves?.auth !== "string")
-    throw new Response("Chaves inválidas", { status: 400 });
+  const { endpoint, chaves } = resultado.inscricao;
   await db
     .insert(inscricoesPush)
     .values({
       usuarioId,
       endpoint,
-      chaves: { p256dh: chaves.p256dh, auth: chaves.auth },
+      chaves,
     })
     .onConflictDoUpdate({
       target: inscricoesPush.endpoint,
-      set: { usuarioId, chaves: { p256dh: chaves.p256dh, auth: chaves.auth } },
+      set: { usuarioId, chaves },
     });
 }

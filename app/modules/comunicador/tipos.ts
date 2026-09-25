@@ -1,0 +1,43 @@
+import type { Segmento } from "./leitura";
+import type { usuarios } from "~/db/schema";
+export type Usuario = Omit<typeof usuarios.$inferSelect, "senhaHash">;
+export type Conversa = {
+  id: number;
+  tipo: "direta" | "grupo" | "interna" | "equipe" | "tarefa";
+  nome: string;
+  descricao: string;
+  privada: boolean;
+  arquivada: boolean;
+  criador_id: number;
+  viagem_id: number | null;
+  nao_lidas: number;
+  lida_ate: number;
+  notificacao: string;
+};
+export type Mensagem = {
+  id: number;
+  client_id: string;
+  conversa_id: number;
+  autor_id: number;
+  autor: string;
+  ativo: boolean;
+  texto: string;
+  segmentos: Segmento[];
+  criada_em: string;
+  apagada: boolean;
+  sistema: boolean;
+  atividade_tipo: string | null;
+  atividade_motivo: string | null;
+  urgente: boolean;
+  citada_id: number | null;
+  versoes: { texto: string; em: string }[];
+  transcricao: string;
+  reacoes: { emoji: string; nome: string }[];
+  midia: {
+    id: string;
+    mime: string;
+    removida: boolean;
+    movida: boolean;
+  } | null;
+};
+export type Pessoa = { id: number; nome: string; papel: string };

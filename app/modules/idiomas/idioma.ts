@@ -1,9 +1,15 @@
 import { useRouteLoaderData } from "react-router";
-import type { loader } from "~/root";
-import { traduzirMensagem, traduzir, type ChaveTraducao } from "./catalogo";
+import {
+  traduzirMensagem,
+  traduzir,
+  type ChaveTraducao,
+  type IdiomaInterface,
+} from "./catalogo";
+
+export type DadosDeIdioma = { idioma: IdiomaInterface };
 
 export function useIdioma() {
-  const dados = useRouteLoaderData<typeof loader>("root");
+  const dados = useRouteLoaderData<DadosDeIdioma>("root");
   const idioma = dados?.idioma ?? "pt";
   return {
     idioma,

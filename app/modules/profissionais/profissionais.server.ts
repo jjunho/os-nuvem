@@ -1,8 +1,12 @@
-import { inteiroEntrada, dataISOValida } from "~/modules/validacao/entrada";
 import { and, eq } from "drizzle-orm";
 import { db } from "~/db/client.server";
 import { profissionais, alocacoes, viagens } from "~/db/schema";
-export async function listarDisponibilidade() {
+import { dadosDeAlocacao, dadosDeProfissional } from "./alocacao";
+export type Disponibilidade = {
+  profissionais: (typeof profissionais.$inferSelect)[];
+  alocacoes: (typeof alocacoes.$inferSelect)[];
+};
+export async function listarDisponibilidade(): Promise<Disponibilidade> {
   return {
     profissionais: await db
       .select()
@@ -12,41 +16,14 @@ export async function listarDisponibilidade() {
   };
 }
 export async function salvarProfissional(f: FormData) {
-  const nome = String(f.get("nome") ?? "").trim(),
-    papel = String(f.get("papel"));
-  const lista = (k: string) =>
-    String(f.get(k) ?? "")
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-  if (!nome || !["guia", "assistente"].includes(papel))
-    throw new Response("Profissional inválido", { status: 400 });
-  const dados = {
-    nome,
-    papel: papel as "guia" | "assistente",
-    idiomas: lista("idiomas"),
-    especialidades: lista("especialidades"),
-  };
+  const dados = dadosDeProfissional(f);
   await db
     .insert(profissionais)
     .values(dados)
     .onConflictDoUpdate({ target: profissionais.nome, set: dados });
 }
 export async function alocarProfissional(f: FormData, autorId: number) {
-  const profissionalId = inteiroEntrada(f.get("profissionalId")),
-    viagemId = inteiroEntrada(f.get("viagemId")),
-    inicio = String(f.get("inicio")),
-    fim = String(f.get("fim")),
-    periodo = String(f.get("periodo"));
-  if (
-    !Number.isInteger(profissionalId) ||
-    !Number.isInteger(viagemId) ||
-    !dataISOValida(inicio) ||
-    !dataISOValida(fim) ||
-    fim < inicio ||
-    !["inteiro", "manha", "tarde"].includes(periodo)
-  )
-    throw new Response("Alocação inválida", { status: 400 });
+  const { profissionalId, viagemId, inicio, fim, periodo } = dadosDeAlocacao(f);
   await db.transaction(async (tx) => {
     // Serialize allocation for this professional: a repeated confirmed booking
     // describes the same domain fact, even after the HTTP response is lost.

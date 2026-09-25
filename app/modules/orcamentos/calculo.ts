@@ -90,21 +90,49 @@ export type RascunhoOrcamento = {
   condicoes?: import("./versoes").CondicoesProposta;
   opcoes: OpcaoOrcamento[];
 };
+export type ContextoCalculo = {
+  canal: string;
+  categoria: string;
+  referencias: Referencias;
+  malasPorPessoa?: number;
+  viajantes?: {
+    id: number;
+    idade: number | null;
+    pagante: boolean;
+    nome: string | null;
+  }[];
+};
+export type LinhaCalculada = LinhaCusto & {
+  grupo: LinhaCusto["grupo"];
+  quantidade: number;
+  sugerido: number | null;
+  aplicado: number | null;
+  convertido: number | null;
+  provisorio: boolean;
+  total: number | null;
+};
+export type CalculoOpcao = {
+  pisoMargem: number;
+  margemReal: number | null;
+  custoReal: number | null;
+  comissaoInfluencer: number;
+  gorjeta: number | null;
+  linhas: LinhaCalculada[];
+  servicos: number;
+  margem: number;
+  hoteis: number;
+  terceiros: number;
+  calculado: number;
+  sugerido: number;
+  enviado: number;
+  diferenca: number;
+  porPessoa: number | null;
+  avisos: string[];
+};
 export function calcularOpcao(
   opcao: OpcaoOrcamento,
-  contexto?: {
-    canal: string;
-    categoria: string;
-    referencias: Referencias;
-    malasPorPessoa?: number;
-    viajantes?: {
-      id: number;
-      idade: number | null;
-      pagante: boolean;
-      nome: string | null;
-    }[];
-  },
-) {
+  contexto?: ContextoCalculo,
+): CalculoOpcao {
   let servicos = 0,
     hoteis = 0,
     terceiros = 0;
@@ -568,7 +596,7 @@ export function calcularOpcao(
 export function alternativasTransporte(
   opcao: OpcaoOrcamento,
   dia: DiaOrcamento,
-  contexto: NonNullable<Parameters<typeof calcularOpcao>[1]>,
+  contexto: ContextoCalculo,
 ) {
   const pax = opcao.pagantes + opcao.gratuidades;
   const equipe = sugerirEquipe(contexto.categoria, pax);

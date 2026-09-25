@@ -2,6 +2,7 @@ import { validarRascunho } from "./validacao";
 import ExcelJS from "exceljs";
 import {
   calcularOpcao,
+  type CalculoOpcao,
   type RascunhoOrcamento,
   type DiaOrcamento,
   type LinhaCusto,
@@ -13,12 +14,13 @@ type Pessoa = {
   idade: number | null;
   pagante: boolean;
 };
+export type Importacao = { dados: RascunhoOrcamento; pendencias: string[] };
 const modelo = "COREALUX-ORCAMENTO-1";
 export async function exportarExcel(
   dados: RascunhoOrcamento,
   referencias: Referencias,
   pessoas: Pessoa[],
-  congelados?: ReturnType<typeof calcularOpcao>[],
+  congelados?: CalculoOpcao[],
 ) {
   const arquivo = new ExcelJS.Workbook();
   arquivo.creator = "CoreaLux";
@@ -114,7 +116,10 @@ export async function exportarExcel(
   }
   return new Uint8Array(await arquivo.xlsx.writeBuffer());
 }
-export async function importarExcel(conteudo: ArrayBuffer, pessoas: Pessoa[]) {
+export async function importarExcel(
+  conteudo: ArrayBuffer,
+  pessoas: Pessoa[],
+): Promise<Importacao> {
   const arquivo = new ExcelJS.Workbook();
   try {
     await arquivo.xlsx.load(conteudo);

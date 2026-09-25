@@ -2,14 +2,10 @@ import { randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile, unlink } from "node:fs/promises";
 import path from "node:path";
 import { pool } from "~/db/client.server";
-import {
-  enviar,
-  exigirConversa,
-  invalido,
-  restrito,
-  publicar,
-  type Usuario,
-} from "./comunicador.server";
+import { enviar } from "./comunicador.server";
+import { exigirConversa, invalido, restrito } from "./acesso.server";
+import { publicar } from "~/modules/notificacoes/eventos.server";
+import type { Usuario } from "./tipos";
 const diretorio = path.resolve(
   ".data",
   process.env.TEST_MODE === "1" ? "comunicador-test" : "comunicador",

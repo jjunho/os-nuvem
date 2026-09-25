@@ -8,7 +8,8 @@ import type { PoolClient } from "pg";
 import { publicar } from "~/modules/notificacoes/eventos.server";
 import { criarTarefa, detalheTarefa } from "~/modules/tarefas/tarefas.server";
 import { notificar } from "~/modules/comunicador/leitura";
-import { leituraAtual } from "~/modules/comunicador/notificacoes.server";
+import { leituraAtual } from "~/modules/comunicador/presenca.server";
+import { decidirAdministracao, decidirMovimento } from "./decisoes";
 export type Leitor = { id: number; papel: string };
 export type Quadro = {
   id: number;
@@ -223,13 +224,8 @@ export async function acaoQuadro(
     if (
       ["compartilhar", "remover-membro", "arquivar-quadro"].includes(intent)
     ) {
-      if (q.pessoal) erro("Quadro pessoal é protegido", 400);
-      if (
-        intent !== "compartilhar" &&
-        q.criador_id !== u.id &&
-        u.papel !== "admin"
-      )
-        erro();
+      const decisao = decidirAdministracao(intent, q, u);
+      if (decisao) erro(decisao.texto, decisao.status);
       const uid = numero(f, "usuarioId");
       if (intent === "compartilhar")
         await c.query(
@@ -279,7 +275,8 @@ export async function acaoQuadro(
         ]);
       }
       if (intent === "arquivar-lista") {
-        if (q.pessoal) erro("Listas pessoais são protegidas", 400);
+        const decisao = decidirAdministracao(intent, q, u);
+        if (decisao) erro(decisao.texto, decisao.status);
         await c.query(
           "update quadros_listas set arquivada=true,conclusao=false where id=$1",
           [lid],
@@ -330,7 +327,8 @@ export async function acaoQuadro(
         )
       ).rows[0];
       if (!l) erro();
-      if (l.conclusao && t.tipo !== "manual" && t.estado !== "concluida") {
+      const decisao = decidirMovimento(t, { id: l.id, quadroId: l.quadro_id, conclusao: l.conclusao });
+      if (decisao.exigeFato) {
         if (t.viagem_id)
           throw redirect(await acaoDaTarefaEtapa(t.id, t.viagem_id));
         erro("Registre o fato na Viagem para concluir esta Tarefa", 400);
@@ -361,26 +359,20 @@ export async function acaoQuadro(
       if (t.lista_id !== lid || t.posicao !== pos) {
         await c.query(
           "update tarefas_posicoes set quadro_id=$2,lista_id=$3,posicao=$4,lista_anterior_id=case when $5 then lista_id else lista_anterior_id end where tarefa_id=$1",
-          [
-            tid,
-            id,
-            lid,
-            pos,
-            l.conclusao && t.lista_id !== lid && t.quadro_id === id,
-          ],
+          [tid, id, lid, pos, decisao.guardarListaAnterior],
         );
         await c.query(
           "delete from tarefas_etiquetas te using quadros_etiquetas e where te.tarefa_id=$1 and te.etiqueta_id=e.id and e.quadro_id<>$2",
           [tid, id],
         );
-        if (t.tipo === "manual" && l.conclusao && t.estado !== "concluida") {
+        if (decisao.estado === "concluida") {
           await c.query(
             "update tarefas set estado='concluida',concluida_em=$2,cancelada_em=null,motivo_cancelamento=null where id=$1",
             [tid, agora],
           );
           await historico(c, tid, "concluida", u, agora);
         }
-        if (t.tipo === "manual" && !l.conclusao && t.estado === "concluida") {
+        if (decisao.estado === "aberta") {
           await c.query(
             "update tarefas set estado='aberta',concluida_em=null where id=$1",
             [tid],
