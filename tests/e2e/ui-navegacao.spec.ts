@@ -294,3 +294,22 @@ test("dois submits síncronos criam uma única alocação", async ({ page }) => 
   ).toBeEnabled();
   expect(chamadas).toBe(1);
 });
+
+test("cabeçalho do shell em 390 px cabe na largura e mantém a navegação", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const medidas = await page.locator("header.topo").evaluate((elemento) => ({
+    scrollWidth: elemento.scrollWidth,
+    clientWidth: elemento.clientWidth,
+    direita: elemento.getBoundingClientRect().right,
+  }));
+  expect(medidas.clientWidth).toBe(390);
+  expect(medidas.scrollWidth).toBe(medidas.clientWidth);
+  expect(medidas.direita).toBeLessThanOrEqual(390);
+  const navegacao = page.locator("header.topo nav");
+  await expect(navegacao).toBeInViewport();
+  const caixa = await navegacao.boundingBox();
+  expect(caixa?.width ?? 0).toBeGreaterThan(300);
+});
