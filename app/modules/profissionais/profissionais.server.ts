@@ -1,7 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "~/db/client.server";
 import { profissionais, alocacoes, viagens } from "~/db/schema";
-import { dadosDeAlocacao, dadosDeProfissional } from "./alocacao";
+import { dadosDeAlocacao } from "./alocacao";
+import { dadosDeProfissional } from "./profissional";
 export type Disponibilidade = {
   profissionais: (typeof profissionais.$inferSelect)[];
   alocacoes: (typeof alocacoes.$inferSelect)[];

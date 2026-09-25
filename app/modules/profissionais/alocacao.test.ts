@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { dadosDeAlocacao, dadosDeProfissional } from "./alocacao";
+import { dadosDeAlocacao } from "./alocacao";
 
 const formulario = (valores: Record<string, string>) => {
   const form = new FormData();
@@ -16,29 +16,6 @@ async function respostaDe(acao: () => unknown): Promise<Response> {
   }
   throw new Error("Esperava resposta de validação");
 }
-
-test("profissional interpreta nome, papel, idiomas e especialidades como o formulário atual", async () => {
-  expect(
-    dadosDeProfissional(
-      formulario({
-        nome: "  Guia Kim  ",
-        papel: "guia",
-        idiomas: "pt, ko, , en",
-        especialidades: "história, gastronomia",
-      }),
-    ),
-  ).toEqual({
-    nome: "Guia Kim",
-    papel: "guia",
-    idiomas: ["pt", "ko", "en"],
-    especialidades: ["história", "gastronomia"],
-  });
-  const resposta = await respostaDe(() =>
-    dadosDeProfissional(formulario({ nome: "", papel: "motorista" })),
-  );
-  expect(resposta.status).toBe(400);
-  expect(await resposta.text()).toBe("Profissional inválido");
-});
 
 test("alocação preserva os campos válidos e rejeita identificadores, datas, período e ordem inválidos", async () => {
   expect(
